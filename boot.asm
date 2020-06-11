@@ -52,13 +52,20 @@ clearscreen:
 	
 	pusha
 	
-	mov ah, 0x07        ; tells BIOS to scroll down window
-	mov al, 0x00        ; clear entire window
-	mov bh, 0x07        ; white on black
-	mov cx, 0x00        ; specifies top left of screen as (0,0)
-	mov dh, 0x20        ; 18h = 24 rows of chars
-	mov dl, 0x50        ; 4fh = 79 cols of chars
-	int 0x10            ; calls video interrupt
+	; clear screen
+	mov ah, 0x07 ; scroll down
+	mov al, 0x00 ; full window
+	mov bh, 0x07 ; white on black
+	mov cx, 0x00 ; origin is 0|0
+	mov dh, 0x18 ; 18h = 24 rows
+	mov dl, 0x4f ; 4fh = 79 cols
+	int 0x10 ; video int
+	
+	; reset cursor
+	mov ah, 0x02 ;cursor pos
+	mov dx, 0x0000 ;set to 0|0
+	mov bh, 0x00 ; page 0
+	int 0x10 ;video int
 	
 	popa
 	
