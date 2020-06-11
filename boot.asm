@@ -9,6 +9,8 @@ boot:
 	mov ax, 0x07E0 	 ; let's make a stack (8k in size)
 	mov ss, ax
 	mov sp, 0x2000
+
+	call clearscreen ; clear the screen... duh!
 	
 	push headermsg ; log our beautiful OS name!
 	call print
@@ -42,6 +44,27 @@ print:
 	mov sp, bp ;return stack frame
     pop bp
 		
+	ret
+	
+clearscreen:
+	push bp     ; save stack frame
+	mov bp, sp
+	
+	pusha
+	
+	mov ah, 0x07        ; tells BIOS to scroll down window
+	mov al, 0x00        ; clear entire window
+	mov bh, 0x07        ; white on black
+	mov cx, 0x00        ; specifies top left of screen as (0,0)
+	mov dh, 0x20        ; 18h = 24 rows of chars
+	mov dl, 0x50        ; 4fh = 79 cols of chars
+	int 0x10            ; calls video interrupt
+	
+	popa
+	
+	mov sp, bp ;return stack frame
+    pop bp
+	
 	ret
 
 headermsg: db "nekosys Bootloader",0xa,0xd,0
