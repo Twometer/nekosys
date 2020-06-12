@@ -9,14 +9,30 @@ boot:
 	mov ax, 0x07E0 	 ; let's make a stack (8k in size)
 	mov ss, ax
 	mov sp, 0x2000
+	
+	mov [disk], dl ; save our disk
 
 	call clearscreen ; clear the screen... duh!
 	
 	push headermsg ; log our beautiful OS name!
 	call print
 	
-	push bootmsg ; log more info because it looks cool
-	call print
+	; push 0x7C00+0x1BE ; load offset of the FAT partition table
+	; call print
+
+	; load a file from disk:
+	; mov ah, 0x2 ;read sector
+	; mov al, 1 ;1 sector
+	; mov ch, 0 ; cyl
+	; mov dh, 0 ; head
+	; mov cl, 3 ; sector idx
+	; mov dl, [disk] ; disk
+	; mov bx, 0x7000 ;dst ptr
+	; int 0x13
+	
+	; and put that file content on the screen
+	; push 0x7000
+	; call print
 	
 	cli ; clear interrupts
 	hlt ; halt execution
@@ -74,22 +90,21 @@ clearscreen:
 	
 	ret
 
+disk: db 0x0
 headermsg: db "nekosys Bootloader",0xa,0xd,0
-bootmsg: db "Loading kernel...",0xa,0xd,0
 
 times 446 - ($-$$) db 0 ; pad with 0s until the 1st partition table entry at byte 446
 
-; TODO: Bios complains about invalid partition table
-db 0x01			 ; 1st partition table entry
+db 0x80			 ; 1st partition table entry
 times 15 db 0
 
-db 0x01			 ; 2nd partition table entry
+db 0x00			 ; 2nd partition table entry
 times 15 db 0
 
-db 0x01			 ; 3rd partition table entry
+db 0x00			 ; 3rd partition table entry
 times 15 db 0
 
-db 0x01			 ; 4th partition table entry
+db 0x00			 ; 4th partition table entry
 times 15 db 0
 
 dw 0xaa55 ; boot signature

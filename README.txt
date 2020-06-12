@@ -1,1 +1,0 @@
-nekosys is an operating system from scratch
