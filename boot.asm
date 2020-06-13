@@ -1,10 +1,11 @@
-bits 16    ; 16-bit real mode
+bits 16    ; 16-bit
 org 0x7C00 ; BIOS offset
 
+; entry point 16 bit real mode
 boot:
 	xor ax, ax ; Zero registers
-	mov ds, ax
-	mov es, ax
+	mov ds, ax ; data segment at zero
+	mov es, ax ; extra segment at zero
 	
 	mov ax, 0x07E0 	 ; let's make a stack (8k in size)
 	mov ss, ax
@@ -17,25 +18,80 @@ boot:
 	push headermsg ; log our beautiful OS name!
 	call print
 	
-	; push 0x7C00+0x1BE ; load offset of the FAT partition table
-	; call print
-
-	; load a file from disk:
-	; mov ah, 0x2 ;read sector
-	; mov al, 1 ;1 sector
-	; mov ch, 0 ; cyl
-	; mov dh, 0 ; head
-	; mov cl, 3 ; sector idx
-	; mov dl, [disk] ; disk
-	; mov bx, 0x7000 ;dst ptr
-	; int 0x13
+	mov ah, 0x2	; op
+	mov al, 0x1 ; sector count
+	mov ch, 0x0 ; cyl
+	mov cl, 0x2 ; sector
+	mov dh, 0x0 ; head
+	mov bx, 0x7F00 ; put it at 0x7f00
+	mov dl, [disk] ;diskno
+	int 0x13
 	
-	; and put that file content on the screen
-	; push 0x7000
-	; call print
+	jc _error ; if carry is set: instant error
+	cmp ah, 0
+	je read  ; if ah is zero, read
+	
+	_error:
+	push ioerr
+	call print
+	
+	cli ; exit after error!
+	hlt
+	
+	read:
+	push iogood
+	call print
+	
+	push 0x7F00
+	call print
+	
+	; read from disk!
+	
+	; Switch to 32-bit mode
+	; mov ax, 2401
+	; int 0x15
+	
+	; set vga text mode 0x3
+	; mov ax, 0x3
+	; int 0x10
+	
+	; load global descriptor table
+	; lgdt [gdt_pointer]
+	; mov eax, cr0
+	; or eax, 0x1 ; set protected mode bit on special regiter cr0
+	; mov cr0, eax
+	
+	; Jump to the 32-bit boot code
+	; jmp CODE_SEG:boot32
+	
 	
 	cli ; clear interrupts
 	hlt ; halt execution
+
+; global descriptor table
+
+gdt_start:
+    dq 0x0
+gdt_code:
+    dw 0xFFFF
+    dw 0x0
+    db 0x0
+    db 10011010b
+    db 11001111b
+    db 0x0
+gdt_data:
+    dw 0xFFFF
+    dw 0x0
+    db 0x0
+    db 10010010b
+    db 11001111b
+    db 0x0
+gdt_end:
+gdt_pointer:
+    dw gdt_end - gdt_start
+    dd gdt_start
+CODE_SEG equ gdt_code - gdt_start
+DATA_SEG equ gdt_data - gdt_start
 
 	
 print:
@@ -92,7 +148,37 @@ clearscreen:
 
 disk: db 0x0
 headermsg: db "nekosys Bootloader",0xa,0xd,0
+ioerr: db "disk error", 0xa,0xd,0
+iogood: db "io ok",0xa,0xd,0
 
+; 32-bit code:
+bits 32
+boot32:
+	; init registers 
+	mov ax, DATA_SEG
+	mov ds, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	mov ss, ax
+	mov esi,hello
+	mov ebx,0xb8000
+.loop:
+	lodsb
+	or al,al
+	jz halt
+	or eax,0x0100
+	mov word [ebx], ax
+	add ebx,2
+	jmp .loop
+halt:
+	cli
+	hlt
+hello: db "nekosys Bootloader",0
+
+
+
+; partition table and boot sig:
 times 446 - ($-$$) db 0 ; pad with 0s until the 1st partition table entry at byte 446
 
 db 0x80			 ; 1st partition table entry
