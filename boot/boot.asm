@@ -1,7 +1,7 @@
 bits 16    ; 16-bit
 org 0x7C00 ; BIOS offset
 
-; entry point 16 bit real mode
+; entry point
 boot:
 	xor ax, ax ; Zero registers
 	mov ds, ax ; data segment at zero
@@ -66,94 +66,13 @@ print:
 		
 	ret
 
+; memory
+disk: db 0x0
+
 ; messages
 ioerr: db "Failed to access boot disk", 0xa,0xd,0
 iogood: db "Bootloader loaded",0xa,0xd,0
 
-; global descriptor table
-
-gdt_start:
-    dq 0x0
-gdt_code:
-    dw 0xFFFF
-    dw 0x0
-    db 0x0
-    db 10011010b
-    db 11001111b
-    db 0x0
-gdt_data:
-    dw 0xFFFF
-    dw 0x0
-    db 0x0
-    db 10010010b
-    db 11001111b
-    db 0x0
-gdt_end:
-gdt_pointer:
-    dw gdt_end - gdt_start
-    dd gdt_start
-CODE_SEG equ gdt_code - gdt_start
-DATA_SEG equ gdt_data - gdt_start
-
-	
-
-	
-clearscreen:
-	push bp     ; save stack frame
-	mov bp, sp
-	
-	pusha
-	
-	; clear screen
-	mov ah, 0x07 ; scroll down
-	mov al, 0x00 ; full window
-	mov bh, 0x07 ; white on black
-	mov cx, 0x00 ; origin is 0|0
-	mov dh, 0x18 ; 18h = 24 rows
-	mov dl, 0x4f ; 4fh = 79 cols
-	int 0x10 ; video int
-	
-	; reset cursor
-	mov ah, 0x02 ;cursor pos
-	mov dx, 0x0000 ;set to 0|0
-	mov bh, 0x00 ; page 0
-	int 0x10 ;video int
-	
-	popa
-	
-	mov sp, bp ;return stack frame
-    pop bp
-	
-	ret
-
-disk: db 0x0
-
-; 32-bit code:
-bits 32
-boot32:
-	; init registers 
-	mov ax, DATA_SEG
-	mov ds, ax
-	mov es, ax
-	mov fs, ax
-	mov gs, ax
-	mov ss, ax
-	mov esi,hello
-	mov ebx,0xb8000
-.loop:
-	lodsb
-	or al,al
-	jz halt
-	or eax,0x0100
-	mov word [ebx], ax
-	add ebx,2
-	jmp .loop
-halt:
-	cli
-	hlt
-hello: db "nekosys Bootloader",0
-
-
-
+; boot sector
 times 510 - ($-$$) db 0 ; pad to full sector
 dw 0xaa55 ; boot signature

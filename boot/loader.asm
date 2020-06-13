@@ -1,11 +1,23 @@
-bits 16
-org 0x7F00
+bits 16		; still 16 bit
+org 0x7F00  ; loader offset
 
 init:
 	call clearscreen
 	
-	push welcome
+	push log_welcome
 	call print
+	
+	push log_readfat
+	call print
+	; Read the FAT system
+	
+	; push log_ldkernel
+	; call print
+	; Load C kernel to RAM
+	
+	; push log_done
+	; call print
+	; Jump to kernel
 
 	cli
 	hlt
@@ -62,4 +74,7 @@ clearscreen:
 	
 	ret
 	
-welcome: db "nekosys Bootloader from beyond 512 bytes", 0xa, 0xd, 0
+log_welcome: db "nekosys Bootloader", 0xa, 0xd, 0
+log_readfat: db "Reading FAT data...", 0xa, 0xd, 0
+log_ldkernel: db "Loading kernel...", 0x0a, 0x0d, 0
+log_done: db "Entering kernel... bye :3", 0x0a, 0x0d, 0
