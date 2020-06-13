@@ -1,3 +1,4 @@
 #!/bin/bash
-rm boot.bin
-nasm -f bin boot.asm -o boot.bin
+rm out/*
+nasm -f bin boot/boot.asm -o out/boot.bin
+nasm -f bin boot/loader.asm -o out/loader.bin
