@@ -1,5 +1,12 @@
 bits 16		; still 16 bit
-org 0x7F00  ; loader offset
+org 0x7E00  ; loader offset
+
+; Memory layout
+; 
+; [0x7C00] +512: Boot sector and stage 1 loader
+; [0x7E00] +512: Stage 2 bootloader (this one here). May expand in the future
+; [0x8000] +...: Stores some FAT sectors and finally the kernel code. May move in the future.
+
 
 init:
 	; get disk parameters
@@ -25,12 +32,55 @@ init:
 	call print
 	
 	; Read the FAT system	
-	push 704		; disk sector
-	push 0x8000		; dst address
+	
+	; 7C00h is where the boot sector is, 1BEh is where the first partition is
+	; and 0x08 is the offset of the LBA where it starts, deref that and we have the 
+	; sector of the first partition. load that into 0x8000
+	mov ax, [0x7C00 + 0x1BE + 0x08]
+	mov [first_partition_offset], ax
+	
+	push word [first_partition_offset]
+	push 0x8000
 	call read_sector
 	
-	push 0x8000
+	; compute location of data region sector
+	mov ax, [0x8000 + 0x16] ; blocks per fat: 0x16
+	mov bx, [0x8000 + 0x10] ; num of fats: 0x10
+	xor dx, dx ; clear dx register
+	mul bx ; ax *= bx
+	add ax, [0x8000 + 0x0e] ; num_reserved blocks: 0x0e
+	add ax, [first_partition_offset]; add partition offset
+	
+	push ax ; ax now holds the sector with the data region
+	push 0x8000 ; load that again to 0x8000
+	call read_sector
+	
+	; read the root directory here:
+	mov bx, 0x8000 ; start reading at the beginning
+	
+	read_dirent:
+
+	mov al, [bx+11] ; al now contains the flags
+
+	mov ah, al
+	and ah, 0x2 ; and with hidden flag mask
+	cmp ah, 0x00 ; check if the result is != zero (which means it is set)
+	jne next_entry ; if hidden flag is set, dont show entry!
+
+	cmp byte [bx], 0xE5 
+	je next_entry ; if first byte of dir entry is 0xe5, that entry is unused
+	
+	
+	push bx		; print the name of the directory entry
+	call print 
+	
+	push newline ; and a newline, lol
 	call print
+	
+	next_entry:	
+	add bx, 32 ; move forward by 32 bytes (size of dirent)
+	cmp byte [bx], 0
+	jne read_dirent ; if the first byte of dir entry is null, then reading is done
 	
 	
 	; push log_ldkernel
@@ -48,6 +98,8 @@ init:
 disk: db 0x0
 num_heads: dw 0x0000
 sectors_per_track: dw 0x0000
+first_partition_offset: dw 0x0000
+
 
 ; subroutines
 on_error:
@@ -162,4 +214,5 @@ log_done: db "Entering kernel... bye :3", 0x0a, 0x0d, 0
 err_diskio: db "Disk IO Error!", 0xa, 0xd, 0
 
 ; Other strings
+newline: db 0xa, 0xd, 0
 kernel_file: db "NEKOLD", 0
