@@ -14,7 +14,7 @@ boot:
 	mov [disk], dl ; save our disk
 
 	mov ah, 0x2	; op
-	mov al, 0x1 ; sector count
+	mov al, 0x2 ; sector count: TWO SECTORS
 	mov ch, 0x0 ; cyl
 	mov cl, 0x2 ; sector
 	mov dh, 0x0 ; head

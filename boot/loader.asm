@@ -3,10 +3,11 @@ org 0x7E00  ; loader offset
 
 ; Memory layout
 ; 
-; [0x7C00] +512: Boot sector and stage 1 loader
-; [0x7E00] +512: Stage 2 bootloader (this one here). May expand in the future
-; [0x8000] +...: Stores some FAT sectors and finally the kernel code. May move in the future.
+; [0x7C00] +200h: Boot sector and stage 1 loader
+; [0x7E00] +400h: Stage 2 bootloader (this one here). May expand in the future
+; [0x8200] +...: Stores some FAT sectors and finally the kernel code. May move in the future.
 
+fat_offset: equ 0x8200
 
 init:
 	; get disk parameters
@@ -35,31 +36,30 @@ init:
 	
 	; 7C00h is where the boot sector is, 1BEh is where the first partition is
 	; and 0x08 is the offset of the LBA where it starts, deref that and we have the 
-	; sector of the first partition. load that into 0x8000
+	; sector of the first partition. load that into fat_offset
 	mov ax, [0x7C00 + 0x1BE + 0x08]
 	mov [first_partition_offset], ax
 	
 	push word [first_partition_offset]
-	push 0x8000
+	push fat_offset
 	call read_sector
 	
 	; compute location of data region sector
-	mov ax, [0x8000 + 0x16] ; blocks per fat: 0x16
-	mov bx, [0x8000 + 0x10] ; num of fats: 0x10
+	mov ax, [fat_offset + 0x16] ; blocks per fat: 0x16
+	mov bx, [fat_offset + 0x10] ; num of fats: 0x10
 	xor dx, dx ; clear dx register
 	mul bx ; ax *= bx
-	add ax, [0x8000 + 0x0e] ; num_reserved blocks: 0x0e
+	add ax, [fat_offset + 0x0e] ; num_reserved blocks: 0x0e
 	add ax, [first_partition_offset]; add partition offset
 	
 	push ax ; ax now holds the sector with the data region
-	push 0x8000 ; load that again to 0x8000
+	push fat_offset ; load that again to fat_offset
 	call read_sector
 	
 	; read the root directory here:
-	mov bx, 0x8000 ; start reading at the beginning
+	mov bx, fat_offset ; start reading at the beginning
 	
 	read_dirent:
-
 	mov al, [bx+11] ; al now contains the flags
 
 	mov ah, al
@@ -70,29 +70,47 @@ init:
 	cmp byte [bx], 0xE5 
 	je next_entry ; if first byte of dir entry is 0xe5, that entry is unused
 	
+	push bx
+	push kernel_file
+	call streq
+	cmp ax, 0 ; if not equal, then AX=0 and we have not found our kernel file, goto next entry
+	jz next_entry
 	
-	push bx		; print the name of the directory entry
+	push bx		; print the name of the found kernel directory entry
 	call print 
 	
-	push newline ; and a newline, lol
+	push log_found ; and a log statement to complete the line
 	call print
+	
+	; jump to kernel found routine
+	mov ax, [bx+26] ; store the cluster number of the file in AX
+	sub ax, 2 ; the cluster is 2-based, so fix that
+	jmp kernel_found
 	
 	next_entry:	
 	add bx, 32 ; move forward by 32 bytes (size of dirent)
 	cmp byte [bx], 0
 	jne read_dirent ; if the first byte of dir entry is null, then reading is done
 	
+	; if we exit this loop, the kernel was not found :c
+	push err_nokrnl
+	call print
+	jmp halt_system
 	
-	; push log_ldkernel
-	; call print
+	; but if we reach here, the kernel was found :3
+	kernel_found:
+	push log_ldkernel
+	call print
+	
+	; let's compute the sector of that file
+	
 	; Load C kernel to RAM
 	
 	; push log_done
 	; call print
 	; Jump to kernel
-
-	cli
-	hlt
+	
+	jmp halt_system
 	
 ; disk parameters
 disk: db 0x0
@@ -101,12 +119,58 @@ sectors_per_track: dw 0x0000
 first_partition_offset: dw 0x0000
 
 
-; subroutines
-on_error:
+; jmp targets
+on_disk_error:
 	push err_diskio
 	call print
+	jmp halt_system
+
+halt_system:
 	cli
 	hlt
+	jmp halt_system
+	
+; subroutines
+streq: ; (word aPtr, word bPtr)
+	push bp ; stack frame
+	mov bp, sp
+	
+	push bx ; save bx and di register on stack
+	push di
+	
+	mov bx, [bp+6] ; address ctr for left side
+	mov di, [bp+4] ; address ctr for right side
+	
+	compare_char:
+	mov al, [bx] ; load left char to al
+	mov ah, [di] ; load right char to ah
+	
+	cmp al, 0 ; if we reached a NUL-byte, we are done and equal
+	je done_eq
+	cmp ah, 0
+	je done_eq
+	
+	cmp ah, al ; compare the char
+	jne done_noteq ; if not equal, we exit
+	
+	inc bx ; if equal, compare next char
+	inc di
+	jmp compare_char
+	
+	done_noteq:
+	mov ax, 0
+	jmp streq_end
+	
+	done_eq:
+	mov ax, 1
+	
+	streq_end:
+	pop di ; return bx and di back from the stack
+	pop bx
+	
+	mov sp, bp ; restore stack frame
+	pop bp
+	ret 4
 		
 read_sector: ; (word sector, word destPtr)
 	push bp     ; save stack frame
@@ -141,7 +205,7 @@ read_sector: ; (word sector, word destPtr)
 	mov bx, [bp+4] ; dst address
 	mov dl, [disk] ;diskno
 	int 0x13
-	jc on_error ; carry flag means error
+	jc on_disk_error ; carry flag means error
 	
 	
 	popa ;load register states back from stack
@@ -206,13 +270,14 @@ clearscreen: ; ()
 ; Boot loader log messages
 log_header: db "nekosys Bootloader", 0xa, 0xd, 0
 log_welcome: db "(c) 2020 Twometer Applications", 0xa, 0xd, 0
-log_readfat: db "Reading FAT data...", 0xa, 0xd, 0
+log_readfat: db "Reading file system...", 0xa, 0xd, 0
+log_found: db " found", 0xa, 0xd, 0
 log_ldkernel: db "Loading kernel...", 0x0a, 0x0d, 0
 log_done: db "Entering kernel... bye :3", 0x0a, 0x0d, 0
 
 ; Boot loader error messages
 err_diskio: db "Disk IO Error!", 0xa, 0xd, 0
+err_nokrnl: db "Kernel file not found!", 0xa, 0xd, 0
 
 ; Other strings
-newline: db 0xa, 0xd, 0
 kernel_file: db "NEKOLD", 0
