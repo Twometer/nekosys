@@ -1,7 +1,3 @@
-/* nekosys Kernel entry point */
-
-#define CONSOLE_COLOR_
-
 int line = 0;
 short *vga_mem = (short*)0xb8000;
 
@@ -15,6 +11,7 @@ void newln() {
 	line++;
 }
 
+/* nekosys Kernel entry point */
 void nkmain() {
 	println(0x0D00, "nekosys Kernel 0.01", 19);
 	println(0x0700, "(c) 2020 Twometer Applications", 30);

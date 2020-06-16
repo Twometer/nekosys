@@ -1,5 +1,5 @@
 # The Nekosys OS
-nekosys is an operating system written from scratch
+nekosys is an x86 operating system written from scratch
 
 ## Disk layout
 - Sector 0: MBR and `boot.asm` stage one loader: Loads Stage 2 so that we can use more than 512 bytes
@@ -7,3 +7,8 @@ nekosys is an operating system written from scratch
 - The kernel is in a file called `NEKOKRNL` on the disk
 
 The disk must be formatted with FAT-16.
+
+## Requirements
+- nasm
+- gcc
+- make

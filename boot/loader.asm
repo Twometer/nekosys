@@ -149,19 +149,19 @@ init:
     call printhex
     
     ; Load kernel to RAM
-	mov bx, fat_offset ; offset
-	mov cx, 0
-	
-	next_sector:
+    mov bx, fat_offset ; offset
+    mov cx, 0
+    
+    next_sector:
     push ax             ; load that sector to fat_offset
     push bx
     call read_sector
-	
-	add bx, 512 ; memory_offset += 512
-	inc ax		; sector ++
-	inc cx		; read_sectors ++
-	cmp cx, [cluster_size] ; if (read_sectors != cluster_size)
-	jne next_sector		   ;     goto next_sector
+    
+    add bx, 512 ; memory_offset += 512
+    inc ax      ; sector ++
+    inc cx      ; read_sectors ++
+    cmp cx, [cluster_size] ; if (read_sectors != cluster_size)
+    jne next_sector        ;     goto next_sector
     
     ; We are done
     push log_done

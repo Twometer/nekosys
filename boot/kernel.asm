@@ -52,7 +52,7 @@ boot32:
     mov gs, ax
     mov ss, ax
     
-    ; Setup stack
+    ; Setup stack and enter kernel
     mov esp, kernel_stack_top
     extern nkmain
     call nkmain
