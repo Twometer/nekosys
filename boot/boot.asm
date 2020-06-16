@@ -3,68 +3,68 @@ org 0x7C00 ; BIOS offset
 
 ; entry point
 boot:
-	xor ax, ax ; Zero registers
-	mov ds, ax ; data segment at zero
-	mov es, ax ; extra segment at zero
-	
-	mov ax, 0x07E0 	 ; let's make a stack (8k in size)
-	mov ss, ax
-	mov sp, 0x2000
-	
-	mov [disk], dl ; save our disk
+    xor ax, ax ; Zero registers
+    mov ds, ax ; data segment at zero
+    mov es, ax ; extra segment at zero
+    
+    mov ax, 0x07E0      ; let's make a stack (8k in size)
+    mov ss, ax
+    mov sp, 0x2000
+    
+    mov [disk], dl ; save our disk
 
-	mov ah, 0x2	; op
-	mov al, 0x2 ; sector count: TWO SECTORS
-	mov ch, 0x0 ; cyl
-	mov cl, 0x2 ; sector
-	mov dh, 0x0 ; head
-	mov bx, 0x7E00 ; put it at 0x7f00
-	mov dl, [disk] ;diskno
-	int 0x13
-	
-	jc _error ; if carry is set: instant error
-	cmp ah, 0
-	je read  ; if ah is zero, read
-	
-	_error:		; write an error message
-	push ioerr
-	call print
-	
-	cli ; and halt
-	hlt
-	
-	read:	; read was ok, log that
-	push iogood
-	call print
-	
-	jmp 0x7E00 ; and transfer execution to the big chungus fat16 loader
-	
-	cli ; clear interrupts
-	hlt ; halt execution
+    mov ah, 0x2 ; op
+    mov al, 0x2 ; sector count: TWO SECTORS
+    mov ch, 0x0 ; cyl
+    mov cl, 0x2 ; sector
+    mov dh, 0x0 ; head
+    mov bx, 0x7E00 ; put it at 0x7f00
+    mov dl, [disk] ;diskno
+    int 0x13
+    
+    jc _error ; if carry is set: instant error
+    cmp ah, 0
+    je read  ; if ah is zero, read
+    
+    _error:        ; write an error message
+    push ioerr
+    call print
+    
+    cli ; and halt
+    hlt
+    
+    read:    ; read was ok, log that
+    push iogood
+    call print
+    
+    jmp 0x7E00 ; and transfer execution to the big chungus fat16 loader
+    
+    cli ; clear interrupts
+    hlt ; halt execution
 
 print:
-	push bp     ; save stack frame
-	mov bp, sp
-	
-	pusha ;save register states to stack
-	
-	mov si, [bp+4] ; get argument from stack
-	mov ah, 0x0e ; set mode to tty
-	
-	nextchar:
-	mov al, [si] ; load char
-	int 0x10 ; call video int
-	inc si ; increment si
-	
-	cmp byte [si], 0 ; check if we reached the end
-	jne nextchar; if not, write next char
-	
-	popa ;load register states back from stack
-	
-	mov sp, bp ;return stack frame
+    push bp     ; save stack frame
+    mov bp, sp
+    
+    pusha ;save register states to stack
+    
+    mov si, [bp+4] ; get argument from stack
+    mov ah, 0x0e ; set mode to tty
+    
+    nextchar:
+    mov al, [si] ; load char
+    int 0x10 ; call video int
+    inc si ; increment si
+    
+    cmp byte [si], 0 ; check if we reached the end
+    jne nextchar; if not, write next char
+    
+    popa ;load register states back from stack
+    
+    mov sp, bp ;return stack frame
     pop bp
-		
-	ret
+        
+    ret
 
 ; memory
 disk: db 0x0

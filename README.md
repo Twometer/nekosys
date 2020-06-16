@@ -1,11 +1,9 @@
-nekosys is an operating system from scratch
+# The Nekosys OS
+nekosys is an operating system written from scratch
 
-## Structure on disk
-- Sector 0: FAT16 MBR and `boot.asm` stage one loader
-- Sector 1: `loader.asm` stage two loader
+## Disk layout
+- Sector 0: MBR and `boot.asm` stage one loader: Loads Stage 2 so that we can use more than 512 bytes
+- Sector 1+: `loader.asm` stage two loader: Parses the FAT, loads the kernel into memory and executes it
+- The kernel is in a file called `NEKOLD` on the disk
 
-### Stage one loader
-Loads the stage-two loader from disk and executes it
-
-### Stage two loader
-Parses the FAT16 file table, enters 32-bit protected mode, loads the memory table, loads the kernel from disk and executes it
+The disk must be formatted with FAT-16.

@@ -52,20 +52,20 @@ init:
     add ax, [fat_offset + 0x0e] ; num_reserved blocks: 0x0e
     add ax, [first_partition_offset]; add partition offse    
     mov cx, ax ; the root dir begin is now in CX
-	mov [root_dir_beg], cx
+    mov [root_dir_beg], cx
     
     ; compute end of root directory sector
     mov ax, [fat_offset + 0x11] ; number of root directory entries
     mov bx, 32 ; 32 bytes per dir entry
     xor dx, dx; clear dx for mul
     mul bx ; ax = 32 * num_root_dir_entries
-	mov bx, 512 ; div / 512 (sector size)
-	div bx
+    mov bx, 512 ; div / 512 (sector size)
+    div bx
     add ax, cx ; ax += rootdir_start_sector
     mov [root_dir_end], ax ; store that for later 
     
     ; compute cluster size
-	mov ax, 0
+    mov ax, 0
     mov al, [fat_offset + 0x0d] ; bl = blocks_per_alloc_unit
     mov [cluster_size], ax
     
@@ -118,36 +118,36 @@ init:
     kernel_found:
     push log_ldkernel
     call print
-	
-	; log some debug data about the disk
-	push word [num_heads]
-	call printhex
-	
-	push word [sectors_per_track]
-	call printhex
-	
-	push word [first_partition_offset]
-	call printhex
-	
-	push word [root_dir_beg]
-	call printhex
-	
-	push word [root_dir_end]
-	call printhex
-	
-	push word [cluster_size]
-	call printhex
-	
-	push word ax
-	call printhex
-	
+    
+    ; log some debug data about the disk
+    push word [num_heads]
+    call printhex
+    
+    push word [sectors_per_track]
+    call printhex
+    
+    push word [first_partition_offset]
+    call printhex
+    
+    push word [root_dir_beg]
+    call printhex
+    
+    push word [root_dir_end]
+    call printhex
+    
+    push word [cluster_size]
+    call printhex
+    
+    push word ax
+    call printhex
+    
     ; let's compute the sector of that file
     push ax ; ax stores our cluster
     call cluster2sector ; now ax stores our sector - simple, right? :P
     
-	push word ax
-	call printhex
-	
+    push word ax
+    call printhex
+    
     push ax             ; load that sector to fat_offset
     push fat_offset
     call read_sector
@@ -292,44 +292,44 @@ printhex: ; (word number)
     mov bp, sp
     
     pusha ;save register states to stack
-	
-	mov ax, [bp+4] ; load the number
+    
+    mov ax, [bp+4] ; load the number
 
-	mov bx, 0
-	mov bl, ah
-	and bl, 0xf0
-	mov cl, 4
-	shr bl, cl
-	add bx, hextable
-	push word [bx]
-	call printchar
-	
-	mov bx, 0
-	mov bl, ah
-	and bl, 0x0f
-	add bx, hextable
-	push word [bx]
-	call printchar
+    mov bx, 0
+    mov bl, ah
+    and bl, 0xf0
+    mov cl, 4
+    shr bl, cl
+    add bx, hextable
+    push word [bx]
+    call printchar
+    
+    mov bx, 0
+    mov bl, ah
+    and bl, 0x0f
+    add bx, hextable
+    push word [bx]
+    call printchar
 
-	mov bx, 0
-	mov bl, al
-	and bl, 0xf0
-	mov cl, 4
-	shr bl, cl
-	add bx, hextable
-	push word [bx]
-	call printchar
-	
-	mov bx, 0
-	mov bl, al
-	and bl, 0x0f
-	add bx, hextable
-	push word [bx]
-	call printchar
-	
-	push newline
-	call print
-	
+    mov bx, 0
+    mov bl, al
+    and bl, 0xf0
+    mov cl, 4
+    shr bl, cl
+    add bx, hextable
+    push word [bx]
+    call printchar
+    
+    mov bx, 0
+    mov bl, al
+    and bl, 0x0f
+    add bx, hextable
+    push word [bx]
+    call printchar
+    
+    push newline
+    call print
+    
     popa ;load register states back from stack
     
     mov sp, bp ;return stack frame
@@ -340,18 +340,18 @@ printhex: ; (word number)
 printchar: ; (word char)
     push bp     ; save stack frame
     mov bp, sp
-	
-	pusha
-	mov ah, 0x0e
-	mov byte al, [bp+4]
-	int 0x10
-	popa
-	
-	mov sp, bp ;return stack frame
+    
+    pusha
+    mov ah, 0x0e
+    mov byte al, [bp+4]
+    int 0x10
+    popa
+    
+    mov sp, bp ;return stack frame
     pop bp
         
     ret 2 ; clean stack and return
-	
+    
 print: ; (word msgPtr)
     push bp     ; save stack frame
     mov bp, sp
