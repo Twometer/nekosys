@@ -1,16 +1,17 @@
+section .boot
 bits 16
-org 0x8200
+global boot
 
 boot:
-    ; Enter 32-bit mode
+    ; Remove 1MB limit
     mov ax, 0x2401
     int 0x15 ; enable A20 bit
     
-    ; Set VGA Text Mode 3
-    mov ax, 0x3
+    ; Set VGA Text Mode
+    mov ax, 0x2
     int 0x10 
 
-    ; Load the Global Descriptor Table
+    ; Load the Global Descriptor Table and enter protected mode
     lgdt [gdt_pointer] ; Load GDT
     mov eax, cr0 
     or eax, 0x1 ; Enable the Protected Mode Bit
@@ -51,21 +52,20 @@ boot32:
     mov gs, ax
     mov ss, ax
     
-	; Print test statement
-	mov esi,hello
-    mov ebx,0xb8000
-.loop:
-    lodsb
-    or al,al
-    jz halt_system
-    or eax,0x0100
-    mov word [ebx], ax
-    add ebx,2
-    jmp .loop
-	
+    ; Setup stack
+    mov esp, kernel_stack_top
+    extern nkmain
+    call nkmain
+
+    ; When we return from kernel, halt
 halt_system:
     cli
     hlt
     jmp halt_system
-	
-hello: db "Hello from 32 bits!",0
+    
+; Our C stack
+section .bss
+align 4
+kernel_stack_bottom: equ $
+    resb 16384 ; 16 KB
+kernel_stack_top:
