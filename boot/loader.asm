@@ -148,20 +148,20 @@ init:
     push word ax
     call printhex
     
+    ; Load kernel to RAM
     push ax             ; load that sector to fat_offset
     push fat_offset
     call read_sector
     
-    push fat_offset  ; print the file contents to the screen
+    ; We are done
+    push log_done
     call print
     
+    ; Transfer control to the kernel
+    jmp fat_offset
     
-    ; Load C kernel to RAM
-    
-    ; push log_done
-    ; call print
-    ; Jump to kernel
-    
+    ; If we get here, halt the system
+    ; But we should not get here
     jmp halt_system
     
 ; disk parameters
