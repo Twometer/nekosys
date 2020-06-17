@@ -9,6 +9,6 @@ nekosys is an x86 operating system written from scratch
 The disk must be formatted with FAT-16.
 
 ## Requirements
+- [neko-gcc](https://github.com/nekosys-os/neko-gcc)
 - nasm
-- gcc
 - make
