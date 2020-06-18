@@ -36,11 +36,14 @@ void tty_putchar(char c) {
 
 	if (!is_newline)
 		tty_putentry(c, term_color, term_column, term_row);
-		
+
 	if (++term_column == VGA_WIDTH || is_newline) {
 		term_column = 0;
 		if (++term_row == VGA_HEIGHT)
-			term_row = 0;
+		{
+			term_row--;
+			tty_scroll();
+		}
 	}
 }
 
@@ -51,4 +54,15 @@ void tty_write(const char *data, size_t size) {
 
 void tty_print(const char *data) {
 	tty_write(data, strlen(data));
+}
+
+void tty_scroll() {
+	// Discard first line
+	size_t new_buf_size = (VGA_HEIGHT - 1) * VGA_WIDTH;
+	memcpy(term_buffer, term_buffer + VGA_WIDTH, new_buf_size);
+
+	// Clear last line
+	for (size_t x = 0; x < VGA_WIDTH; x++) {
+		tty_putentry(' ', term_color, x, term_row);
+	}
 }

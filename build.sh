@@ -11,4 +11,4 @@ export INCLUDE_DIRS="-I kernel/include -I libc/include"
 export KERNEL_FILES="kernel/kernel.c kernel/tty.c out/kernel0.o"
 export LIBC_FILES="libc/string/memcmp.c libc/string/memcpy.c libc/string/memset.c libc/string/strlen.c"
 
-neko-gcc -m32 $KERNEL_FILES $LIBC_FILES -o out/NEKOKRNL -T kernel.ld $GCC_FLAGS $INCLUDE_DIRS
+neko-gcc $KERNEL_FILES $LIBC_FILES -o out/NEKOKRNL -T kernel.ld $GCC_FLAGS $INCLUDE_DIRS
