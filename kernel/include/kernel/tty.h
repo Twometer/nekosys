@@ -11,5 +11,6 @@ void tty_putchar(char c);
 void tty_scroll();
 void tty_write(const char* data, size_t size);
 void tty_print(const char* string);
+void tty_set_cursor_pos(size_t x, size_t y);
 
 #endif

@@ -4,8 +4,8 @@
 #include <string.h>
 
 #include <kernel/tty.h>
-
-#include "vga.h"
+#include <kernel/vga.h>
+#include <kernel/io.h>
 
 static const size_t VGA_WIDTH = 80;
 static const size_t VGA_HEIGHT = 25;
@@ -45,6 +45,7 @@ void tty_putchar(char c) {
 			tty_scroll();
 		}
 	}
+	tty_set_cursor_pos(term_column, term_row);
 }
 
 void tty_write(const char *data, size_t size) {
@@ -65,4 +66,15 @@ void tty_scroll() {
 	for (size_t x = 0; x < VGA_WIDTH; x++) {
 		tty_putentry(' ', term_color, x, term_row);
 	}
+}
+
+void tty_set_cursor_pos(size_t x, size_t y) {
+	term_column = x;
+	term_row = y;
+	uint16_t pos = y * VGA_WIDTH + x;
+
+	outb(0x3D4, 0x0F);
+	outb(0x3D5, (uint8_t) (pos & 0xFF));
+	outb(0x3D4, 0x0E);
+	outb(0x3D5, (uint8_t) ((pos >> 8) & 0xFF));
 }
