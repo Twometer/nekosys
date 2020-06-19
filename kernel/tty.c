@@ -59,7 +59,7 @@ void tty_print(const char *data) {
 
 void tty_scroll() {
 	// Discard first line
-	size_t new_buf_size = (VGA_HEIGHT - 1) * VGA_WIDTH;
+	size_t new_buf_size = 2 * (VGA_HEIGHT - 1) * VGA_WIDTH;
 	memcpy(term_buffer, term_buffer + VGA_WIDTH, new_buf_size);
 
 	// Clear last line
