@@ -5,11 +5,9 @@ org 0x7E00  ; loader offset
 ; 
 ; [0x7C00] +200h: Boot sector and stage 1 loader
 ; [0x7E00] +400h: Stage 2 bootloader (this one here). May expand in the future
-; [0x8200] +200h: FAT Table
-; [0x8400] + ...: FAT intermediate sector storage and finally the kernel
+; [0x8200] +...: Stores some FAT sectors and finally the kernel code. May move in the future.
 
 fat_offset: equ 0x8200
-krnl_offset: equ 0x8400
 
 init:
     ; get disk parameters
@@ -38,30 +36,26 @@ init:
     
     ; 7C00h is where the boot sector is, 1BEh is where the first partition is
     ; and 0x08 is the offset of the LBA where it starts, deref that and we have the 
-    ; sector of the first partition. load that into krnl_offset
+    ; sector of the first partition. load that into fat_offset
     mov ax, [0x7C00 + 0x1BE + 0x08]
     mov [first_partition_offset], ax
     
     push word [first_partition_offset]
-    push krnl_offset
+    push fat_offset
     call read_sector
     
     ; compute location of data region sector
-    mov ax, [krnl_offset + 0x16] ; blocks per fat: 0x16
-    mov bx, [krnl_offset + 0x10] ; num of fats: 0x10
+    mov ax, [fat_offset + 0x16] ; blocks per fat: 0x16
+    mov bx, [fat_offset + 0x10] ; num of fats: 0x10
     xor dx, dx ; clear dx register
     mul bx ; ax *= bx
-    add ax, [krnl_offset + 0x0e] ; num_reserved blocks: 0x0e
+    add ax, [fat_offset + 0x0e] ; num_reserved blocks: 0x0e
     add ax, [first_partition_offset]; add partition offse    
     mov cx, ax ; the root dir begin is now in CX
     mov [root_dir_beg], cx
-	
-	; save the number of reseved blocks
-	mov ax, [krnl_offset + 0x0e]
-	mov [reserved_sectors], ax
     
     ; compute end of root directory sector
-    mov ax, [krnl_offset + 0x11] ; number of root directory entries
+    mov ax, [fat_offset + 0x11] ; number of root directory entries
     mov bx, 32 ; 32 bytes per dir entry
     xor dx, dx; clear dx for mul
     mul bx ; ax = 32 * num_root_dir_entries
@@ -72,15 +66,15 @@ init:
     
     ; compute cluster size
     mov ax, 0
-    mov al, [krnl_offset + 0x0d] ; bl = blocks_per_alloc_unit
+    mov al, [fat_offset + 0x0d] ; bl = blocks_per_alloc_unit
     mov [cluster_size], ax
     
     push cx ; root dir begin sector
-    push krnl_offset ; load that again to krnl_offset
+    push fat_offset ; load that again to fat_offset
     call read_sector
     
     ; read the root directory here:
-    mov bx, krnl_offset ; start reading at the beginning
+    mov bx, fat_offset ; start reading at the beginning
     
     read_dirent:
     mov al, [bx+11] ; al now contains the flags
@@ -147,29 +141,19 @@ init:
     push word ax
     call printhex
     
-	; to load the file entirely, we need the FAT, load that
-	mov bx, [first_partition_offset]
-	add bx, [reserved_sectors]
-	push bx	; sector of the FAT
-	push fat_offset ; dst
-	call read_sector; read that FAT!
-	
-	push fat_offset
-	call print
-	
     ; let's compute the sector of that file
     push ax ; ax stores our cluster
-    call cluster2sector ; now ax stores our first sector - simple, right? :P
+    call cluster2sector ; now ax stores our sector - simple, right? :P
     
     push word ax
     call printhex
     
     ; Load kernel to RAM
-    mov bx, krnl_offset ; offset
+    mov bx, fat_offset ; offset
     mov cx, 0
     
     next_sector:
-    push ax             ; load that sector to krnl_offset
+    push ax             ; load that sector to fat_offset
     push bx
     call read_sector
     
@@ -186,7 +170,7 @@ init:
     call print
     
     ; Transfer control to the kernel
-    ; jmp krnl_offset
+    jmp fat_offset
     
     ; If we get here, halt the system
     ; But we should not get here
@@ -200,7 +184,6 @@ first_partition_offset: dw 0x0000
 root_dir_end: dw 0x0000
 root_dir_beg: dw 0x0000
 cluster_size: dw 0x0000
-reserved_sectors: dw 0x0000
 
 ; jmp targets
 on_disk_error:
