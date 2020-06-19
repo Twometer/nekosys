@@ -1,26 +1,25 @@
 ENTRY(boot)
 OUTPUT_FORMAT("binary")
 SECTIONS {
-	. = 0x8200;
+	. = 0xA000;
 	.text :
 	{
-        *(.boot)
+    *(.boot)
 		*(.text)
 	}
-    
-    .rodata :
-    {
-    	*(.rodata)
-    }
 
-    .data :
-    {
-    	*(.data)
-    }
+  .rodata :
+  {
+  	*(.rodata)
+  }
 
-    .bss :
-    {
-    	*(.bss)
-    }
+  .data :
+  {
+  	*(.data)
+  }
+
+  .bss :
+  {
+  	*(.bss)
+  }
 }
-

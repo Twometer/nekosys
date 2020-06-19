@@ -5,9 +5,10 @@ org 0x7E00  ; loader offset
 ; 
 ; [0x7C00] +200h: Boot sector and stage 1 loader
 ; [0x7E00] +400h: Stage 2 bootloader (this one here). May expand in the future
-; [0x8200] +...: Stores some FAT sectors and finally the kernel code. May move in the future.
+; [0x8200] +200h: Stores some FAT sectors
 
 fat_offset: equ 0x8200
+kernel_offset: equ 0xA000
 
 init:
     ; get disk parameters
@@ -149,11 +150,11 @@ init:
     call printhex
     
     ; Load kernel to RAM
-    mov bx, fat_offset ; offset
+    mov bx, kernel_offset ; offset
     mov cx, 0
     
     next_sector:
-    push ax             ; load that sector to fat_offset
+    push ax             ; load that sector to kernel_offset
     push bx
     call read_sector
     
@@ -170,7 +171,7 @@ init:
     call print
     
     ; Transfer control to the kernel
-    jmp fat_offset
+    jmp kernel_offset
     
     ; If we get here, halt the system
     ; But we should not get here
@@ -432,3 +433,5 @@ err_nokrnl: db "Kernel file not found!", 0xa, 0xd, 0
 newline: db 0x0a, 0x0d, 0
 kernel_file: db "NEKOKRNL", 0
 hextable: db "0123456789ABCDEF"
+
+times 1024 - ($-$$) db 0 ; pad to 2 sectors
