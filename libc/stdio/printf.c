@@ -3,6 +3,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
+
+const char *hextable = "0123456789ABCDEF";
 
 static bool print(const char* data, size_t length) {
 	const unsigned char* bytes = (const unsigned char*) data;
@@ -61,6 +64,33 @@ int printf(const char* restrict format, ...) {
 			if (!print(str, len))
 				return -1;
 			written += len;
+		} else if (*format == 'd') {
+			format++;
+			long val = va_arg(parameters, long);
+
+			size_t buf_idx = 32;
+			char buf[32];
+			do {
+				buf[--buf_idx] = (char)('0' + (val % 10));
+				val /= 10;
+				written++;
+			} while (val);
+			print (buf + buf_idx, 32 - buf_idx);
+		} else if (*format == 'x') {
+			format++;
+			long l = va_arg(parameters, long);
+			print("0x", 2);
+			written += 2;
+
+			uint8_t *byte_ptr = (uint8_t*)&l;
+			for (int i = sizeof(long) - 1; i >= 0; i--) {
+				uint8_t byte = byte_ptr[i];
+				uint8_t low = byte & 0x0F;
+				uint8_t high = (byte & 0xF0) >> 4;
+				print(&(hextable[high]), 1);
+				print(&(hextable[low]), 1);
+				written += 2;
+			}
 		} else {
 			format = format_begun_at;
 			size_t len = strlen(format);
