@@ -8,6 +8,7 @@ org 0x7E00  ; loader offset
 ; [0x8200] +200h: Stores some FAT sectors
 
 fat_offset: equ 0x8200
+table_offset: equ 0x8400
 kernel_offset: equ 0xA000
 
 init:
@@ -45,6 +46,10 @@ init:
     push fat_offset
     call read_sector
     
+	; get number of reserved sectors
+	mov ax, [fat_offset + 0x0e]
+	mov [reserved_sectors], ax
+	
     ; compute location of data region sector
     mov ax, [fat_offset + 0x16] ; blocks per fat: 0x16
     mov bx, [fat_offset + 0x10] ; num of fats: 0x10
@@ -54,7 +59,7 @@ init:
     add ax, [first_partition_offset]; add partition offse    
     mov cx, ax ; the root dir begin is now in CX
     mov [root_dir_beg], cx
-    
+	
     ; compute end of root directory sector
     mov ax, [fat_offset + 0x11] ; number of root directory entries
     mov bx, 32 ; 32 bytes per dir entry
@@ -74,6 +79,14 @@ init:
     push fat_offset ; load that again to fat_offset
     call read_sector
     
+	; read table
+	mov ax, [reserved_sectors]
+	add ax, [first_partition_offset]
+	
+	push ax
+	push table_offset
+	call read_sector
+	
     ; read the root directory here:
     mov bx, fat_offset ; start reading at the beginning
     
@@ -102,7 +115,6 @@ init:
     
     ; jump to kernel found routine
     mov ax, [bx+26] ; store the cluster number of the file in AX
-    sub ax, 2 ; the cluster is 2-based, so fix that
     jmp kernel_found
     
     next_entry:    
@@ -142,7 +154,11 @@ init:
     push word ax
     call printhex
     
-    ; let's compute the sector of that file
+    
+	next_cluster:
+	mov di, ax
+	
+	sub ax, 2 ; the cluster is 2-based, so fix that
     push ax ; ax stores our cluster
     call cluster2sector ; now ax stores our sector - simple, right? :P
     
@@ -164,7 +180,12 @@ init:
     cmp cx, [cluster_size] ; if (read_sectors != cluster_size)
     jne next_sector        ;     goto next_sector
     
-	; check
+	; check if we have a NEXT cluster
+	add di, table_offset
+	mov ax, [di] ; mov next cluster into ax
+	cmp ax, 0xFFFF ; check 0xffff
+	jne next_cluster ; goto next cluster
+	
 	
     ; We are done
     push log_done
@@ -185,6 +206,7 @@ first_partition_offset: dw 0x0000
 root_dir_end: dw 0x0000
 root_dir_beg: dw 0x0000
 cluster_size: dw 0x0000
+reserved_sectors: dw 0x0000
 
 ; jmp targets
 on_disk_error:

@@ -10,18 +10,13 @@ void nkmain() {
 	printf("nekosys Kernel 0.01\n");
 	printf("(c) 2020 Twometer Applications\n");
 
-/*
+
 	interrupts_disable();
 	gdt_initialize();
 	interrupts_initialize();
 	interrupts_enable();
 
-	printf(" Init completed\n");
-	printf("\n");
+	printf("Init completed\n\n");
 
 	printf("root@neko $ ");
-
-	for(;;) {
-	 asm("hlt");
- 	}*/
 }
