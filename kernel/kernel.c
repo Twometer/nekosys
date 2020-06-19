@@ -10,6 +10,7 @@ void nkmain() {
 	printf("nekosys Kernel 0.01\n");
 	printf("(c) 2020 Twometer Applications\n");
 
+/*
 	interrupts_disable();
 	gdt_initialize();
 	interrupts_initialize();
@@ -22,5 +23,5 @@ void nkmain() {
 
 	for(;;) {
 	 asm("hlt");
-	}
+ 	}*/
 }
