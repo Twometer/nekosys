@@ -1,13 +1,13 @@
 ENTRY(boot)
 OUTPUT_FORMAT("binary")
 SECTIONS {
-	. = 0x8200;
+	. = 0x8400;
 	.text :
 	{
         *(.boot)
 		*(.text)
 	}
-    
+
     .rodata :
     {
     	*(.rodata)
@@ -23,4 +23,3 @@ SECTIONS {
     	*(.bss)
     }
 }
-
