@@ -163,6 +163,8 @@ init:
     cmp cx, [cluster_size] ; if (read_sectors != cluster_size)
     jne next_sector        ;     goto next_sector
     
+	; check
+	
     ; We are done
     push log_done
     call print
