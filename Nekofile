@@ -1,0 +1,43 @@
+; NekoMake build script for nekosys
+;
+
+; Constants
+CCFLAGS = -std=gnu99 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -Werror -fno-pie -O2
+
+; Tools
+[asm, single]:
+	nasm -f {format, bin} {input} -o {output}
+	
+[cc, multi]:
+	neko-gcc {input} -o {output} -T kernel.ld {CCFLAGS} {include}
+
+; Targets
+all:
+	clean
+	bootloader
+	kernel
+	
+clean:
+	rm -rf build/
+	mkdir build/
+	mkdir build/intermediate
+	
+bootloader:
+	[asm]
+		input: bin/*.asm;
+		output: build/~.bin;
+	
+kernel:
+	[asm]
+		input: kernel/*.asm
+		format: elf32
+		output: build/~.o
+		
+	[cc]
+		input: build/intermediate/*.o
+			   kernel/**.c
+			   
+		include: -I kernel/include
+				 -I libc/include
+				 
+		output: build/NEKOKRNL

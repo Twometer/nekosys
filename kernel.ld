@@ -4,7 +4,7 @@ SECTIONS {
 	. = 0xA000;
 	.text :
 	{
-    *(.boot)
+		*(.boot)
 		*(.text)
 	}
 
