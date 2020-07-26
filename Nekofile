@@ -26,11 +26,12 @@ kernel:
     [asm]
         input: kernel/**.asm
         format: elf32
-        output: build/~.o
+        output: build/intermediate/~.o
         
     [cc]
         input: build/intermediate/*.o
                kernel/**.c
+			   libc/**.c
                
         include: -I kernel/include
                  -I libc/include
