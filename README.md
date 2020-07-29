@@ -12,7 +12,7 @@ This uses the nkm ([NekoMake](https://github.com/nekosys-os/nkm)) build system
 The disk must be formatted with FAT-16.
 
 ## Requirements
-- [NekoMake](https://github.com/nekosys-os/nkm))
+- [NekoMake](https://github.com/nekosys-os/nkm)
 - [neko-gcc](https://github.com/nekosys-os/neko-gcc)
 - [nasm](https://www.nasm.us/)
 
