@@ -1,6 +1,7 @@
 #ifndef _INTERRUPTS_H
 #define _INTERRUPTS_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 typedef struct IDT_entry {
@@ -9,7 +10,7 @@ typedef struct IDT_entry {
    uint8_t zero;      // unused, set to 0
    uint8_t type_attr; // type and attributes, see below
    uint16_t offset_2; // offset bits 16..31
-} IDT_entry;
+} __attribute__ ((packed)) IDT_entry;
 
 void interrupts_initialize();
 void interrupts_disable();
@@ -23,5 +24,19 @@ static inline void interrupts_lidt(void *base, uint16_t size) {
 
    asm ( "lidt %0" : : "m"(IDTR) );  // let the compiler choose an addressing mode
 }
+
+static inline bool are_interrupts_enabled()
+{
+    unsigned long flags;
+    asm volatile ( "pushf\n\t"
+                   "pop %0"
+                   : "=g"(flags) );
+    return flags & (1 << 9);
+}
+
+#define PIC_EOI		0x20		/* End-of-interrupt command code */
+ 
+void PIC_sendEOI(unsigned char irq);
+void PIC_remap(int opffset1, int offset2);
 
 #endif

@@ -2,7 +2,7 @@
 ;
 
 ; Constants
-CCFLAGS = -std=gnu99 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -Werror -fno-pie -O2
+CCFLAGS = -std=gnu99 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -Werror -fno-pie -O2 -mgeneral-regs-only 
 
 ; Tools
 [asm, multi]:
@@ -19,13 +19,12 @@ default:
 	
 ; TODO: Does not generate a valid FAT partition table and can't boot
 image:
-	rm build/neko.img
 	dd if=/dev/zero of=build/neko.img bs=1024 count=16384
 	mkfs.vfat -F 16 build/neko.img
 	mcopy -i build/neko.img build/NEKOKRNL ::NEKOKRNL
 	dd if=build/boot.bin of=build/neko.img bs=256 count=1 conv=notrunc
 	dd if=build/loader.bin of=build/neko.img bs=512 count=2 conv=notrunc seek=1
-	 
+	  
 clean:
     rm -rf build/
     mkdir build/

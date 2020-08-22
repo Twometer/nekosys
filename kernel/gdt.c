@@ -2,20 +2,15 @@
 
 #include "gdt.h"
 
-extern void setGdt(uint8_t*, int);
+extern void setGdt(void* gdt, size_t size);
 
 void gdt_initialize() {
-/*  GDT[0] = (GDT_entry){.base=0, .limit=0, .type=0};                      // Selector 0x00 cannot be used
-  GDT[1] = (GDT_entry){.base=0x04000000, .limit=0x03ffffff, .type=0x9A}; // Selector 0x08 will be our code
-  GDT[2] = (GDT_entry){.base=0x08000000, .limit=0x03ffffff, .type=0x92}; // Selector 0x10 will be our data
-  //table[3] = (GDT_entry){.base=&myTss, .limit=sizeof(myTss), .type=0x89};  // You can use LTR(0x18)
-  */
-  uint8_t gdt[3*8];
-  gdt_encode_entry(gdt+0x00, (GDT_entry){.base=0, .limit=0, .type=0}); // Selector 0x00 cannot be used
-  gdt_encode_entry(gdt+0x08, (GDT_entry){.base=0x04000000, .limit=0x03ffffff, .type=0x9A}); // Selector 0x08 will be our code
-  gdt_encode_entry(gdt+0x10, (GDT_entry){.base=0x08000000, .limit=0x03ffffff, .type=0x92}); // Selector 0x10 will be our data
+	/*uint8_t GDT[3*8];
+	GDT[0] = {.base=0, .limit=0, .type=0};                     // Selector 0x00 cannot be used
+	GDT[1] = {.base=0, .limit=0xffffffff, .type=0x9A};         // Selector 0x08 will be our code
+	GDT[2] = {.base=0, .limit=0xffffffff, .type=0x92};         // Selector 0x10 will be our data
 
-  setGdt(gdt, sizeof(gdt));
+	setGdt(gdt, sizeof(gdt));*/
 }
 
 void gdt_encode_entry(uint8_t *target, GDT_entry source) {

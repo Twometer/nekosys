@@ -1,4 +1,5 @@
 global setGdt
+global reloadSegments
 
 gdtr DW 0 ; For limit storage
      DD 0 ; For base storage
