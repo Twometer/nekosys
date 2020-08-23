@@ -1,8 +1,7 @@
 #include <kernel/tty.h>
 #include <stdio.h>
 
-#include "interrupts.h"
-#include "gdt.h"
+#include "arch/interrupts.h"
 
 /* nekosys Kernel entry point */
 void nkmain() {
@@ -12,9 +11,8 @@ void nkmain() {
 	printf("(c) 2020 Twometer Applications\n");
 
 	// Set up environment
-	interrupts_disable();
-	interrupts_initialize();
-	interrupts_enable();
+	idt_init();
+	int_enable();
 
 	// Dummy terminal
 	printf("Init completed\n\n");

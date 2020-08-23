@@ -6,18 +6,18 @@ boot:
     ; Remove 1MB limit
     mov ax, 0x2401
     int 0x15 ; enable A20 bit
-    
+
     ; Set VGA Text Mode
     mov ax, 0x2
-    int 0x10 
+    int 0x10
 
     ; Load the Global Descriptor Table and enter protected mode
     lgdt [gdt_pointer] ; Load GDT
-    mov eax, cr0 
+    mov eax, cr0
     or eax, 0x1 ; Enable the Protected Mode Bit
     mov cr0, eax
     jmp CODE_SEG:boot32 ; long jump to the code segment
-    
+
 ; Define the Global Descriptor Table
 gdt_start:
     dq 0x0
@@ -41,7 +41,7 @@ gdt_end:
     dd gdt_start
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
-    
+
 bits 32
 boot32:
     ; Make all segments point at the DATA segment we just defined
@@ -51,7 +51,7 @@ boot32:
     mov fs, ax
     mov gs, ax
     mov ss, ax
-    
+
     ; Setup stack and enter kernel
     mov esp, kernel_stack_top
     extern nkmain
@@ -62,7 +62,7 @@ halt_system:
     cli
     hlt
     jmp halt_system
-    
+
 ; Our C stack
 section .bss
 align 4
