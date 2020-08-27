@@ -11,8 +11,8 @@ void nkmain() {
 	printf("(c) 2020 Twometer Applications\n");
 
 	// Set up environment
-	idt_init();
-	int_enable();
+	//idt_init();
+	//int_enable();
 
 	// Dummy terminal
 	printf("Init completed\n\n");
