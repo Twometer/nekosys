@@ -2,21 +2,21 @@
 ;
 
 ; Constants
-CCFLAGS = -std=gnu99 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -Werror -fno-pie -O2 -mgeneral-regs-only 
+CCFLAGS = -std=gnu99 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -fno-pie -O2 -mgeneral-regs-only 
 
 ; Tools
 [asm, multi]:
     nasm -f {format=bin} {input} -o {output}
-    
+
 [cc, single]:
     neko-gcc {input} -o {output} -T kernel.ld {CCFLAGS} {include}
 
-; Targets   
+; Targets
 default:
 	% clean
 	% bootloader
 	% kernel
-	
+
 ; TODO: Does not generate a valid FAT partition table and can't boot
 image:
 	dd if=/dev/zero of=build/neko.img bs=1024 count=16384
@@ -24,29 +24,29 @@ image:
 	mcopy -i build/neko.img build/NEKOKRNL ::NEKOKRNL
 	dd if=build/boot.bin of=build/neko.img bs=256 count=1 conv=notrunc
 	dd if=build/loader.bin of=build/neko.img bs=512 count=2 conv=notrunc seek=1
-	  
+
 clean:
     rm -rf build/
     mkdir build/
-    mkdir build/intermediate	
+    mkdir build/intermediate
 
-bootloader:		
+bootloader:
     [asm]
         input: boot/*.asm
         output: build/~.bin
-    
+
 kernel:
     [asm]
         input: kernel/**.asm
         format: elf32
         output: build/intermediate/~.o
-        
+
     [cc]
         input: build/intermediate/*.o
                kernel/**.c
 			   libc/**.c
-               
+
         include: -I kernel/include
                  -I libc/include
-                 
+
         output: build/NEKOKRNL

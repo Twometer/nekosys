@@ -17,6 +17,7 @@ global irq15
 
 global load_idt
 
+global exception_handler
 global irq0_handler
 global irq1_handler
 global irq2_handler

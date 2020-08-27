@@ -21,6 +21,7 @@ void tty_clear(void) {
 			tty_putentry(' ', term_color, x, y);
 		}
 	}
+	tty_set_cursor_pos(0, 0);
 }
 
 void tty_setcolor(uint8_t color) {
