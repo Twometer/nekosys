@@ -7,14 +7,20 @@
 void nkmain() {
 	// Welcome message
 	tty_clear();
-	printf("nekosys Kernel 0.01\n");
-	printf("(c) 2020 Twometer Applications\n");
+	printf("nekosys 0.01 <by Twometer>\n");
 
 	// Set up environment
-	//idt_init();
-	//int_enable();
+	printf("Setting up interrupts...\n");
+
+	int_disable();
+	idt_init();
+	int_enable();
 
 	// Dummy terminal
-	printf("Init completed\n\n");
-	printf("root@neko $ ");
+	printf("Initialized.\n\n");
+	printf("$ ");
+
+	for(;;) {
+	 asm("hlt");
+	}
 }

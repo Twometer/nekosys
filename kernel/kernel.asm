@@ -12,6 +12,7 @@ boot:
     int 0x10
 
     ; Load the Global Descriptor Table and enter protected mode
+    cli
     lgdt [gdt_pointer] ; Load GDT
     mov eax, cr0
     or eax, 0x1 ; Enable the Protected Mode Bit
@@ -36,7 +37,7 @@ gdt_data:
     db 11001111b
     db 0x0
 gdt_end:
-    gdt_pointer:
+gdt_pointer:
     dw gdt_end - gdt_start
     dd gdt_start
 CODE_SEG equ gdt_code - gdt_start
