@@ -1,5 +1,6 @@
 #include <kernel/io.h>
 #include <kernel/tty.h>
+#include <device/keyboard.h>
 #include <stdio.h>
 
 #define TYPE_INTERRUPT_GATE 0x8e
@@ -222,12 +223,7 @@ void irq0_handler(void) {
 
 void irq1_handler(void) {
 		unsigned char scan_code = inb(0x60);
-		if (scan_code > 128) {
-			printf("Release %d\n", scan_code - 128);
-		} else {
-			printf("Press %d\n", scan_code);
-		}
-		
+		kbd_handle_interrupt(scan_code);
 	  master_eoi();
 }
 

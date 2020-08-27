@@ -33,6 +33,14 @@ void tty_putentry(char c, uint8_t color, size_t x, size_t y) {
 }
 
 void tty_putchar(char c) {
+	if (c == '\b') {
+		if (term_column > 0){
+			tty_set_cursor_pos(term_column - 1, term_row);
+			tty_putentry(' ', term_color, term_column, term_row);
+		}
+		return;
+	}
+
 	bool is_newline = (c == '\n' || c == '\r');
 
 	if (!is_newline)
