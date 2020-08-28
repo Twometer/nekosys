@@ -1,6 +1,7 @@
 #include <kernel/io.h>
 #include <kernel/tty.h>
 #include <device/keyboard.h>
+#include <device/cpu.h>
 #include <stdio.h>
 
 #define TYPE_INTERRUPT_GATE 0x8e
@@ -41,7 +42,7 @@ const char* exception_descriptors[] = {
 	"General Protection Fault",
 	"Page Fault",
 	"Reserved",
-	"x87 FLoating-Point Exception",
+	"x87 Floating-Point Exception",
 	"Alignment Check",
 	"Machine Check",
 	"SIMD Floating-Point Exception",
@@ -80,16 +81,15 @@ void pic_remap() {
 }
 
 void handle_exceptions(unsigned int vector, struct interrupt_frame *frame) {
-	tty_clear();
 	tty_setcolor(0x0c);
-	printf("nekosys: Fatal Error\n");
+	printf("\nnekosys: Fatal Error\n");
 	tty_setcolor(0x0f);
 	printf("Error Code: %x\n", vector);
 	printf("Error Description: %s\n\n", exception_descriptors[vector]);
 	printf("IP: %x\nCS: %x\nSP: %x\nSS: %x\nFlags: %x\n", frame->ip, frame->cs, frame->sp, frame->ss, frame->flags);
 
 	printf("\nSystem halted.");
-	while(1) asm("hlt");
+	cpu_halt();
 }
 
 #define EXCEPTION_HANDLER(vec) \

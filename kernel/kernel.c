@@ -1,5 +1,7 @@
 #include <kernel/tty.h>
+#include <kernel/heap.h>
 #include <device/keyboard.h>
+#include <device/cpu.h>
 #include <stdio.h>
 
 #include "arch/interrupts.h"
@@ -20,12 +22,11 @@ void nkmain() {
 
 	printf("Registering devices...\n");
 	kbd_initialize();
+	heap_init();
 
 	// Dummy terminal
 	printf("Initialized.\n\n");
 	printf("$ ");
 
-	for(;;) {
-	 asm("hlt");
-	}
+	cpu_halt();
 }

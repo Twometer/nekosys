@@ -78,14 +78,4 @@ void kbd_handle_interrupt(unsigned int scancode) {
   char chr = map_char(scancode);
   if (chr != 0)
     tty_write(&chr, 1);
-
-  // printf("KEY: %d\n", scancode);
-
-  // TODO correct keyboard handling
-  /*if (scancode > 128) {
-    printf("Release %d\n", scan_code - 128);
-  } else {
-    printf("Press %d\n", scan_code);
-  }*/
-
 }
