@@ -29,6 +29,9 @@ image:
 	dd if=build/loader.bin of=build/neko.img bs=512 count=2 conv=notrunc seek=1
 	rm build/neko-tmp.img
 
+qemu:
+	qemu-system-i386 -m 256 -drive format=raw,file=build/neko.img -usb -vga std -no-reboot
+
 clean:
     rm -rf build/
     mkdir build/
@@ -48,7 +51,7 @@ kernel:
     [cc]
         input: build/intermediate/*.o
                kernel/**.c
-			   libc/**.c
+               libc/**.c
 
         include: -I kernel/include
                  -I libc/include
