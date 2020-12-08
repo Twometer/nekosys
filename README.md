@@ -20,5 +20,5 @@ The disk must be formatted with FAT-16.
 
 ## Building
 ```sh
- $  nkm .
+ $  nkm 
 ```
