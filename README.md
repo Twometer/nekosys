@@ -14,6 +14,7 @@ The disk must be formatted with FAT-16.
 ## Requirements
 - [NekoMake](https://github.com/nekosys-os/nkm)
 - [neko-gcc](https://github.com/nekosys-os/neko-gcc)
+- [nekoimg](https://github.com/nekosys-os/image-builder)
 - [nasm](https://www.nasm.us/)
 - GNU mtools
 

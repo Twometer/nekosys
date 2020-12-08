@@ -13,24 +13,16 @@ CCFLAGS = -std=gnu99 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wal
 
 ; Targets
 default:
-	% clean
-	% bootloader
-	% kernel
+    % clean
+    % bootloader
+    % kernel
 
-; TODO: Does not generate a valid FAT partition table and can't boot
 image:
-	dd if=/dev/zero of=build/neko.img bs=1024 count=16384
-	parted build/neko.img mklabel msdos
-	parted build/neko.img mkpart primary fat16 65536B 1MB -s
-	dd if=/dev/zero of=build/neko-tmp.img bs=1024 count=32767
-	mkfs.vfat -F 16 -h 128 -R 8 -s 8 -S 512 build/neko-tmp.img
-	dd if=build/neko-tmp.img of=build/neko.img bs=512 count=32000 conv=notrunc seek=128
-	dd if=build/boot.bin of=build/neko.img bs=256 count=1 conv=notrunc
-	dd if=build/loader.bin of=build/neko.img bs=512 count=2 conv=notrunc seek=1
-	rm build/neko-tmp.img
+    nkimg -s build/boot.bin -l build/loader.bin -k build/NEKOKRNL -o build/neko.img
 
 qemu:
-	qemu-system-i386 -m 256 -drive format=raw,file=build/neko.img -usb -vga std -no-reboot
+    % image
+    qemu-system-i386 -m 256 -drive format=raw,file=build/neko.img -usb -vga std -no-reboot
 
 clean:
     rm -rf build/
