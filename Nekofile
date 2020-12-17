@@ -2,7 +2,7 @@
 ;
 
 ; Constants
-CCFLAGS = -std=gnu99 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -fno-pie -O2 -mgeneral-regs-only
+CCFLAGS = -std=gnu++11 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -fno-pie -O2 -mgeneral-regs-only
 
 ; Tools
 [asm, multi]:
@@ -24,6 +24,10 @@ qemu:
     % image
     qemu-system-i386 -m 256 -drive format=raw,file=build/neko.img -usb -vga std -no-reboot
 
+run:
+    % default
+    % qemu
+
 clean:
     rm -rf build/
     mkdir build/
@@ -42,8 +46,10 @@ kernel:
 
     [cc]
         input: build/intermediate/*.o
+               kernel/**.cpp
                kernel/**.c
                libc/**.c
+               libc/**.cpp
 
         include: -I kernel/include
                  -I libc/include

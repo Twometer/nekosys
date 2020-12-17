@@ -1,3 +1,18 @@
-void kbd_initialize();
+namespace Device
+{
+    class Keyboard
+    {
+    private:
+        static char scancode_map[128];
 
-void kbd_handle_interrupt(unsigned int scancode);
+    public:
+        static void Initialize();
+
+        static void HandleInterrupt(unsigned int scancode);
+
+    private:
+        static void NewScancode(unsigned int code, char c);
+
+        static char MapChar(unsigned int scancode);
+    };
+} // namespace Device

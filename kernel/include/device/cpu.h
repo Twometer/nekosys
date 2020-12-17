@@ -1,1 +1,10 @@
-void cpu_halt();
+namespace Device
+{
+
+    class CPU
+    {
+    public:
+        static void Halt();
+    };
+
+} // namespace Device
