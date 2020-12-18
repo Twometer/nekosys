@@ -1,111 +1,161 @@
+#include "interrupts.h"
 #include <kernel/io.h>
 #include <kernel/tty.h>
 #include <device/keyboard.h>
 #include <device/cpu.h>
+#include <device/pic.h>
+#include <stdio.h>
 
 #define TYPE_INTERRUPT_GATE 0x8e
 #define TYPE_TRAP_GATE 0x8f
 
+using namespace Kernel;
+
+static const char *exception_descriptors[] = {
+	"Division by Zero",
+	"Debug",
+	"Non-maskable Interrupt",
+	"Breakpoint",
+	"Overflow",
+	"Bound range exceeded",
+	"Invalid opcode",
+	"Device not available",
+	"Double fault",
+	"Coprocessor Segment Overrun",
+	"Invalid TSS",
+	"Segment not present",
+	"Stack-Segment Fault",
+	"General Protection Fault",
+	"Page Fault",
+	"Reserved",
+	"x87 Floating-Point Exception",
+	"Alignment Check",
+	"Machine Check",
+	"SIMD Floating-Point Exception",
+	"Virtualization Exception",
+	"Reserved",
+	"Security Exception",
+	"Reserved"};
+
+static IDT_entry IDT[256];
+
 extern "C"
 {
-
-#include <stdio.h>
-
-	struct IDT_entry
+	// End of interrupt singals
+	inline static void master_eoi()
 	{
-		unsigned short int offset_lowerbits;
-		unsigned short int selector;
-		unsigned char zero;
-		unsigned char type_attr;
-		unsigned short int offset_higherbits;
-	};
-
-	struct interrupt_frame
-	{
-		unsigned int ip;
-		unsigned int cs;
-		unsigned int flags;
-		unsigned int sp;
-		unsigned int ss;
-	};
-
-	struct IDT_entry IDT[256];
-
-	const char *exception_descriptors[] = {
-		"Division by Zero",
-		"Debug",
-		"Non-maskable Interrupt",
-		"Breakpoint",
-		"Overflow",
-		"Bound range exceeded",
-		"Invalid opcode",
-		"Device not available",
-		"Double fault",
-		"Coprocessor Segment Overrun",
-		"Invalid TSS",
-		"Segment not present",
-		"Stack-Segment Fault",
-		"General Protection Fault",
-		"Page Fault",
-		"Reserved",
-		"x87 Floating-Point Exception",
-		"Alignment Check",
-		"Machine Check",
-		"SIMD Floating-Point Exception",
-		"Virtualization Exception",
-		"Reserved",
-		"Security Exception",
-		"Reserved"};
-
-	void int_disable()
-	{
-		asm("cli");
+		IO::Out8(0x20, 0x20);
 	}
 
-	void int_enable()
+	inline static void slave_eoi()
 	{
-		asm("sti");
+		IO::Out8(0xA0, 0x20);
+		IO::Out8(0x20, 0x20);
 	}
 
-	void pic_remap()
+	// Handlers
+	void irq0_handler(void)
 	{
-		unsigned char m1, m2;
-		m1 = inb(0x21);
-		m2 = inb(0xA1);
-
-		outb(0x20, 0x11);
-		outb(0xA0, 0x11);
-		outb(0x21, 0x20);
-		outb(0xA1, 40);
-		outb(0x21, 0x04);
-		outb(0xA1, 0x02);
-		outb(0x21, 0x01);
-		outb(0xA1, 0x01);
-		outb(0x21, 0x0);
-		outb(0xA1, 0x0);
-
-		outb(0x21, m1);
-		outb(0xA1, m2);
+		Interrupts::HandleInterrupt(0);
+		master_eoi();
 	}
 
-	void handle_exceptions(unsigned int vector, struct interrupt_frame *frame)
+	void irq1_handler(void)
 	{
-		int_disable();
-		Kernel::TTY::SetColor(0x0c);
-		printf("\nnekosys: Fatal Error\n");
-		Kernel::TTY::SetColor(0x0f);
-		printf("Error Code: %x\n", vector);
-		printf("Error Description: %s\n\n", exception_descriptors[vector]);
-		printf("IP: %x\nCS: %x\nSP: %x\nSS: %x\nFlags: %x\n", frame->ip, frame->cs, frame->sp, frame->ss, frame->flags);
+		unsigned char scan_code = IO::In8(0x60);
+		Device::Keyboard::HandleInterrupt(scan_code);
+		Interrupts::HandleInterrupt(1);
+		master_eoi();
+	}
 
-		printf("\nSystem halted.");
-		Device::CPU::Halt();
+	void irq2_handler(void)
+	{
+		Interrupts::HandleInterrupt(2);
+		master_eoi();
+	}
+
+	void irq3_handler(void)
+	{
+		Interrupts::HandleInterrupt(3);
+		master_eoi();
+	}
+
+	void irq4_handler(void)
+	{
+		Interrupts::HandleInterrupt(4);
+		master_eoi();
+	}
+
+	void irq5_handler(void)
+	{
+		Interrupts::HandleInterrupt(5);
+		master_eoi();
+	}
+
+	void irq6_handler(void)
+	{
+		Interrupts::HandleInterrupt(6);
+		master_eoi();
+	}
+
+	void irq7_handler(void)
+	{
+		Interrupts::HandleInterrupt(7);
+		master_eoi();
+	}
+
+	void irq8_handler(void)
+	{
+		Interrupts::HandleInterrupt(8);
+		slave_eoi();
+	}
+
+	void irq9_handler(void)
+	{
+		Interrupts::HandleInterrupt(9);
+		slave_eoi();
+	}
+
+	void irq10_handler(void)
+	{
+		Interrupts::HandleInterrupt(10);
+		slave_eoi();
+	}
+
+	void irq11_handler(void)
+	{
+		Interrupts::HandleInterrupt(11);
+		slave_eoi();
+	}
+
+	void irq12_handler(void)
+	{
+		Interrupts::HandleInterrupt(12);
+		slave_eoi();
+	}
+
+	void irq13_handler(void)
+	{
+		Interrupts::HandleInterrupt(13);
+		slave_eoi();
+	}
+
+	void irq14_handler(void)
+	{
+		Interrupts::HandleInterrupt(14);
+		slave_eoi();
+	}
+
+	void irq15_handler(void)
+	{
+		Interrupts::HandleInterrupt(15);
+		slave_eoi();
 	}
 
 #define EXCEPTION_HANDLER(vec)                                              \
 	__attribute__((interrupt)) void exc##vec(struct interrupt_frame *frame) \
 	{                                                                       \
-		handle_exceptions(vec, frame);                                      \
+		Interrupts::HandleException(vec, frame);                            \
 	}
 
 	EXCEPTION_HANDLER(0)
@@ -133,182 +183,117 @@ extern "C"
 	EXCEPTION_HANDLER(22)
 	EXCEPTION_HANDLER(23)
 
-	void set_idt_entry(unsigned int interrupt, unsigned char type, unsigned long address)
-	{
-		IDT[interrupt].offset_lowerbits = address & 0xffff;
-		IDT[interrupt].selector = 0x08; /* KERNEL_CODE_SEGMENT_OFFSET */
-		IDT[interrupt].zero = 0;
-		IDT[interrupt].type_attr = type;
-		IDT[interrupt].offset_higherbits = (address & 0xffff0000) >> 16;
-	}
+	extern int load_idt(void *);
+	extern int irq0();
+	extern int irq1();
+	extern int irq2();
+	extern int irq3();
+	extern int irq4();
+	extern int irq5();
+	extern int irq6();
+	extern int irq7();
+	extern int irq8();
+	extern int irq9();
+	extern int irq10();
+	extern int irq11();
+	extern int irq12();
+	extern int irq13();
+	extern int irq14();
+	extern int irq15();
+}
 
-	void idt_init(void)
-	{
-		extern int load_idt(void *);
-		extern int irq0();
-		extern int irq1();
-		extern int irq2();
-		extern int irq3();
-		extern int irq4();
-		extern int irq5();
-		extern int irq6();
-		extern int irq7();
-		extern int irq8();
-		extern int irq9();
-		extern int irq10();
-		extern int irq11();
-		extern int irq12();
-		extern int irq13();
-		extern int irq14();
-		extern int irq15();
+void Interrupts::SetupIdt()
+{
+	/* remapping the PIC */
+	Device::PIC::Remap();
 
-		/* remapping the PIC */
-		pic_remap();
+	/* build table */
+	SetIdtEntry(0, TYPE_TRAP_GATE, (unsigned long)exc0);
+	SetIdtEntry(1, TYPE_TRAP_GATE, (unsigned long)exc1);
+	SetIdtEntry(2, TYPE_TRAP_GATE, (unsigned long)exc2);
+	SetIdtEntry(3, TYPE_TRAP_GATE, (unsigned long)exc3);
+	SetIdtEntry(4, TYPE_TRAP_GATE, (unsigned long)exc4);
+	SetIdtEntry(5, TYPE_TRAP_GATE, (unsigned long)exc5);
+	SetIdtEntry(6, TYPE_TRAP_GATE, (unsigned long)exc6);
+	SetIdtEntry(7, TYPE_TRAP_GATE, (unsigned long)exc7);
+	SetIdtEntry(8, TYPE_TRAP_GATE, (unsigned long)exc8);
+	SetIdtEntry(9, TYPE_TRAP_GATE, (unsigned long)exc9);
+	SetIdtEntry(10, TYPE_TRAP_GATE, (unsigned long)exc10);
+	SetIdtEntry(11, TYPE_TRAP_GATE, (unsigned long)exc11);
+	SetIdtEntry(12, TYPE_TRAP_GATE, (unsigned long)exc12);
+	SetIdtEntry(13, TYPE_TRAP_GATE, (unsigned long)exc13);
+	SetIdtEntry(14, TYPE_TRAP_GATE, (unsigned long)exc14);
+	SetIdtEntry(15, TYPE_TRAP_GATE, (unsigned long)exc15);
+	SetIdtEntry(16, TYPE_TRAP_GATE, (unsigned long)exc16);
+	SetIdtEntry(17, TYPE_TRAP_GATE, (unsigned long)exc17);
+	SetIdtEntry(18, TYPE_TRAP_GATE, (unsigned long)exc18);
+	SetIdtEntry(19, TYPE_TRAP_GATE, (unsigned long)exc19);
+	SetIdtEntry(20, TYPE_TRAP_GATE, (unsigned long)exc20);
+	SetIdtEntry(21, TYPE_TRAP_GATE, (unsigned long)exc21);
+	SetIdtEntry(22, TYPE_TRAP_GATE, (unsigned long)exc22);
+	SetIdtEntry(23, TYPE_TRAP_GATE, (unsigned long)exc23);
+	SetIdtEntry(32, TYPE_INTERRUPT_GATE, (unsigned long)irq0);
+	SetIdtEntry(33, TYPE_INTERRUPT_GATE, (unsigned long)irq1);
+	SetIdtEntry(34, TYPE_INTERRUPT_GATE, (unsigned long)irq2);
+	SetIdtEntry(35, TYPE_INTERRUPT_GATE, (unsigned long)irq3);
+	SetIdtEntry(36, TYPE_INTERRUPT_GATE, (unsigned long)irq4);
+	SetIdtEntry(37, TYPE_INTERRUPT_GATE, (unsigned long)irq5);
+	SetIdtEntry(38, TYPE_INTERRUPT_GATE, (unsigned long)irq6);
+	SetIdtEntry(39, TYPE_INTERRUPT_GATE, (unsigned long)irq7);
+	SetIdtEntry(40, TYPE_INTERRUPT_GATE, (unsigned long)irq8);
+	SetIdtEntry(41, TYPE_INTERRUPT_GATE, (unsigned long)irq9);
+	SetIdtEntry(42, TYPE_INTERRUPT_GATE, (unsigned long)irq10);
+	SetIdtEntry(43, TYPE_INTERRUPT_GATE, (unsigned long)irq11);
+	SetIdtEntry(44, TYPE_INTERRUPT_GATE, (unsigned long)irq12);
+	SetIdtEntry(45, TYPE_INTERRUPT_GATE, (unsigned long)irq13);
+	SetIdtEntry(46, TYPE_INTERRUPT_GATE, (unsigned long)irq14);
+	SetIdtEntry(47, TYPE_INTERRUPT_GATE, (unsigned long)irq15);
 
-		/* build table */
-		set_idt_entry(0, TYPE_TRAP_GATE, (unsigned long)exc0);
-		set_idt_entry(1, TYPE_TRAP_GATE, (unsigned long)exc1);
-		set_idt_entry(2, TYPE_TRAP_GATE, (unsigned long)exc2);
-		set_idt_entry(3, TYPE_TRAP_GATE, (unsigned long)exc3);
-		set_idt_entry(4, TYPE_TRAP_GATE, (unsigned long)exc4);
-		set_idt_entry(5, TYPE_TRAP_GATE, (unsigned long)exc5);
-		set_idt_entry(6, TYPE_TRAP_GATE, (unsigned long)exc6);
-		set_idt_entry(7, TYPE_TRAP_GATE, (unsigned long)exc7);
-		set_idt_entry(8, TYPE_TRAP_GATE, (unsigned long)exc8);
-		set_idt_entry(9, TYPE_TRAP_GATE, (unsigned long)exc9);
-		set_idt_entry(10, TYPE_TRAP_GATE, (unsigned long)exc10);
-		set_idt_entry(11, TYPE_TRAP_GATE, (unsigned long)exc11);
-		set_idt_entry(12, TYPE_TRAP_GATE, (unsigned long)exc12);
-		set_idt_entry(13, TYPE_TRAP_GATE, (unsigned long)exc13);
-		set_idt_entry(14, TYPE_TRAP_GATE, (unsigned long)exc14);
-		set_idt_entry(15, TYPE_TRAP_GATE, (unsigned long)exc15);
-		set_idt_entry(16, TYPE_TRAP_GATE, (unsigned long)exc16);
-		set_idt_entry(17, TYPE_TRAP_GATE, (unsigned long)exc17);
-		set_idt_entry(18, TYPE_TRAP_GATE, (unsigned long)exc18);
-		set_idt_entry(19, TYPE_TRAP_GATE, (unsigned long)exc19);
-		set_idt_entry(20, TYPE_TRAP_GATE, (unsigned long)exc20);
-		set_idt_entry(21, TYPE_TRAP_GATE, (unsigned long)exc21);
-		set_idt_entry(22, TYPE_TRAP_GATE, (unsigned long)exc22);
-		set_idt_entry(23, TYPE_TRAP_GATE, (unsigned long)exc23);
-		set_idt_entry(32, TYPE_INTERRUPT_GATE, (unsigned long)irq0);
-		set_idt_entry(33, TYPE_INTERRUPT_GATE, (unsigned long)irq1);
-		set_idt_entry(34, TYPE_INTERRUPT_GATE, (unsigned long)irq2);
-		set_idt_entry(35, TYPE_INTERRUPT_GATE, (unsigned long)irq3);
-		set_idt_entry(36, TYPE_INTERRUPT_GATE, (unsigned long)irq4);
-		set_idt_entry(37, TYPE_INTERRUPT_GATE, (unsigned long)irq5);
-		set_idt_entry(38, TYPE_INTERRUPT_GATE, (unsigned long)irq6);
-		set_idt_entry(39, TYPE_INTERRUPT_GATE, (unsigned long)irq7);
-		set_idt_entry(40, TYPE_INTERRUPT_GATE, (unsigned long)irq8);
-		set_idt_entry(41, TYPE_INTERRUPT_GATE, (unsigned long)irq9);
-		set_idt_entry(42, TYPE_INTERRUPT_GATE, (unsigned long)irq10);
-		set_idt_entry(43, TYPE_INTERRUPT_GATE, (unsigned long)irq11);
-		set_idt_entry(44, TYPE_INTERRUPT_GATE, (unsigned long)irq12);
-		set_idt_entry(45, TYPE_INTERRUPT_GATE, (unsigned long)irq13);
-		set_idt_entry(46, TYPE_INTERRUPT_GATE, (unsigned long)irq14);
-		set_idt_entry(47, TYPE_INTERRUPT_GATE, (unsigned long)irq15);
+	/* fill the IDT descriptor */
+	unsigned long idt_ptr[2];
+	unsigned long idt_address = (unsigned long)IDT;
+	idt_ptr[0] = (sizeof(struct IDT_entry) * 256) + ((idt_address & 0xffff) << 16);
+	idt_ptr[1] = idt_address >> 16;
 
-		/* fill the IDT descriptor */
-		unsigned long idt_ptr[2];
-		unsigned long idt_address = (unsigned long)IDT;
-		idt_ptr[0] = (sizeof(struct IDT_entry) * 256) + ((idt_address & 0xffff) << 16);
-		idt_ptr[1] = idt_address >> 16;
+	/* load the IDT */
+	load_idt(idt_ptr);
+}
 
-		/* load the IDT */
-		load_idt(idt_ptr);
-	}
+void Interrupts::Enable()
+{
+	asm("sti");
+}
 
-	// End of interrupt singals
-	inline static void master_eoi()
-	{
-		outb(0x20, 0x20);
-	}
+void Interrupts::Disable()
+{
+	asm("cli");
+}
 
-	inline static void slave_eoi()
-	{
-		outb(0xA0, 0x20);
-		outb(0x20, 0x20);
-	}
+void Interrupts::SetIdtEntry(unsigned int interrupt, unsigned char type, unsigned long address)
+{
+	IDT[interrupt].offset_lowerbits = address & 0xffff;
+	IDT[interrupt].selector = 0x08; /* KERNEL_CODE_SEGMENT_OFFSET */
+	IDT[interrupt].zero = 0;
+	IDT[interrupt].type_attr = type;
+	IDT[interrupt].offset_higherbits = (address & 0xffff0000) >> 16;
+}
 
-	// Handlers
-	void irq0_handler(void)
-	{
-		master_eoi();
-	}
+void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *frame)
+{
+	Interrupts::Disable();
 
-	void irq1_handler(void)
-	{
-		unsigned char scan_code = inb(0x60);
-		Device::Keyboard::HandleInterrupt(scan_code);
-		master_eoi();
-	}
+	Kernel::TTY::SetColor(0x0c);
+	printf("\nnekosys: Fatal Error\n");
+	Kernel::TTY::SetColor(0x0f);
+	printf("Error Code: %x\n", vector);
+	printf("Error Description: %s\n\n", exception_descriptors[vector]);
+	printf("IP: %x\nCS: %x\nSP: %x\nSS: %x\nFlags: %x\n", frame->ip, frame->cs, frame->sp, frame->ss, frame->flags);
 
-	void irq2_handler(void)
-	{
-		master_eoi();
-	}
+	printf("\nSystem halted.");
+	Device::CPU::Halt();
+}
 
-	void irq3_handler(void)
-	{
-		master_eoi();
-	}
-
-	void irq4_handler(void)
-	{
-		master_eoi();
-	}
-
-	void irq5_handler(void)
-	{
-		master_eoi();
-	}
-
-	void irq6_handler(void)
-	{
-		master_eoi();
-	}
-
-	void irq7_handler(void)
-	{
-		master_eoi();
-	}
-
-	void irq8_handler(void)
-	{
-		slave_eoi();
-	}
-
-	void irq9_handler(void)
-	{
-		slave_eoi();
-	}
-
-	void irq10_handler(void)
-	{
-		slave_eoi();
-	}
-
-	void irq11_handler(void)
-	{
-		slave_eoi();
-	}
-
-	void irq12_handler(void)
-	{
-		slave_eoi();
-	}
-
-	void irq13_handler(void)
-	{
-		slave_eoi();
-	}
-
-	void irq14_handler(void)
-	{
-		slave_eoi();
-	}
-
-	void irq15_handler(void)
-	{
-		slave_eoi();
-	}
+void Interrupts::HandleInterrupt(unsigned int interrupt)
+{
+	
 }

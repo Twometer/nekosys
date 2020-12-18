@@ -19,9 +19,9 @@ void nkmain() {
 
 	// Set up environment
 	printf("Setting up interrupts...\n");
-	int_disable();
-	idt_init();
-	int_enable();
+	Interrupts::Disable();
+	Interrupts::SetupIdt();
+	Interrupts::Enable();
 
 	printf("Registering devices...\n");
 	Device::Keyboard::Initialize();
