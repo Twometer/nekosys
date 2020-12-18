@@ -1,10 +1,10 @@
 #include <kernel/tty.h>
 #include <kernel/interrupts.h>
+#include <kernel/io.h>
 #include <device/keyboard.h>
 
+using namespace Kernel;
 using namespace Device;
-
-char Keyboard::scancode_map[128];
 
 void Keyboard::Initialize()
 {
@@ -63,10 +63,13 @@ void Keyboard::Initialize()
     NewScancode(53, '-');
     NewScancode(57, ' ');
 
+    Interrupts::AddHandler(1, this);
 }
 
-void Keyboard::HandleInterrupt(unsigned int scancode)
+void Keyboard::HandleInterrupt(unsigned int interrupt)
 {
+    unsigned int scancode = IO::In8(0x60);
+
     if (scancode > 128)
         return;
 

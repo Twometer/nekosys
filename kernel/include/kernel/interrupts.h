@@ -1,3 +1,7 @@
+#ifndef _INTERRUPTS_H
+#define _INTERRUPTS_H
+
+#include <nk/vector.h>
 
 struct IDT_entry
 {
@@ -21,11 +25,21 @@ namespace Kernel
 {
     class InterruptHandler
     {
-        virtual void Handle(unsigned int interrupt);
+    public:
+        virtual void HandleInterrupt(unsigned int interrupt) = 0;
+    };
+
+    struct InterruptHandlerEntry
+    {
+        unsigned int interrupt;
+        InterruptHandler *handler;
     };
 
     class Interrupts
     {
+    private:
+        static nk::Vector<InterruptHandlerEntry> entries;
+        
     public:
         static void SetupIdt();
 
@@ -39,7 +53,9 @@ namespace Kernel
 
         static void HandleInterrupt(unsigned int interrupt);
 
-        static void AddHandler(unsigned int interrupt, InterruptHandler handler);
+        static void AddHandler(unsigned int interrupt, InterruptHandler *handler);
     };
 
 }; // namespace Kernel
+
+#endif

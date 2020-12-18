@@ -1,18 +1,24 @@
+#ifndef _KEYBOARD_H
+#define _KEYBOARD_H
+
+#include <kernel/interrupts.h>
+
 namespace Device
 {
-    class Keyboard
+    class Keyboard : public Kernel::InterruptHandler
     {
     private:
-        static char scancode_map[128];
+        char scancode_map[128];
 
     public:
-        static void Initialize();
+        void Initialize();
 
-        static void HandleInterrupt(unsigned int scancode);
+        void HandleInterrupt(unsigned int interrupt) override;
 
     private:
-        static void NewScancode(unsigned int code, char c);
-
-        static char MapChar(unsigned int scancode);
+        void NewScancode(unsigned int code, char c);
+        char MapChar(unsigned int scancode);
     };
 } // namespace Device
+
+#endif

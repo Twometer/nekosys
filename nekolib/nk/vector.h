@@ -1,4 +1,8 @@
+#ifndef _VECTOR_H
+#define _VECTOR_H
+
 #include <stdlib.h>
+#include <string.h>
 
 namespace nk
 {
@@ -8,33 +12,44 @@ namespace nk
     {
     private:
         T *data = nullptr;
-        int index = 0;
-        int capacity = 0;
+        size_t index = 0;
+        size_t capacity = 0;
 
     public:
-        Vector()
-        {
-            EnsureCapacity(5);
-        }
-
         void Add(T obj)
         {
             EnsureCapacity(index + 1);
-            data[index] = T;
+            data[index] = obj;
             index++;
         }
 
+        T &At(size_t index)
+        {
+            return data[index];
+        }
+
+        size_t Size()
+        {
+            return index;
+        }
+
+        size_t Capacity()
+        {
+            return capacity;
+        }
+
     private:
-        void EnsureCapacity(int min)
+        void EnsureCapacity(size_t min)
         {
             if (min > capacity)
             {
-                int newCapacity = min * 2;
-                T *newData = malloc(sizeof(T) * newCapacity);
+                size_t newCapacity = min * 2;
+                T *newData = (T*) malloc(sizeof(T) * newCapacity);
                 if (this->data != nullptr)
                 {
                     memcpy(newData, data, sizeof(T) * index);
                 }
+                free((void*) this->data);
                 this->data = newData;
                 this->capacity = newCapacity;
             }
@@ -42,3 +57,5 @@ namespace nk
     };
 
 } // namespace nk
+
+#endif

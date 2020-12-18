@@ -1,3 +1,6 @@
+#ifndef _HEAP_H
+#define _HEAP_H
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -14,4 +17,6 @@ extern "C"
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

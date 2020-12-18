@@ -11,6 +11,8 @@
 
 using namespace Kernel;
 
+nk::Vector<InterruptHandlerEntry> Interrupts::entries;
+
 static const char *exception_descriptors[] = {
 	"Division by Zero",
 	"Debug",
@@ -62,8 +64,6 @@ extern "C"
 
 	void irq1_handler(void)
 	{
-		unsigned char scan_code = IO::In8(0x60);
-		Device::Keyboard::HandleInterrupt(scan_code);
 		Interrupts::HandleInterrupt(1);
 		master_eoi();
 	}
@@ -204,9 +204,6 @@ extern "C"
 
 void Interrupts::SetupIdt()
 {
-	/* remapping the PIC */
-	Device::PIC::Remap();
-
 	/* build table */
 	SetIdtEntry(0, TYPE_TRAP_GATE, (unsigned long)exc0);
 	SetIdtEntry(1, TYPE_TRAP_GATE, (unsigned long)exc1);
@@ -272,7 +269,7 @@ void Interrupts::Disable()
 void Interrupts::SetIdtEntry(unsigned int interrupt, unsigned char type, unsigned long address)
 {
 	IDT[interrupt].offset_lowerbits = address & 0xffff;
-	IDT[interrupt].selector = 0x08; /* KERNEL_CODE_SEGMENT_OFFSET */
+	IDT[interrupt].selector = 0x08; /* kernel code segment */
 	IDT[interrupt].zero = 0;
 	IDT[interrupt].type_attr = type;
 	IDT[interrupt].offset_higherbits = (address & 0xffff0000) >> 16;
@@ -295,9 +292,15 @@ void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *fr
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
 {
+	for (int i = 0; i < entries.Size(); i++) {
+		InterruptHandlerEntry &entry = entries.At(i);
+		if (entry.interrupt == interrupt)
+			entry.handler->HandleInterrupt(interrupt);
+	}
 }
 
-void Interrupts::AddHandler(unsigned int interrupt, InterruptHandler handler)
+void Interrupts::AddHandler(unsigned int interrupt, InterruptHandler *handler)
 {
-	
+	InterruptHandlerEntry entry = {interrupt, handler};
+	entries.Add(entry);
 }

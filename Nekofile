@@ -2,7 +2,7 @@
 ;
 
 ; Constants
-CCFLAGS = -std=gnu++11 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -fno-pie -O2 -mgeneral-regs-only
+CCFLAGS = -std=gnu++11 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -fno-pie -fno-rtti -O2 -mgeneral-regs-only
 
 ; Tools
 [asm, multi]:

@@ -1,4 +1,4 @@
-#include <device/cpu.h>
+#include <device/devicemanager.h>
 #include <string.h>
 extern "C"
 {
