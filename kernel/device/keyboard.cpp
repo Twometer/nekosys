@@ -1,4 +1,5 @@
 #include <kernel/tty.h>
+#include <kernel/interrupts.h>
 #include <device/keyboard.h>
 
 using namespace Device;
@@ -61,6 +62,7 @@ void Keyboard::Initialize()
     NewScancode(52, '.');
     NewScancode(53, '-');
     NewScancode(57, ' ');
+
 }
 
 void Keyboard::HandleInterrupt(unsigned int scancode)

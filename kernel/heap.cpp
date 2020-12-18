@@ -88,7 +88,7 @@ extern "C"
         return (bytes + HEAP_SEG_SIZE - 1) / HEAP_SEG_SIZE;
     }
 
-    void *malloc(size_t size)
+    void *kmalloc(size_t size)
     {
         size_t header_size = sizeof(heap_entry);
         size_t total_size = size + header_size;
@@ -117,7 +117,7 @@ extern "C"
         return data;
     }
 
-    void free(void *ptr)
+    void kfree(void *ptr)
     {
         uint8_t *byte_ptr = (uint8_t *)ptr;
         heap_entry *description = (heap_entry *)(byte_ptr - sizeof(heap_entry));

@@ -1,3 +1,4 @@
+
 struct IDT_entry
 {
     unsigned short int offset_lowerbits;
@@ -18,6 +19,10 @@ struct interrupt_frame
 
 namespace Kernel
 {
+    class InterruptHandler
+    {
+        virtual void Handle(unsigned int interrupt);
+    };
 
     class Interrupts
     {
@@ -33,6 +38,8 @@ namespace Kernel
         static void SetIdtEntry(unsigned int interrupt, unsigned char type, unsigned long address);
 
         static void HandleInterrupt(unsigned int interrupt);
+
+        static void AddHandler(unsigned int interrupt, InterruptHandler handler);
     };
 
 }; // namespace Kernel

@@ -8,8 +8,11 @@ CCFLAGS = -std=gnu++11 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -W
 [asm, multi]:
     nasm -f {format=bin} {input} -o {output}
 
-[cc, single]:
+[kcc, single]:
     neko-gcc {input} -o {output} -T kernel.ld {CCFLAGS} {include}
+
+[cc, single]:
+    neko-gcc -c {input} -o {output} {CCFLAGS} {include}
 
 ; Targets
 default:
@@ -44,7 +47,7 @@ kernel:
         format: elf32
         output: build/intermediate/~.o
 
-    [cc]
+    [kcc]
         input: build/intermediate/*.o
                kernel/**.cpp
                kernel/**.c
@@ -53,5 +56,6 @@ kernel:
 
         include: -I kernel/include
                  -I libc/include
+                 -I nekolib
 
         output: build/NEKOKRNL

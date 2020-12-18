@@ -1,4 +1,4 @@
-#include "interrupts.h"
+#include <kernel/interrupts.h>
 #include <kernel/io.h>
 #include <kernel/tty.h>
 #include <device/keyboard.h>
@@ -294,6 +294,10 @@ void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *fr
 }
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
+{
+}
+
+void Interrupts::AddHandler(unsigned int interrupt, InterruptHandler handler)
 {
 	
 }

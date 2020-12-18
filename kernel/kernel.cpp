@@ -1,16 +1,14 @@
-extern "C" {
 #include <kernel/tty.h>
 #include <kernel/heap.h>
+#include <kernel/interrupts.h>
 #include <device/keyboard.h>
 #include <device/cpu.h>
 #include <stdio.h>
 
-#include "arch/interrupts.h"
-
 using namespace Kernel;
 
 /* nekosys Kernel entry point */
-void nkmain() {
+extern "C" void nkmain() {
 	// Welcome message
 	TTY::Clear();
 	TTY::SetColor(0x0b);
@@ -32,6 +30,4 @@ void nkmain() {
 	printf("$ ");
 
 	Device::CPU::Halt();
-}
-
 }

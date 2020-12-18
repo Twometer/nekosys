@@ -1,8 +1,17 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void heap_init();
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-void* malloc(size_t size);
+    void heap_init();
 
-void free(void *ptr);
+    void *kmalloc(size_t size);
+
+    void kfree(void *ptr);
+
+#ifdef __cplusplus
+}
+#endif
