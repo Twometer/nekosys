@@ -2,6 +2,7 @@
 #include <kernel/interrupts.h>
 #include <kernel/io.h>
 #include <device/keyboard.h>
+#include <stdio.h>
 
 using namespace Kernel;
 using namespace Device;
@@ -75,7 +76,9 @@ void Keyboard::HandleInterrupt(unsigned int interrupt)
 
     char chr = MapChar(scancode);
     if (chr != 0)
-        Kernel::TTY::Write(&chr, 1);
+    {
+        putchar(chr);
+    }
 }
 
 void Keyboard::NewScancode(unsigned int scancode, char c)

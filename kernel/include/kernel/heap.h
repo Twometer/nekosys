@@ -11,6 +11,8 @@ extern "C"
 
     void heap_init();
 
+    size_t get_free_heap();
+
     void *kmalloc(size_t size);
 
     void kfree(void *ptr);

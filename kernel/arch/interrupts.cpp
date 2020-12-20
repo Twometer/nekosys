@@ -246,13 +246,13 @@ void Interrupts::SetupIdt()
 	SetIdtEntry(46, TYPE_INTERRUPT_GATE, (unsigned long)irq14);
 	SetIdtEntry(47, TYPE_INTERRUPT_GATE, (unsigned long)irq15);
 
-	/* fill the IDT descriptor */
+	// build idt descriptor
 	unsigned long idt_ptr[2];
 	unsigned long idt_address = (unsigned long)IDT;
 	idt_ptr[0] = (sizeof(struct IDT_entry) * 256) + ((idt_address & 0xffff) << 16);
 	idt_ptr[1] = idt_address >> 16;
 
-	/* load the IDT */
+	// load idt
 	load_idt(idt_ptr);
 }
 
@@ -292,7 +292,7 @@ void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *fr
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
 {
-	for (int i = 0; i < entries.Size(); i++) {
+	for (size_t i = 0; i < entries.Size(); i++) {
 		InterruptHandlerEntry &entry = entries.At(i);
 		if (entry.interrupt == interrupt)
 			entry.handler->HandleInterrupt(interrupt);

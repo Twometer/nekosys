@@ -4,6 +4,7 @@
 #include "cpu.h"
 #include "keyboard.h"
 #include "pic.h"
+#include "cmos.h"
 
 namespace Device
 {

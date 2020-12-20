@@ -9,7 +9,7 @@ namespace Device
     {
     private:
         char scancode_map[128];
-
+        
     public:
         void Initialize();
 

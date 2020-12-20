@@ -45,6 +45,14 @@ extern "C"
         return (allocation_map[a] & (0x1 << b)) == 0;
     }
 
+    size_t get_free_heap() {
+        size_t freeHeap = 0;
+        for (size_t i = 0; i < ALLOCATION_MAP_ENTRIES; i++)
+            if (is_free(i))
+                freeHeap += HEAP_SEG_SIZE;
+        return freeHeap;
+    }
+
     void set_free(size_t alloc_unit, bool free)
     {
         size_t a = alloc_unit / 8;

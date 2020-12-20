@@ -9,27 +9,34 @@ using namespace Device;
 
 /* nekosys Kernel entry point */
 extern "C" void nkmain() {
-	// Welcome message
+	Interrupts::Disable();
+
+	// Banner
 	TTY::Clear();
 	TTY::SetColor(0x0b);
 	printf("nekosys 0.01 <by Twometer>\n");
-	TTY::SetColor(0x0f);
+	TTY::SetColor(0x07);
 
-	printf("Initializing heap...\n"); 
+	// Init
+	printf("Initializing...\n"); 
+ 	uint16_t base_memory = (CMOS::Read(0x16) << 8) | CMOS::Read(0x15);
+    uint32_t ext_memory = (CMOS::Read(0x31) << 8 | CMOS::Read(0x30));
+
+	printf("Base Memory: %d KB\n", base_memory);
+	printf("Extended Memory: %d KB\n", ext_memory);
+
 	heap_init();
 
-	printf("Initializing devices...\n");
+
+	Interrupts::SetupIdt();
 	DeviceManager::Initialize();
 
-	// Set up environment
-	printf("Setting up interrupts...\n");
-	Interrupts::Disable();
-	Interrupts::SetupIdt();
 	Interrupts::Enable();
 
 	// Dummy terminal
 	printf("Initialized.\n\n");
 	printf("$ ");
 
+	// Idle
 	Device::CPU::Halt();
 }
