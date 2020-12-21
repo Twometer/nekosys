@@ -24,7 +24,6 @@ void GDT::Set(int selector, const GDTEntry &entry)
 void GDT::Load()
 {
     setGdt(data, size * GDT_ENTRY_SIZE);
-    printf("GDT loaded %s\n", data);
 }
 
 void GDT::EncodeEntry(uint8_t *target, GDTEntry source)
