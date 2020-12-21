@@ -1,3 +1,4 @@
+#include <kernel/panic.h>
 #include <device/devicemanager.h>
 #include <string.h>
 extern "C"
@@ -105,8 +106,8 @@ extern "C"
         int alloc_result = find_free_allocation_units(num_alloc_units);
         if (alloc_result < 0)
         {
-            printf("kernel_heap: Out of memory! No more space for %d bytes.\n", size);
-            Device::CPU::Halt();
+            printf("kernel_heap: No more space for %d bytes.\n", size);
+            Kernel::Panic("Out of memory");
             return 0;
         }
 
