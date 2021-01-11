@@ -18,8 +18,8 @@ extern "C" void nkmain()
 
 	// Banner
 	TTY::Clear();
-	TTY::SetColor(0x0b);
-	printf("nekosys 0.01 <by Twometer>\n");
+	TTY::SetColor(0x9f);
+	printf("neko_kernel 0.01 <by Twometer>\n");
 	TTY::SetColor(0x07);
 
 	// Init
@@ -44,8 +44,9 @@ extern "C" void nkmain()
 			printf("  base=%x len=%d KB\n", entry->baseLow, (entry->lengthLow / 1024));
 	}
 	TTY::SetColor(0x07);
-	
-	heap_init();
+
+	void *heapBase = memoryMap.GetLargestChunk();
+	heap_init(heapBase);
 
 	Interrupts::SetupIdt();
 	DeviceManager::Initialize();

@@ -8,7 +8,7 @@ extern "C"
 #include <stdbool.h>
 #include <stdio.h>
 
-    /*
+/*
  * Simple heap implementation for getting the kernel started.
  * Should probably be replaced with something more efficient in
  * the future.
@@ -16,7 +16,6 @@ extern "C"
  * chunks, which we mark as used or unused in a bitmap.
  */
 
-#define HEAP_OFFSET 0x1ffff // Where the heap starts
 #define HEAP_SIZE 1000000   // 1MB heap size
 #define HEAP_SEG_SIZE 128   // 128 byte allocation units
 
@@ -32,9 +31,9 @@ extern "C"
         size_t size;
     } heap_entry;
 
-    void heap_init()
+    void heap_init(void *heap_base)
     {
-        allocation_map = (uint8_t *)(HEAP_OFFSET);
+        allocation_map = (uint8_t *)(heap_base);
         heap_begin = allocation_map + ALLOCATION_MAP_SIZE;
         memset(allocation_map, 0x00, ALLOCATION_MAP_SIZE); // All zero: Nothing allocated
     }
@@ -46,7 +45,8 @@ extern "C"
         return (allocation_map[a] & (0x1 << b)) == 0;
     }
 
-    size_t get_free_heap() {
+    size_t get_free_heap()
+    {
         size_t freeHeap = 0;
         for (size_t i = 0; i < ALLOCATION_MAP_ENTRIES; i++)
             if (is_free(i))

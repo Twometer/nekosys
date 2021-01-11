@@ -9,7 +9,7 @@ extern "C"
 {
 #endif
 
-    void heap_init();
+    void heap_init(void *base_ptr);
 
     size_t get_free_heap();
 

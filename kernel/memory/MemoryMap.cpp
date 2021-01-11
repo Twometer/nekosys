@@ -34,4 +34,16 @@ namespace Memory
         return header->length;
     }
 
+    void *MemoryMap::GetLargestChunk()
+    {
+        MemoryMapEntry *largestEntry = GetEntry(0);
+        for (int i = 0; i < GetLength(); i++)
+        {
+            auto *entry = GetEntry(i);
+            if (entry->type == 0x01 && entry->lengthLow > largestEntry->lengthLow)
+                largestEntry = entry;
+        }
+        return largestEntry;
+    }
+
 }; // namespace Memory
