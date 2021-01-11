@@ -2,7 +2,56 @@ section .boot
 bits 16
 global boot
 
+mmap_state_location: equ 0x8000
+mmap_list_location: equ 0x8008
+
 boot:
+    ; ** MEMORY MAP LOADER **
+    mov dword [mmap_state_location], 0
+
+    ; Set ES:DI target location for memory map
+    mov ax, 0            ; segment zero
+    mov es, ax
+    mov di, 0x8008
+
+    ; Call BIOS
+    xor ebx, ebx            ; clear ebx
+    mov edx, 0x0534D4150    ; magic number (SMAP)
+    next_entry:
+    mov eax, 0xe820         ; set command E820
+    mov ecx, 24             ; length maybe?
+    int 0x15
+    jc mmap_err_carry       ; if carry is set, then it failed
+
+    mov edx, 0x0534D4150
+    cmp eax, edx
+    jne mmap_err_bad_sig    ; if eax is not the magic num then error
+
+    cmp ebx, 0              ; if ebx == 0, it ended
+    je mmap_err_list_end
+
+    ; if it didn't fail, goto next entry
+    inc dword [mmap_state_location]
+    add di, 24 ; increment di by 24
+    jmp next_entry  
+    
+    ; ** MMAP ERROR HANDLERS **
+    mmap_err_list_end:
+        mov dword [mmap_state_location + 4], 0x01
+        jmp continue_boot
+
+    mmap_err_bad_sig:
+        mov dword [mmap_state_location + 4], 0x02
+        jmp continue_boot
+
+    mmap_err_carry:
+        mov dword [mmap_state_location + 4], 0x03
+        jmp continue_boot
+
+
+    ; ** ENTER 32-BIT BOOT **
+continue_boot:
+
     ; Remove 1MB limit
     mov ax, 0x2401
     int 0x15 ; enable A20 bit
@@ -11,7 +60,7 @@ boot:
     mov ax, 0x2
     int 0x10
 
-    ; Load the Global Descriptor Table and enter protected mode
+    ; Load temporary Global Descriptor Table to get into kernel and enter protected mode
     cli
     lgdt [gdt_pointer] ; Load GDT
     mov eax, cr0

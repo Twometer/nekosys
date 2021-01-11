@@ -1,12 +1,15 @@
 #include <kernel/tty.h>
 #include <kernel/heap.h>
 #include <kernel/gdt.h>
+#include <kernel/panic.h>
 #include <kernel/interrupts.h>
 #include <device/devicemanager.h>
+#include <memory/MemoryMap.h>
 #include <stdio.h>
 
 using namespace Kernel;
 using namespace Device;
+using namespace Memory;
 
 /* nekosys Kernel entry point */
 extern "C" void nkmain()
@@ -21,19 +24,27 @@ extern "C" void nkmain()
 
 	// Init
 	printf("Initializing...\n");
-	uint16_t base_memory = (CMOS::Read(0x16) << 8) | CMOS::Read(0x15);
-	uint32_t ext_memory = (CMOS::Read(0x31) << 8 | CMOS::Read(0x30));
-
-	printf("Base Memory: %d KB\n", base_memory);
-	printf("Extended Memory: %d KB\n", ext_memory);
-
 	GDT gdt(3);
-	gdt.Set(0, {0, 0, 0}); // Selector 0x00: NULL
+	gdt.Set(0, {0, 0, 0});			   // Selector 0x00: NULL
 	gdt.Set(1, {0, 0xffffffff, 0x9A}); // Selector 0x08: Code
 	gdt.Set(2, {0, 0xffffffff, 0x92}); // Selector 0x10: Data
 	// Task state segment here
 	gdt.Load();
 
+	printf("Loading memory map...\n");
+
+	TTY::SetColor(0x08);
+	MemoryMap memoryMap;
+	memoryMap.Parse((void *)0x8000);
+
+	for (int i = 0; i < memoryMap.GetLength(); i++)
+	{
+		auto *entry = memoryMap.GetEntry(i);
+		if (entry->type == 0x01)
+			printf("  base=%x len=%d KB\n", entry->baseLow, (entry->lengthLow / 1024));
+	}
+	TTY::SetColor(0x07);
+	
 	heap_init();
 
 	Interrupts::SetupIdt();
