@@ -19,7 +19,7 @@ extern "C" void nkmain()
 	// Banner
 	TTY::Clear();
 	TTY::SetColor(0x9f);
-	printf("neko_kernel 0.01 <by Twometer>\n");
+	printf("neko kernel 0.02\n");
 	TTY::SetColor(0x07);
 
 	// Init
@@ -52,6 +52,9 @@ extern "C" void nkmain()
 	DeviceManager::Initialize();
 
 	Interrupts::Enable();
+
+	auto time = CMOS::GetDate();
+	printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
 
 	// Dummy terminal
 	printf("Initialized.\n\n");
