@@ -4,6 +4,7 @@
 #include <kernel/panic.h>
 #include <kernel/interrupts.h>
 #include <device/devicemanager.h>
+#include <device/pit.h>
 #include <memory/MemoryMap.h>
 #include <stdio.h>
 
@@ -51,13 +52,18 @@ extern "C" void nkmain()
 	Interrupts::SetupIdt();
 	DeviceManager::Initialize();
 
+	printf("Reconfiguring timer...\n");
+	PIT::Configure(0, Device::PIT::AccessMode::LowAndHigh, Device::PIT::OperatingMode::RateGenerator, false);
+	PIT::SetSpeed(0, 100); // 100 Hz timer frequency (interrupt every 10ms)
+
 	Interrupts::Enable();
 
 	auto time = CMOS::GetDate();
 	printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
+	printf("Initialized.\n\n");
+
 
 	// Dummy terminal
-	printf("Initialized.\n\n");
 	printf("$ ");
 
 	// Idle
