@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdarg.h>
 #include <device/cpu.h>
 #include <kernel/interrupts.h>
 #include <kernel/panic.h>
@@ -7,12 +8,21 @@
 namespace Kernel
 {
 
-    void Panic(const char *message)
+    void Panic(const char *module, const char *fmt, ...)
     {
-        TTY::SetColor(0xcf);
-        printf("nekosys: Kernel Panic: \n %s\n", message);
         Interrupts::Disable();
-        Device::CPU::Halt();
+
+        TTY::SetColor(0x0c);
+        printf("\nNK_Kernel Panic:\n%s: ", module);
+
+        TTY::SetColor(0x07);
+        va_list args;
+        va_start(args, fmt);
+        printf(fmt, args);
+        va_end(args);
+
+        for (;;)
+            Device::CPU::Halt();
     };
 
 } // namespace Kernel

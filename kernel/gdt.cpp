@@ -5,8 +5,9 @@
 
 using namespace Kernel;
 
-extern "C" {
-    extern void setGdt(void*, uint32_t);
+extern "C"
+{
+    extern void setGdt(void *, uint32_t);
 }
 
 GDT::GDT(int entries)
@@ -31,7 +32,7 @@ void GDT::EncodeEntry(uint8_t *target, GDTEntry source)
     // Check the limit to make sure that it can be encoded
     if ((source.limit > 65536) && ((source.limit & 0xFFF) != 0xFFF))
     {
-        Kernel::Panic("Invalid GDT Entry!");
+        Kernel::Panic("gdt_loader", "Invalid GDT Entry!");
     }
     if (source.limit > 65536)
     {

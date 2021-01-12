@@ -12,15 +12,15 @@ namespace Memory
 
         if (header->result == 1 && header->length == 0)
         {
-            Kernel::Panic("MemoryMap: Empty memory map");
+            Kernel::Panic("memory_map", "Empty memory map");
         }
         else if (header->result == 2)
         {
-            Kernel::Panic("MemoryMap: Bad BIOS signature");
+            Kernel::Panic("memory_map", "Bad BIOS signature");
         }
         else if (header->result == 3)
         {
-            Kernel::Panic("MemoryMap: Function not available");
+            Kernel::Panic("memory_map", "BIOS not available");
         }
     }
 

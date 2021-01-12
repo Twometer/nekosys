@@ -27,7 +27,7 @@ extern "C" void nkmain()
 	printf("Initializing...\n");
 	GDT gdt(3);
 	gdt.Set(0, {0, 0, 0});			   // Selector 0x00: NULL
-	gdt.Set(1, {0, 0xffffffff, 0x9A}); // Selector 0x08: Code
+	gdt.Set(1, {0, 0xfffffffe, 0x9A}); // Selector 0x08: Code
 	gdt.Set(2, {0, 0xffffffff, 0x92}); // Selector 0x10: Data
 	// Task state segment here
 	gdt.Load();
@@ -54,14 +54,13 @@ extern "C" void nkmain()
 
 	printf("Reconfiguring timer...\n");
 	PIT::Configure(0, Device::PIT::AccessMode::LowAndHigh, Device::PIT::OperatingMode::RateGenerator, false);
-	PIT::SetSpeed(0, 100); // 100 Hz timer frequency (interrupt every 10ms)
+	PIT::SetSpeed(0, 1000); // 1 kHz timer frequency (interrupt every 1ms)
 
 	Interrupts::Enable();
 
 	auto time = CMOS::GetDate();
 	printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
 	printf("Initialized.\n\n");
-
 
 	// Dummy terminal
 	printf("$ ");

@@ -1,6 +1,7 @@
 #include <kernel/interrupts.h>
 #include <kernel/io.h>
 #include <kernel/tty.h>
+#include <kernel/panic.h>
 #include <device/keyboard.h>
 #include <device/cpu.h>
 #include <device/pic.h>
@@ -277,22 +278,13 @@ void Interrupts::SetIdtEntry(unsigned int interrupt, unsigned char type, unsigne
 
 void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *frame)
 {
-	Interrupts::Disable();
-
-	Kernel::TTY::SetColor(0x0c);
-	printf("\nnekosys: Fatal Error\n");
-	Kernel::TTY::SetColor(0x0f);
-	printf("Error Code: %x\n", vector);
-	printf("Error Description: %s\n\n", exception_descriptors[vector]);
-	printf("IP: %x\nCS: %x\nSP: %x\nSS: %x\nFlags: %x\n", frame->ip, frame->cs, frame->sp, frame->ss, frame->flags);
-
-	printf("\nSystem halted.");
-	Device::CPU::Halt();
+	Kernel::Panic("cpu_error", "Fatal CPU exception!\nVector: %x\nDescription:%s\nIP: %x\nCS: %x\nSS: %x\nFlags: %x\n", vector, exception_descriptors[vector], frame->ip, frame->cs, frame->sp, frame->ss, frame->flags);
 }
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
 {
-	for (size_t i = 0; i < entries.Size(); i++) {
+	for (size_t i = 0; i < entries.Size(); i++)
+	{
 		InterruptHandlerEntry &entry = entries.At(i);
 		if (entry.interrupt == interrupt)
 			entry.handler->HandleInterrupt(interrupt);

@@ -8,7 +8,7 @@ extern "C"
 #include <stdbool.h>
 #include <stdio.h>
 
-/*
+    /*
  * Simple heap implementation for getting the kernel started.
  * Should probably be replaced with something more efficient in
  * the future.
@@ -16,8 +16,8 @@ extern "C"
  * chunks, which we mark as used or unused in a bitmap.
  */
 
-#define HEAP_SIZE 1000000   // 1MB heap size
-#define HEAP_SEG_SIZE 128   // 128 byte allocation units
+#define HEAP_SIZE 1000000 // 1MB heap size
+#define HEAP_SEG_SIZE 128 // 128 byte allocation units
 
 #define ALLOCATION_MAP_ENTRIES HEAP_SIZE / HEAP_SEG_SIZE
 #define ALLOCATION_MAP_SIZE HEAP_SIZE / HEAP_SEG_SIZE / 8
@@ -106,8 +106,7 @@ extern "C"
         int alloc_result = find_free_allocation_units(num_alloc_units);
         if (alloc_result < 0)
         {
-            printf("kernel_heap: No more space for %d bytes.\n", size);
-            Kernel::Panic("Out of memory");
+            Kernel::Panic("kernel_heap", "No more space for %d bytes.\n", size);
             return 0;
         }
 

@@ -4,7 +4,7 @@
 namespace Kernel
 {
 
-    void Panic(const char *message);
+    void Panic(const char *module, const char *fmt, ...);
 
 } // namespace Kernel
 
