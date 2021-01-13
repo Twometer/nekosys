@@ -3,10 +3,16 @@
 #include <kernel/scheduler.h>
 #include <kernel/timemanager.h>
 
-#define SCHEDULER_DBG 0
+#define SCHEDULER_DBG 1
 
 namespace Kernel
 {
+    DEFINE_SINGLETON(Scheduler)
+
+    Scheduler::Scheduler()
+    {
+        Initialize();
+    }
 
     void Scheduler::Initialize()
     {
@@ -27,13 +33,37 @@ namespace Kernel
 
     void Scheduler::HandleInterrupt(unsigned int interrupt, RegisterStates *regs)
     {
+        PreemptCurrent(regs);
+    }
+
+    extern "C"
+    {
+        extern void scheduler_yield();
+        void scheduler_preempt_current(RegisterStates *regs)
+        {
+            Scheduler::get_instance()->PreemptCurrent(regs);
+        }
+    }
+
+    void Scheduler::Yield()
+    {
+        scheduler_yield();
+        // should never reach here
+    }
+
+    void Scheduler::PreemptCurrent(RegisterStates *regs)
+    {
         if (threads.Size() == 0)
             return;
 
-        auto newThread = FindNextThread();
         auto oldThread = Thread::current;
+        auto newThread = FindNextThread();
+        ContextSwitch(oldThread, newThread, regs);
+    }
 
-        if (newThread == oldThread)
+    void Scheduler::ContextSwitch(Thread *oldThread, Thread *newThread, RegisterStates *regs)
+    {
+        if (newThread == oldThread || newThread->id == oldThread->id)
         {
             // well...
             return;

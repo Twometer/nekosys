@@ -2,6 +2,7 @@
 #include <string.h>
 #include <kernel/thread.h>
 #include <kernel/timemanager.h>
+#include <kernel/scheduler.h>
 
 namespace Kernel
 {
@@ -31,6 +32,7 @@ namespace Kernel
         unblock_time = TimeManager::get_instance()->get_uptime() + ms;
         thread_state = ThreadState::Blocked;
         asm("hlt"); // TODO: don't wait for the interrupt, but yield instantly...?
+        //Scheduler::get_instance()->Yield();
     }
 
 }; // namespace Kernel

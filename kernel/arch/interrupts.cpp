@@ -61,98 +61,98 @@ extern "C"
 	// Handlers
 	void irq0_handler(void)
 	{
-		master_eoi();
 		Interrupts::HandleInterrupt(0);
+		master_eoi();
 	}
 
 	void irq1_handler(void)
 	{
-		master_eoi();
 		Interrupts::HandleInterrupt(1);
+				master_eoi();
 	}
 
 	void irq2_handler(void)
 	{
-		master_eoi();
 		Interrupts::HandleInterrupt(2);
+		master_eoi();
 	}
 
 	void irq3_handler(void)
 	{
-		master_eoi();
 		Interrupts::HandleInterrupt(3);
+		master_eoi();
 	}
 
 	void irq4_handler(void)
 	{
-		master_eoi();
 		Interrupts::HandleInterrupt(4);
+		master_eoi();
 	}
 
 	void irq5_handler(void)
 	{
-		master_eoi();
 		Interrupts::HandleInterrupt(5);
+		master_eoi();
 	}
 
 	void irq6_handler(void)
 	{
-		master_eoi();
 		Interrupts::HandleInterrupt(6);
+		master_eoi();
 	}
 
 	void irq7_handler(void)
 	{
-		master_eoi();
 		Interrupts::HandleInterrupt(7);
+		master_eoi();
 	}
 
 	void irq8_handler(void)
 	{
-		slave_eoi();
 		Interrupts::HandleInterrupt(8);
+		slave_eoi();
 	}
 
 	void irq9_handler(void)
 	{
-		slave_eoi();
 		Interrupts::HandleInterrupt(9);
+		slave_eoi();
 	}
 
 	void irq10_handler(void)
 	{
-		slave_eoi();
 		Interrupts::HandleInterrupt(10);
+		slave_eoi();
 	}
 
 	void irq11_handler(void)
 	{
-		slave_eoi();
 		Interrupts::HandleInterrupt(11);
+		slave_eoi();
 	}
 
 	void irq12_handler(void)
 	{
-		slave_eoi();
 		Interrupts::HandleInterrupt(12);
+		slave_eoi();
 	}
 
 	void irq13_handler(void)
 	{
-		slave_eoi();
 		Interrupts::HandleInterrupt(13);
+		slave_eoi();
 	}
 
 	void irq14_handler(void)
 	{
-		slave_eoi();
 		Interrupts::HandleInterrupt(14);
+		slave_eoi();
 	}
 
 	void irq15_handler(void)
 	{
-		slave_eoi();
 		Interrupts::HandleInterrupt(15);
+		slave_eoi();
 	}
 
 #define EXCEPTION_HANDLER(vec)                                              \

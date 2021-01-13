@@ -1,29 +1,11 @@
 ; Total number of interrupt vectors
 %define NUM_VECTORS 16
 
-; Storage for registers during the IRQ
-; This must match the RegisterState struct in registers.h
-s_eax: dd 0
-s_ebx: dd 0
-s_ecx: dd 0
-s_edx: dd 0
-s_esp: dd 0
-s_esi: dd 0
-s_edi: dd 0
-s_flags: dd 0
+%include "kernel/arch/regutil.asm"
 
+; define ptr to register states struct
 register_states equ s_eax
 global register_states
-
-; Macro for saving register to struct
-%macro save_reg 1
-mov dword [s_%1], %1
-%endmacro
-
-; Macro for loading register from struct
-%macro load_reg 1
-mov dword %1, [s_%1]
-%endmacro
 
 ; Interrupt handler generator macro
 %macro def_ireq_handler 1
@@ -32,13 +14,7 @@ extern irq%1_handler
 
 irq%1:
   ; save reg states
-  save_reg eax
-  save_reg ebx
-  save_reg ecx
-  save_reg edx
-  save_reg esp
-  save_reg esi
-  save_reg edi
+  save_all_regs
   
   ; get the flags from the stack
   ; they are just for analyzing and stuff, and don't get written back
@@ -49,13 +25,7 @@ irq%1:
   call irq%1_handler
 
   ; load reg states back
-  load_reg eax
-  load_reg ebx
-  load_reg ecx
-  load_reg edx
-  load_reg esp
-  load_reg esi
-  load_reg edi
+  load_all_regs
   iret
 %endmacro
 

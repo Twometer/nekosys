@@ -46,17 +46,14 @@ extern "C"
 
 		// Init
 		printf("Booting...\n");
-		Scheduler scheduler;
-		scheduler.Initialize();
-
 		GDT gdt(3);
-		gdt.Set(0, {0, 0, 0});									   // Selector 0x00: NULL
-		gdt.Set(1, {0, 0xffffffff, 0x9A});						   // Selector 0x08: Code
-		gdt.Set(2, {0, 0xffffffff, 0x92});						   // Selector 0x10: Data
-		gdt.Set(3, {(uint32_t)scheduler.GetTssPtr(), 1024, 0x89}); // Selector 0x18: TSS
+		gdt.Set(0, {0, 0, 0});										// Selector 0x00: NULL
+		gdt.Set(1, {0, 0xffffffff, 0x9A});							// Selector 0x08: Code
+		gdt.Set(2, {0, 0xffffffff, 0x92});							// Selector 0x10: Data
+		//gdt.Set(3, {(uint32_t)scheduler->GetTssPtr(), 1024, 0x89}); // Selector 0x18: TSS
 		gdt.Load();
 
-		setTss(0x18);
+		//setTss(0x18);
 
 		printf("Loading memory map\n");
 		TTY::SetColor(0x08);
@@ -85,15 +82,16 @@ extern "C"
 		auto time = TimeManager::get_instance()->get_system_time();
 		printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
 
-		// Idle thread
+		// Tasking
+		Scheduler *scheduler = scheduler->get_instance();
 		printf("Starting idle thread\n");
 		Thread idleThread(idleThreadEP);
-		scheduler.Start(&idleThread);
+		scheduler->Start(&idleThread);
 
 		// Test thread
 		printf("Starting test thread\n");
 		Thread testThread(testThreadEP);
-		scheduler.Start(&testThread);
+		scheduler->Start(&testThread);
 
 		// Kernel initialized
 		printf("System boot complete\n");
