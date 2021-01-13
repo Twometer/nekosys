@@ -1,6 +1,7 @@
 #ifndef _THREAD_H
 #define _THREAD_H
 
+#include <kernel/stack.h>
 #include <kernel/registers.h>
 #define THREAD_STACK_SIZE 4096
 
@@ -11,9 +12,9 @@ namespace Kernel
     class Thread
     {
     private:
-        void *stack;
-
         static int idCounter;
+
+        Stack stack;
 
     public:
         static Thread *current;

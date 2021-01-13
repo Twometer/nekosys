@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <kernel/scheduler.h>
 
+#define SCHEDULER_DBG 0
+
 namespace Kernel
 {
 
@@ -37,8 +39,10 @@ namespace Kernel
         // set thread as current
         Thread::current = newThread;
 
-        // context switch:
+// context switch:
+#if SCHEDULER_DB
         printf("scheduler: Context switch to %d\n", newThread->id);
+#endif
 
         // save current regs to old thread
         if (oldThread != nullptr)
@@ -47,7 +51,7 @@ namespace Kernel
         }
 
         // load regs for next thread
-        newThread->registers.CopyTo(regs); 
+        newThread->registers.CopyTo(regs);
     }
 
     void Scheduler::SwitchToTask(Thread *newThread)

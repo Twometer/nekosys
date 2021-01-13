@@ -12,6 +12,7 @@ struct RegisterStates
     uint32_t esp = 0x00;
     uint32_t esi = 0x00;
     uint32_t edi = 0x00;
+    uint32_t flags = 0x00;
 
     void CopyTo(RegisterStates *other)
     {

@@ -10,6 +10,7 @@ s_edx: dd 0
 s_esp: dd 0
 s_esi: dd 0
 s_edi: dd 0
+s_flags: dd 0
 
 register_states equ s_eax
 global register_states
@@ -38,6 +39,11 @@ irq%1:
   save_reg esp
   save_reg esi
   save_reg edi
+  
+  ; get the flags from the stack
+  ; they are just for analyzing and stuff, and don't get written back
+  mov eax, [esp + 8]
+  mov [s_flags], eax
 
   ; call interrupt handler
   call irq%1_handler

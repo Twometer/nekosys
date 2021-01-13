@@ -15,6 +15,7 @@ using namespace Memory;
 
 void idleThreadEP()
 {
+	printf("Hello from idle thread!\n");
 	CPU::Halt();
 }
 
