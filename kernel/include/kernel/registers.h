@@ -5,13 +5,25 @@
 
 struct RegisterStates
 {
-    uint32_t eax;
-    uint32_t ebx;
-    uint32_t ecx;
-    uint32_t edx;
-    uint32_t esp;
-    uint32_t esi;
-    uint32_t edi;
+    uint32_t eax = 0x00;
+    uint32_t ebx = 0x00;
+    uint32_t ecx = 0x00;
+    uint32_t edx = 0x00;
+    uint32_t esp = 0x00;
+    uint32_t esi = 0x00;
+    uint32_t edi = 0x00;
+
+    void CopyTo(RegisterStates *other)
+    {
+        other->eax = eax;
+        other->ebx = ebx;
+        other->ecx = ecx;
+        other->edx = edx;
+        other->esp = esp;
+        other->esi = esi;
+        other->edi = edi;
+    }
+
 } __attribute__((packed));
 
 #endif

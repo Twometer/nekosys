@@ -1,6 +1,7 @@
 #ifndef _THREAD_H
 #define _THREAD_H
 
+#include <kernel/registers.h>
 #define THREAD_STACK_SIZE 4096
 
 namespace Kernel
@@ -12,8 +13,14 @@ namespace Kernel
     private:
         void *stack;
 
+        static int idCounter;
+
     public:
         static Thread *current;
+
+        int id;
+
+        RegisterStates registers;
 
         ThreadMain entryPoint;
 

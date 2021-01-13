@@ -43,7 +43,7 @@ namespace Memory
             if (entry->type == 0x01 && entry->lengthLow > largestEntry->lengthLow)
                 largestEntry = entry;
         }
-        return largestEntry;
+        return (void *)largestEntry->baseLow;
     }
 
 }; // namespace Memory
