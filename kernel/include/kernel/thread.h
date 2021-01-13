@@ -9,6 +9,13 @@ namespace Kernel
 {
     typedef void (*ThreadMain)(void);
 
+    enum class ThreadState
+    {
+        Ready,
+        Running,
+        Blocked
+    };
+
     class Thread
     {
     private:
@@ -20,7 +27,8 @@ namespace Kernel
         static Thread *current;
 
         int id;
-
+        uint32_t unblock_time = 0;
+        ThreadState thread_state = ThreadState::Ready;
         RegisterStates registers;
 
         ThreadMain entryPoint;

@@ -25,7 +25,9 @@ namespace Kernel
         void HandleInterrupt(unsigned int interrupt, RegisterStates *regs) override;
 
     private:
-        void SwitchToTask(Thread *thread);
+        Thread *FindNextThread();
+
+        bool CanRun(Thread *thread);
     };
 
 }; // namespace Kernel

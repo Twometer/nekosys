@@ -4,6 +4,7 @@
 #include <kernel/panic.h>
 #include <kernel/interrupts.h>
 #include <kernel/scheduler.h>
+#include <kernel/timemanager.h>
 #include <device/devicemanager.h>
 #include <device/pit.h>
 #include <memory/MemoryMap.h>
@@ -23,7 +24,7 @@ void testThreadEP()
 {
 	for (;;)
 	{
-		printf("Hello from thread #2");
+		printf("Hello from thread #2 %d\n", TimeManager::get_instance()->get_uptime());
 		Thread::current->Sleep(1000);
 	}
 }
@@ -81,7 +82,7 @@ extern "C"
 		PIT::Configure(0, Device::PIT::AccessMode::LowAndHigh, Device::PIT::OperatingMode::RateGenerator, false);
 		PIT::SetSpeed(0, 1000); // 1 kHz timer frequency (interrupt every 1ms)
 
-		auto time = CMOS::GetDate();
+		auto time = TimeManager::get_instance()->get_system_time();
 		printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
 
 		// Idle thread

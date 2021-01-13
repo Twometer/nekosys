@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <kernel/scheduler.h>
+#include <kernel/timemanager.h>
 
 #define SCHEDULER_DBG 0
 
@@ -26,21 +27,23 @@ namespace Kernel
 
     void Scheduler::HandleInterrupt(unsigned int interrupt, RegisterStates *regs)
     {
-        // TODO: Real scheduling algorithm
         if (threads.Size() == 0)
             return;
 
-        int nextTaskIdx = ctr % threads.Size();
-        ctr++;
-
-        auto newThread = threads.At(nextTaskIdx);
+        auto newThread = FindNextThread();
         auto oldThread = Thread::current;
+
+        if (newThread == oldThread)
+        {
+            // well...
+            return;
+        }
 
         // set thread as current
         Thread::current = newThread;
 
 // context switch:
-#if SCHEDULER_DB
+#if SCHEDULER_DBG
         printf("scheduler: Context switch to %d\n", newThread->id);
 #endif
 
@@ -54,15 +57,21 @@ namespace Kernel
         newThread->registers.CopyTo(regs);
     }
 
-    void Scheduler::SwitchToTask(Thread *newThread)
+    Thread *Scheduler::FindNextThread()
     {
+        // TODO: This is a shitty scheduler function
+        Thread *nextThread = nullptr;
+        do
+        {
+            int nextIdx = (ctr++) % threads.Size();
+            nextThread = threads.At(nextIdx);
+        } while (!CanRun(nextThread));
+        return nextThread;
+    }
 
-        // todo we need register states:
-        //  when the interrupt is fired, save all registers to a struct in memory
-        //  when the interrupt returns, restore the regs from that struct back into the CPU
-        //  result: we can easily modify any registers, and only have them apply once the ISR finishes
-        //  benefit: for a new task, we can build a stack that just has its entry point instr pointer pushed to it
-        //  -> all the registers must therefore be saved in the thread
+    bool Scheduler::CanRun(Thread *thread)
+    {
+        return thread != nullptr && thread->unblock_time <= TimeManager::get_instance()->get_uptime();
     }
 
 }; // namespace Kernel

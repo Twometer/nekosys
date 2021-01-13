@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <kernel/thread.h>
+#include <kernel/timemanager.h>
 
 namespace Kernel
 {
@@ -27,6 +28,9 @@ namespace Kernel
 
     void Thread::Sleep(int ms)
     {
+        unblock_time = TimeManager::get_instance()->get_uptime() + ms;
+        thread_state = ThreadState::Blocked;
+        asm("hlt"); // TODO: don't wait for the interrupt, but yield instantly...?
     }
 
 }; // namespace Kernel
