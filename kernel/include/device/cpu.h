@@ -3,7 +3,6 @@
 
 namespace Device
 {
-
     class CPU
     {
     public:

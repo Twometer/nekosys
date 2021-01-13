@@ -9,11 +9,11 @@ namespace Device
     {
     private:
         char scancode_map[128];
-        
+
     public:
         void Initialize();
 
-        void HandleInterrupt(unsigned int interrupt) override;
+        void HandleInterrupt(unsigned int interrupt, RegisterStates *regs) override;
 
     private:
         void NewScancode(unsigned int code, char c);

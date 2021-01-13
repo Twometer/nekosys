@@ -6,7 +6,7 @@
 namespace nk
 {
 
-    struct datetime
+    struct DateTime
     {
         int32_t year;
         int16_t month;

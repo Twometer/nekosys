@@ -1,134 +1,67 @@
-global irq0
-global irq1
-global irq2
-global irq3
-global irq4
-global irq5
-global irq6
-global irq7
-global irq8
-global irq9
-global irq10
-global irq11
-global irq12
-global irq13
-global irq14
-global irq15
+; Total number of interrupt vectors
+%define NUM_VECTORS 16
 
+; Storage for registers during the IRQ
+; This must match the RegisterState struct in registers.h
+s_eax: dd 0
+s_ebx: dd 0
+s_ecx: dd 0
+s_edx: dd 0
+s_esp: dd 0
+s_esi: dd 0
+s_edi: dd 0
+
+register_states equ s_eax
+global register_states
+
+; Macro for saving register to struct
+%macro save_reg 1
+mov dword [s_%1], %1
+%endmacro
+
+; Macro for loading register from struct
+%macro load_reg 1
+mov dword %1, [s_%1]
+%endmacro
+
+; Interrupt handler generator macro
+%macro def_ireq_handler 1
+global irq%1
+extern irq%1_handler
+
+irq%1:
+  ; save reg states
+  save_reg eax
+  save_reg ebx
+  save_reg ecx
+  save_reg edx
+  save_reg esp
+  save_reg esi
+  save_reg edi
+
+  ; call interrupt handler
+  call irq%1_handler
+
+  ; load reg states back
+  load_reg eax
+  load_reg ebx
+  load_reg ecx
+  load_reg edx
+  load_reg esp
+  load_reg esi
+  load_reg edi
+  iret
+%endmacro
+
+; Call the handler generator for each vector
+%assign vector 0
+%rep NUM_VECTORS
+def_ireq_handler vector
+%assign vector vector + 1
+%endrep
+
+; IDT loader code
 global load_idt
-
-extern irq0_handler
-extern irq1_handler
-extern irq2_handler
-extern irq3_handler
-extern irq4_handler
-extern irq5_handler
-extern irq6_handler
-extern irq7_handler
-extern irq8_handler
-extern irq9_handler
-extern irq10_handler
-extern irq11_handler
-extern irq12_handler
-extern irq13_handler
-extern irq14_handler
-extern irq15_handler
-
-irq0:
-  pusha
-  call irq0_handler
-  popa
-  iret
-
-irq1:
-  pusha
-  call irq1_handler
-  popa
-  iret
-
-irq2:
-  pusha
-  call irq2_handler
-  popa
-  iret
-
-irq3:
-  pusha
-  call irq3_handler
-  popa
-  iret
-
-irq4:
-  pusha
-  call irq4_handler
-  popa
-  iret
-
-irq5:
-  pusha
-  call irq5_handler
-  popa
-  iret
-
-irq6:
-  pusha
-  call irq6_handler
-  popa
-  iret
-
-irq7:
-  pusha
-  call irq7_handler
-  popa
-  iret
-
-irq8:
-  pusha
-  call irq8_handler
-  popa
-  iret
-
-irq9:
-  pusha
-  call irq9_handler
-  popa
-  iret
-
-irq10:
-  pusha
-  call irq10_handler
-  popa
-  iret
-
-irq11:
-  pusha
-  call irq11_handler
-  popa
-  iret
-
-irq12:
-  pusha
-  call irq12_handler
-  popa
-  iret
-
-irq13:
-  pusha
-  call irq13_handler
-  popa
-  iret
-
-irq14:
-  pusha
-  call irq14_handler
-  popa
-  iret
-
-irq15:
-  pusha
-  call irq15_handler
-  popa
-  iret
 
 load_idt:
 	mov edx, [esp + 4]

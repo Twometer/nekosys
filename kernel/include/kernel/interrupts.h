@@ -1,6 +1,7 @@
 #ifndef _INTERRUPTS_H
 #define _INTERRUPTS_H
 
+#include <kernel/registers.h>
 #include <nk/vector.h>
 
 struct IDT_entry
@@ -26,7 +27,7 @@ namespace Kernel
     class InterruptHandler
     {
     public:
-        virtual void HandleInterrupt(unsigned int interrupt) = 0;
+        virtual void HandleInterrupt(unsigned int interrupt, RegisterStates *states) = 0;
     };
 
     struct InterruptHandlerEntry

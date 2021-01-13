@@ -21,8 +21,7 @@ namespace Kernel
         printf(fmt, args);
         va_end(args);
 
-        for (;;)
-            Device::CPU::Halt();
+        Device::CPU::Halt();
     };
 
 } // namespace Kernel

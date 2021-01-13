@@ -44,6 +44,8 @@ static IDT_entry IDT[256];
 
 extern "C"
 {
+	extern RegisterStates register_states;
+
 	// End of interrupt singals
 	inline static void master_eoi()
 	{
@@ -59,98 +61,98 @@ extern "C"
 	// Handlers
 	void irq0_handler(void)
 	{
-		Interrupts::HandleInterrupt(0);
 		master_eoi();
+		Interrupts::HandleInterrupt(0);
 	}
 
 	void irq1_handler(void)
 	{
-		Interrupts::HandleInterrupt(1);
 		master_eoi();
+		Interrupts::HandleInterrupt(1);
 	}
 
 	void irq2_handler(void)
 	{
-		Interrupts::HandleInterrupt(2);
 		master_eoi();
+		Interrupts::HandleInterrupt(2);
 	}
 
 	void irq3_handler(void)
 	{
-		Interrupts::HandleInterrupt(3);
 		master_eoi();
+		Interrupts::HandleInterrupt(3);
 	}
 
 	void irq4_handler(void)
 	{
-		Interrupts::HandleInterrupt(4);
 		master_eoi();
+		Interrupts::HandleInterrupt(4);
 	}
 
 	void irq5_handler(void)
 	{
-		Interrupts::HandleInterrupt(5);
 		master_eoi();
+		Interrupts::HandleInterrupt(5);
 	}
 
 	void irq6_handler(void)
 	{
-		Interrupts::HandleInterrupt(6);
 		master_eoi();
+		Interrupts::HandleInterrupt(6);
 	}
 
 	void irq7_handler(void)
 	{
-		Interrupts::HandleInterrupt(7);
 		master_eoi();
+		Interrupts::HandleInterrupt(7);
 	}
 
 	void irq8_handler(void)
 	{
-		Interrupts::HandleInterrupt(8);
 		slave_eoi();
+		Interrupts::HandleInterrupt(8);
 	}
 
 	void irq9_handler(void)
 	{
-		Interrupts::HandleInterrupt(9);
 		slave_eoi();
+		Interrupts::HandleInterrupt(9);
 	}
 
 	void irq10_handler(void)
 	{
-		Interrupts::HandleInterrupt(10);
 		slave_eoi();
+		Interrupts::HandleInterrupt(10);
 	}
 
 	void irq11_handler(void)
 	{
-		Interrupts::HandleInterrupt(11);
 		slave_eoi();
+		Interrupts::HandleInterrupt(11);
 	}
 
 	void irq12_handler(void)
 	{
-		Interrupts::HandleInterrupt(12);
 		slave_eoi();
+		Interrupts::HandleInterrupt(12);
 	}
 
 	void irq13_handler(void)
 	{
-		Interrupts::HandleInterrupt(13);
 		slave_eoi();
+		Interrupts::HandleInterrupt(13);
 	}
 
 	void irq14_handler(void)
 	{
-		Interrupts::HandleInterrupt(14);
 		slave_eoi();
+		Interrupts::HandleInterrupt(14);
 	}
 
 	void irq15_handler(void)
 	{
-		Interrupts::HandleInterrupt(15);
 		slave_eoi();
+		Interrupts::HandleInterrupt(15);
 	}
 
 #define EXCEPTION_HANDLER(vec)                                              \
@@ -283,11 +285,12 @@ void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *fr
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
 {
+	RegisterStates *states = &register_states;
 	for (size_t i = 0; i < entries.Size(); i++)
 	{
 		InterruptHandlerEntry &entry = entries.At(i);
 		if (entry.interrupt == interrupt)
-			entry.handler->HandleInterrupt(interrupt);
+			entry.handler->HandleInterrupt(interrupt, states);
 	}
 }
 

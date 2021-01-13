@@ -21,11 +21,11 @@ void CMOS::Write(uint8_t addr, uint8_t value)
     IO::Out8(PORT_DATA, value);
 }
 
-nk::datetime CMOS::GetDate()
+nk::DateTime CMOS::GetDate()
 {
     uint8_t format = Read(0x0B);
 
-    nk::datetime datetime = {Read(0x09), Read(0x08), Read(0x07), Read(0x04), Read(0x02), Read(0x00)};
+    nk::DateTime datetime = {Read(0x09), Read(0x08), Read(0x07), Read(0x04), Read(0x02), Read(0x00)};
     if (!(format & 4)) {
         datetime.year = BCD_TO_BIN(datetime.year);
         datetime.month = BCD_TO_BIN(datetime.month);

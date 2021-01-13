@@ -14,7 +14,7 @@ namespace Device
 
         static void Write(uint8_t addr, uint8_t value);
 
-        static nk::datetime GetDate();
+        static nk::DateTime GetDate();
     };
 
 } // namespace Device
