@@ -24,7 +24,7 @@ namespace Kernel
         uint32_t run_start_time = 0;
         uint32_t last_cpu_time = 0;
         RegisterStates registers{};
-        bool yielded;
+        bool yielded = false;
 
         ThreadMain entryPoint;
 

@@ -19,6 +19,7 @@ namespace Kernel
         tss = malloc(1024);
         memset(tss, 0x00, 1024);
         Thread::current = new Thread(nullptr);
+        Thread::current->yielded = true;
         Interrupts::AddHandler(0x00, this);
     }
 
