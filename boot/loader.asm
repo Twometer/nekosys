@@ -1,15 +1,7 @@
 bits 16     ; still 16 bit
-org 0x7E00    ; loader offset
+org 0x7E00  ; loader offset
 
-; Memory layout
-;
-; Segment: 0x00
-; [0x7C00] +200h: Boot sector and stage 1 loader
-; [0x7E00] +400h: Stage 2 bootloader (this one here). May expand in the future
-; [0x8200] +200h: Stores some FAT sectors
-; [0x8400] +200h: Stores the FAT table
-; [0xA000] +....: Kernel offset
-
+boot_sector: equ 0x7C00
 fat_offset: equ 0x8200
 table_offset: equ 0x8400
 kernel_offset: equ 0xA000
@@ -42,7 +34,7 @@ init:
     ; 7C00h is where the boot sector is, 1BEh is where the first partition is
     ; and 0x08 is the offset of the LBA where it starts, deref that and we have the
     ; sector of the first partition. load that into fat_offset
-    mov ax, [0x7C00 + 0x1BE + 0x08]
+    mov ax, [boot_sector + 0x1BE + 0x08]
     mov [first_partition_offset], ax
 
     push word [first_partition_offset]

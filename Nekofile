@@ -56,6 +56,6 @@ kernel:
 
         include: -I kernel/include
                  -I libc/include
-                 -I nekolib
+                 -I libneko
 
         output: build/NEKOKRNL

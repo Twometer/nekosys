@@ -280,7 +280,7 @@ void Interrupts::SetIdtEntry(unsigned int interrupt, unsigned char type, unsigne
 
 void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *frame)
 {
-	Kernel::Panic("cpu_error", "Fatal CPU exception!\nVector: %x\nDescription:%s\nIP: %x\nCS: %x\nSS: %x\nFlags: %x\n", vector, exception_descriptors[vector], frame->ip, frame->cs, frame->sp, frame->ss, frame->flags);
+	Kernel::Panic("cpu_error", "Fatal CPU exception!\nVector: %x\nDescription: %s\nIP: %x\nCS: %x\nSS: %x\nFlags: %x\n", vector, exception_descriptors[vector], frame->ip, frame->cs, frame->sp, frame->ss, frame->flags);
 }
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)

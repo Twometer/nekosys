@@ -35,7 +35,7 @@ namespace Memory
 
         uint32_t GetLength();
 
-        void *GetLargestChunk();
+        MemoryMapEntry *GetLargestChunk();
     };
 
 }; // namespace Memory

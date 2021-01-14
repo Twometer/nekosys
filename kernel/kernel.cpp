@@ -68,7 +68,13 @@ extern "C"
 		}
 		TTY::SetColor(0x07);
 
-		void *heapBase = memoryMap.GetLargestChunk();
+		MemoryMapEntry *usableRam = memoryMap.GetLargestChunk();
+		if (usableRam->lengthLow < 64 * 1024 * 1024)
+		{
+			Kernel::Panic("init", "Nekosys requires 64MB of memory, only %dMB were found.", (usableRam->lengthLow / (1024 * 1024)));
+		}
+
+		void *heapBase = (void *)usableRam->baseLow;
 		heap_init(heapBase);
 		printf("Created 1mb kernel heap at %x\n", heapBase);
 

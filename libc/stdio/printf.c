@@ -1,6 +1,5 @@
 #include <limits.h>
 #include <stdbool.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -20,7 +19,13 @@ int printf(const char *restrict format, ...)
 {
 	va_list parameters;
 	va_start(parameters, format);
+	int r = vprintf(format, parameters);
+	va_end(parameters);
+	return r;
+}
 
+int vprintf(const char *restrict format, va_list parameters)
+{
 	int written = 0;
 
 	while (*format != '\0')
@@ -123,7 +128,5 @@ int printf(const char *restrict format, ...)
 			format += len;
 		}
 	}
-
-	va_end(parameters);
 	return written;
 }

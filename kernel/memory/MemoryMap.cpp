@@ -34,7 +34,7 @@ namespace Memory
         return header->length;
     }
 
-    void *MemoryMap::GetLargestChunk()
+    MemoryMapEntry *MemoryMap::GetLargestChunk()
     {
         MemoryMapEntry *largestEntry = GetEntry(0);
         for (uint32_t i = 0; i < GetLength(); i++)
@@ -43,7 +43,7 @@ namespace Memory
             if (entry->type == 0x01 && entry->lengthLow > largestEntry->lengthLow)
                 largestEntry = entry;
         }
-        return (void *)largestEntry->baseLow;
+        return largestEntry;
     }
 
 }; // namespace Memory

@@ -1,0 +1,11 @@
+Currently used physical memory map:
+
+[0x7C00 + 200h]: Boot sector / Stage 1 Bootloader
+[0x7E00 + 400h]: Stage 2 bootloader
+[0x8000 + 200h]: Stores the memory map after Stage 2 bootloader is gone
+[0x8200 + 400h]: Placeholder for some FAT sectors
+[0xA000 + ...h]: Stores the kernel. Maximum length is 0x75FFF (471K, low memory end)
+
+
+Currently used virtual memory map:
+none, lol
