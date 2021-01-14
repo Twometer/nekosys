@@ -11,6 +11,11 @@ This uses the nkm ([NekoMake](https://github.com/nekosys-os/nkm)) build system
 
 The disk must be formatted with FAT-16.
 
+## Features
+- 32-bit kernel
+- pre-emptive multithreading
+- ...
+
 ## Requirements
 - [NekoMake](https://github.com/nekosys-os/nkm)
 - [neko-gcc](https://github.com/nekosys-os/neko-gcc)
