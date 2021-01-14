@@ -62,6 +62,7 @@ namespace Kernel
 
         // set thread as current
         Thread::current = newThread;
+        oldThread->last_cpu_time = oldThread->GetRuntime();
         newThread->run_start_time = TimeManager::GetInstance()->GetUptime();
 
 // context switch:
@@ -96,7 +97,7 @@ namespace Kernel
 
     bool Scheduler::CanRun(Thread *thread)
     {
-        return thread != nullptr && thread->unblock_time <= TimeManager::GetInstance()->GetUptime();
+        return thread != nullptr && thread->unblock_time <= TimeManager::GetInstance()->GetUptime() && !thread->yielded;
     }
 
 }; // namespace Kernel
