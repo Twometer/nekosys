@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 #include <nk/vector.h>
-#include "MountPoint.h"
-#include "File.h"
+#include <fs/mountpoint.h>
+#include <fs/file.h>
 
 namespace FS
 {

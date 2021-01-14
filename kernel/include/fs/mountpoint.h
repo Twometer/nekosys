@@ -1,7 +1,7 @@
 #ifndef _MOUNT_POINT_H
 #define _MOUNT_POINT_H
 
-#include "FileSystem.h"
+#include <fs/filesystem.h>
 
 namespace FS
 {

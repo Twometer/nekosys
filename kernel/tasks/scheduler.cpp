@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <kernel/panic.h>
-#include <kernel/scheduler.h>
 #include <kernel/timemanager.h>
+#include <tasks/scheduler.h>
 
 #define SCHEDULER_DBG 0
 

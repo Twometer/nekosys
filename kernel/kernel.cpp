@@ -3,11 +3,11 @@
 #include <kernel/gdt.h>
 #include <kernel/panic.h>
 #include <kernel/interrupts.h>
-#include <kernel/scheduler.h>
 #include <kernel/timemanager.h>
 #include <device/devicemanager.h>
 #include <device/pit.h>
 #include <memory/MemoryMap.h>
+#include <tasks/scheduler.h>
 #include <stdio.h>
 
 using namespace Kernel;

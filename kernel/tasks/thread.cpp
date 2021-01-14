@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
-#include <kernel/thread.h>
 #include <kernel/timemanager.h>
-#include <kernel/scheduler.h>
+#include <tasks/thread.h>
+#include <tasks/scheduler.h>
 
 namespace Kernel
 {

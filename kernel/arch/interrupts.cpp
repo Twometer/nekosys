@@ -68,7 +68,7 @@ extern "C"
 	void irq1_handler(void)
 	{
 		Interrupts::HandleInterrupt(1);
-				master_eoi();
+		master_eoi();
 	}
 
 	void irq2_handler(void)
@@ -186,7 +186,6 @@ extern "C"
 	EXCEPTION_HANDLER(22)
 	EXCEPTION_HANDLER(23)
 
-	extern int load_idt(void *);
 	extern int irq0();
 	extern int irq1();
 	extern int irq2();
@@ -203,6 +202,8 @@ extern "C"
 	extern int irq13();
 	extern int irq14();
 	extern int irq15();
+
+	extern int load_idt(void *);
 }
 
 void Interrupts::SetupIdt()
