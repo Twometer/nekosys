@@ -12,14 +12,13 @@ namespace Kernel
 
     Scheduler::Scheduler()
     {
-        Initialize();
-        Thread::current = new Thread(nullptr);
     }
 
     void Scheduler::Initialize()
     {
         tss = malloc(1024);
         memset(tss, 0x00, 1024);
+        Thread::current = new Thread(nullptr);
         Interrupts::AddHandler(0x00, this);
     }
 
@@ -33,7 +32,7 @@ namespace Kernel
         threads.Add(thread);
     }
 
-    void Scheduler::HandleInterrupt(unsigned int interrupt, RegisterStates *regs)
+    void Scheduler::HandleInterrupt(unsigned int, RegisterStates *regs)
     {
         auto *currentThread = Thread::current;
         if (currentThread->yielded || currentThread->GetRuntime() > 25)
@@ -63,7 +62,7 @@ namespace Kernel
 
         // set thread as current
         Thread::current = newThread;
-        newThread->run_start_time = TimeManager::get_instance()->get_uptime();
+        newThread->run_start_time = TimeManager::GetInstance()->GetUptime();
 
 // context switch:
 #if SCHEDULER_DBG
@@ -97,7 +96,7 @@ namespace Kernel
 
     bool Scheduler::CanRun(Thread *thread)
     {
-        return thread != nullptr && thread->unblock_time <= TimeManager::get_instance()->get_uptime();
+        return thread != nullptr && thread->unblock_time <= TimeManager::GetInstance()->GetUptime();
     }
 
 }; // namespace Kernel

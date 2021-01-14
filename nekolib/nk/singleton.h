@@ -7,11 +7,11 @@ private:                             \
     classname();                     \
                                      \
 public:                              \
-    static classname *get_instance();
+    static classname *GetInstance();
 
 #define DEFINE_SINGLETON(classname)             \
     classname *classname::_instance = nullptr;  \
-    classname *classname::get_instance() \
+    classname *classname::GetInstance() \
     {                                           \
         if (_instance == nullptr)               \
             _instance = new classname();        \

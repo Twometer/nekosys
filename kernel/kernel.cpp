@@ -24,7 +24,7 @@ void testThreadEP()
 {
 	for (;;)
 	{
-		printf("Hello from thread #2 %d\n", TimeManager::get_instance()->get_uptime());
+		printf("Hello from thread #2 %d\n", TimeManager::GetInstance()->GetUptime());
 		Thread::current->Sleep(1000);
 	}
 }
@@ -47,9 +47,9 @@ extern "C"
 		// Init
 		printf("Booting...\n");
 		GDT gdt(3);
-		gdt.Set(0, {0, 0, 0});										// Selector 0x00: NULL
-		gdt.Set(1, {0, 0xffffffff, 0x9A});							// Selector 0x08: Code
-		gdt.Set(2, {0, 0xffffffff, 0x92});							// Selector 0x10: Data
+		gdt.Set(0, {0, 0, 0});			   // Selector 0x00: NULL
+		gdt.Set(1, {0, 0xffffffff, 0x9A}); // Selector 0x08: Code
+		gdt.Set(2, {0, 0xffffffff, 0x92}); // Selector 0x10: Data
 		//gdt.Set(3, {(uint32_t)scheduler->GetTssPtr(), 1024, 0x89}); // Selector 0x18: TSS
 		gdt.Load();
 
@@ -58,9 +58,9 @@ extern "C"
 		printf("Loading memory map\n");
 		TTY::SetColor(0x08);
 		MemoryMap memoryMap;
-		memoryMap.Parse((void *)0x8000);
+		memoryMap.Parse((uint8_t *)0x8000);
 
-		for (int i = 0; i < memoryMap.GetLength(); i++)
+		for (size_t i = 0; i < memoryMap.GetLength(); i++)
 		{
 			auto *entry = memoryMap.GetEntry(i);
 			if (entry->type == 0x01)
@@ -82,19 +82,21 @@ extern "C"
 		PIT::Configure(0, Device::PIT::AccessMode::LowAndHigh, Device::PIT::OperatingMode::RateGenerator, false);
 		PIT::SetSpeed(0, 1000); // 1 kHz timer frequency (interrupt every 1ms)
 
-		auto time = TimeManager::get_instance()->get_system_time();
+		auto time = TimeManager::GetInstance()->GetSystemTime();
 		printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
 
 		// Tasking
-		Scheduler *scheduler = scheduler->get_instance();
+		Scheduler *scheduler = scheduler->GetInstance();
+		scheduler->Initialize();
+
 		printf("Starting idle thread\n");
 		Thread idleThread(idleThreadEP);
-		scheduler->Start(&idleThread);
+		idleThread.Start();
 
 		// Test thread
 		printf("Starting test thread\n");
 		Thread testThread(testThreadEP);
-		scheduler->Start(&testThread);
+		testThread.Start();
 
 		// Kernel initialized
 		printf("System boot complete\n");

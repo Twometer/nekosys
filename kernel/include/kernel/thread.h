@@ -29,6 +29,8 @@ namespace Kernel
 
         Thread(ThreadMain entryPoint);
 
+        void Start();
+
         void Sleep(int ms);
 
         void Yield();

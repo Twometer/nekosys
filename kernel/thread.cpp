@@ -26,9 +26,15 @@ namespace Kernel
         registers.esp = (uint32_t)this->stack.get_stack_ptr();
     }
 
+
+    void Thread::Start() 
+    {
+        Scheduler::GetInstance()->Start(this);
+    }
+
     void Thread::Sleep(int ms)
     {
-        unblock_time = TimeManager::get_instance()->get_uptime() + ms;
+        unblock_time = TimeManager::GetInstance()->GetUptime() + ms;
         Yield();
     }
 
@@ -41,7 +47,7 @@ namespace Kernel
 
     uint32_t Thread::GetRuntime()
     {
-        return TimeManager::get_instance()->get_uptime() - run_start_time;
+        return TimeManager::GetInstance()->GetUptime() - run_start_time;
     }
 
 }; // namespace Kernel

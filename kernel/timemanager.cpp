@@ -3,8 +3,7 @@
 
 namespace Kernel
 {
-
-    TimeManager *TimeManager::instance = nullptr;
+    DEFINE_SINGLETON(TimeManager)
 
     TimeManager::TimeManager()
     {
@@ -12,21 +11,14 @@ namespace Kernel
         system_time = Device::CMOS::GetDate();
     }
 
-    TimeManager *TimeManager::get_instance()
-    {
-        if (instance == nullptr)
-            instance = new TimeManager();
-        return instance;
-    }
-
-    void TimeManager::advance_time(uint32_t ms)
+    void TimeManager::AdvanceTime(uint32_t ms)
     {
         this->uptime += ms;
     }
 
-    void TimeManager::HandleInterrupt(unsigned int interrupt, RegisterStates *regs)
+    void TimeManager::HandleInterrupt(unsigned int, RegisterStates *)
     {
-        this->advance_time(1);
+        this->AdvanceTime(1);
     }
 
 }; // namespace Kernel

@@ -29,7 +29,7 @@ namespace Memory
         MemoryMapEntry *entries = nullptr;
 
     public:
-        void Parse(void *basePtr);
+        void Parse(uint8_t *basePtr);
 
         MemoryMapEntry *GetEntry(int idx);
 

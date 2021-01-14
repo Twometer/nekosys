@@ -67,7 +67,7 @@ void Keyboard::Initialize()
     Interrupts::AddHandler(1, this);
 }
 
-void Keyboard::HandleInterrupt(unsigned int interrupt, RegisterStates *regs)
+void Keyboard::HandleInterrupt(unsigned int, RegisterStates *)
 {
     unsigned int scancode = IO::In8(0x60);
 

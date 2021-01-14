@@ -5,7 +5,7 @@
 namespace Memory
 {
 
-    void MemoryMap::Parse(void *basePtr)
+    void MemoryMap::Parse(uint8_t *basePtr)
     {
         header = (MemoryMapHeader *)basePtr;
         entries = (MemoryMapEntry *)(basePtr + sizeof(MemoryMapHeader));
@@ -37,7 +37,7 @@ namespace Memory
     void *MemoryMap::GetLargestChunk()
     {
         MemoryMapEntry *largestEntry = GetEntry(0);
-        for (int i = 0; i < GetLength(); i++)
+        for (uint32_t i = 0; i < GetLength(); i++)
         {
             auto *entry = GetEntry(i);
             if (entry->type == 0x01 && entry->lengthLow > largestEntry->lengthLow)

@@ -19,19 +19,17 @@ namespace Kernel
         int ctr = 0;
 
     public:
+                void Initialize();
+
         void *GetTssPtr();
 
         void Start(Thread *thread);
 
         void HandleInterrupt(unsigned int interrupt, RegisterStates *regs) override;
 
-        void Yield();
-
         void PreemptCurrent(RegisterStates *regs);
 
     private:
-        void Initialize();
-
         void ContextSwitch(Thread *oldThread, Thread *newThread, RegisterStates *regs);
 
         Thread *FindNextThread();
