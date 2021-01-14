@@ -1,9 +1,10 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <kernel/panic.h>
 #include <kernel/scheduler.h>
 #include <kernel/timemanager.h>
 
-#define SCHEDULER_DBG 1
+#define SCHEDULER_DBG 0
 
 namespace Kernel
 {
@@ -12,6 +13,7 @@ namespace Kernel
     Scheduler::Scheduler()
     {
         Initialize();
+        Thread::current = new Thread(nullptr);
     }
 
     void Scheduler::Initialize()
@@ -33,22 +35,12 @@ namespace Kernel
 
     void Scheduler::HandleInterrupt(unsigned int interrupt, RegisterStates *regs)
     {
-        PreemptCurrent(regs);
-    }
-
-    extern "C"
-    {
-        extern void scheduler_yield();
-        void scheduler_preempt_current(RegisterStates *regs)
+        auto *currentThread = Thread::current;
+        if (currentThread->yielded || currentThread->GetRuntime() > 25)
         {
-            Scheduler::get_instance()->PreemptCurrent(regs);
+            currentThread->yielded = false;
+            PreemptCurrent(regs);
         }
-    }
-
-    void Scheduler::Yield()
-    {
-        scheduler_yield();
-        // should never reach here
     }
 
     void Scheduler::PreemptCurrent(RegisterStates *regs)
@@ -71,17 +63,21 @@ namespace Kernel
 
         // set thread as current
         Thread::current = newThread;
+        newThread->run_start_time = TimeManager::get_instance()->get_uptime();
 
 // context switch:
 #if SCHEDULER_DBG
-        printf("scheduler: Context switch to %d\n", newThread->id);
+        if (oldThread->id != 0)
+        {
+            auto &newregs = newThread->registers;
+            printf("scheduler: %d -> %d after %dms\n", oldThread->id, newThread->id, oldThread->GetRuntime());
+            printf("  old: %x, %x\n", regs->esp, regs->eax);
+            printf("  new: %x, %x\n", newregs.esp, newregs.eax);
+        }
 #endif
 
         // save current regs to old thread
-        if (oldThread != nullptr)
-        {
-            regs->CopyTo(&oldThread->registers);
-        }
+        regs->CopyTo(&oldThread->registers);
 
         // load regs for next thread
         newThread->registers.CopyTo(regs);

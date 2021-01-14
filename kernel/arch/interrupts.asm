@@ -18,8 +18,8 @@ irq%1:
   
   ; get the flags from the stack
   ; they are just for analyzing and stuff, and don't get written back
-  mov eax, [esp + 8]
-  mov [s_flags], eax
+  ;mov dword eax, [esp + 8]
+  ;mov dword [s_flags], eax
 
   ; call interrupt handler
   call irq%1_handler

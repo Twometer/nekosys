@@ -9,13 +9,6 @@ namespace Kernel
 {
     typedef void (*ThreadMain)(void);
 
-    enum class ThreadState
-    {
-        Ready,
-        Running,
-        Blocked
-    };
-
     class Thread
     {
     private:
@@ -28,14 +21,19 @@ namespace Kernel
 
         int id;
         uint32_t unblock_time = 0;
-        ThreadState thread_state = ThreadState::Ready;
-        RegisterStates registers;
+        uint32_t run_start_time = 0;
+        RegisterStates registers{};
+        bool yielded;
 
         ThreadMain entryPoint;
 
         Thread(ThreadMain entryPoint);
 
         void Sleep(int ms);
+
+        void Yield();
+
+        uint32_t GetRuntime();
     };
 
 }; // namespace Kernel

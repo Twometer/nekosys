@@ -72,7 +72,10 @@ extern "C"
 		heap_init(heapBase);
 		printf("Created 1mb kernel heap at %x\n", heapBase);
 
+		printf("Setting up interrupts\n");
 		Interrupts::SetupIdt();
+
+		printf("Setting up devices\n");
 		DeviceManager::Initialize();
 
 		printf("Reconfiguring timer\n");

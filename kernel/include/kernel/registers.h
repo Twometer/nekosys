@@ -12,7 +12,9 @@ struct RegisterStates
     uint32_t esp = 0x00;
     uint32_t esi = 0x00;
     uint32_t edi = 0x00;
+    uint32_t ebp = 0x00;
     uint32_t flags = 0x00;
+
 
     void CopyTo(RegisterStates *other)
     {
@@ -23,6 +25,8 @@ struct RegisterStates
         other->esp = esp;
         other->esi = esi;
         other->edi = edi;
+        other->ebp = ebp;
+        other->flags = flags;
     }
 
 } __attribute__((packed));

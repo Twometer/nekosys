@@ -7,6 +7,7 @@ s_edx: dd 0
 s_esp: dd 0
 s_esi: dd 0
 s_edi: dd 0
+s_ebp: dd 0
 s_flags: dd 0
 
 ; Macro for saving register to struct
@@ -27,6 +28,7 @@ mov dword %1, [s_%1]
   save_reg esp
   save_reg esi
   save_reg edi
+  save_reg ebp
 %endmacro
 
 %macro load_all_regs 0
@@ -37,4 +39,5 @@ mov dword %1, [s_%1]
   load_reg esp
   load_reg esi
   load_reg edi
+  load_reg ebp
 %endmacro
