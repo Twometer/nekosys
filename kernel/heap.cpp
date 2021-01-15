@@ -127,6 +127,9 @@ extern "C"
 
     void kfree(void *ptr)
     {
+        if (ptr == nullptr)
+            return;
+
         uint8_t *byte_ptr = (uint8_t *)ptr;
         heap_entry *description = (heap_entry *)(byte_ptr - sizeof(heap_entry));
 

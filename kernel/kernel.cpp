@@ -6,7 +6,8 @@
 #include <kernel/timemanager.h>
 #include <device/devicemanager.h>
 #include <device/pit.h>
-#include <memory/MemoryMap.h>
+#include <memory/memorymap.h>
+#include <memory/pagemanager.h>
 #include <tasks/scheduler.h>
 #include <stdio.h>
 
@@ -74,9 +75,23 @@ extern "C"
 			Kernel::Panic("init", "Nekosys requires 64MB of memory, only %dMB were found.", (usableRam->lengthLow / (1024 * 1024)));
 		}
 
-		void *heapBase = (void *)usableRam->baseLow;
-		heap_init(heapBase);
-		printf("Created 1mb kernel heap at %x\n", heapBase);
+		printf("Setting up paging\n");
+		void *memBase = (void *)usableRam->baseLow;
+
+		PageManager pagemanager;
+		pagemanager.Initialize(memBase, usableRam->lengthLow);
+		pagemanager.EnablePaging();
+
+		for (int i = 0; i < 10; i++)
+		{
+			auto pageframe = pagemanager.AllocPageframe();
+			printf("new pageframe: %x\n", pageframe);
+		}
+
+		// todo integrate kernel heap with paging
+		auto base = pagemanager.AllocPageframe();
+		heap_init(base);
+		printf("Created 1mb kernel heap at %x\n", base);
 
 		printf("Setting up interrupts\n");
 		Interrupts::SetupIdt();

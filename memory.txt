@@ -1,11 +1,14 @@
-Currently used physical memory map:
+Memory map of the first megabyte:
 
 [0x7C00 + 200h]: Boot sector / Stage 1 Bootloader
 [0x7E00 + 400h]: Stage 2 bootloader
-[0x8000 + 200h]: Stores the memory map after Stage 2 bootloader is gone
+[0x8000 + 200h]: Stores the kernel handover data after Stage 2 bootloader is gone
 [0x8200 + 400h]: Placeholder for some FAT sectors
-[0xA000 + ...h]: Stores the kernel. Maximum length is 0x75FFF (471K, low memory end)
+[0xA000 + ...h]: Stores the kernel. Maximum length is 0x75FFF (471K, up to low memory end)
 
 
-Currently used virtual memory map:
-none, lol
+Virtual memory map:
+
+[0x00000000 - 0x00100000]: Identity-mapped: contains kernel and other first-mb stuff.  - not readable from usermode
+[0x00100000 - 0xC0000000]: Used for userspace applications
+[0xC0000000 - 0xFFFFFFFF]: Kernel space data (heap) - not readable from usermode

@@ -6,6 +6,9 @@ boot:
     xor ax, ax ; Zero registers
     mov ds, ax ; data segment at zero
     mov es, ax ; extra segment at zero
+    
+    jmp 0:startup ; jump to where we really think we are (0:0x7c00)
+    startup: equ $
 
     mov ax, 0x07E0      ; let's make a stack (8k in size)
     mov ss, ax
