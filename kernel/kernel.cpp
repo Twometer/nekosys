@@ -8,6 +8,7 @@
 #include <device/pit.h>
 #include <memory/memorymap.h>
 #include <memory/pagemanager.h>
+#include <memory/pagedirectory.h>
 #include <tasks/scheduler.h>
 #include <stdio.h>
 
@@ -25,7 +26,7 @@ void testThreadEP()
 {
 	for (;;)
 	{
-		printf("Hello from thread #2 %d\n", TimeManager::GetInstance()->GetUptime());
+		//printf("Hello from thread #2 %d\n", TimeManager::GetInstance()->GetUptime());
 		Thread::current->Sleep(1000);
 	}
 }
@@ -75,20 +76,22 @@ extern "C"
 			Kernel::Panic("init", "Nekosys requires 64MB of memory, only %dMB were found.", (usableRam->lengthLow / (1024 * 1024)));
 		}
 
-		printf("Setting up paging\n");
 		void *memBase = (void *)usableRam->baseLow;
 
 		PageManager pagemanager;
 		pagemanager.Initialize(memBase, usableRam->lengthLow);
+
+		PageDirectory pageDir;
+
+		// Identity map the first 4 MB
+		for (uint32_t i = 0; i < 4 * MBYTE; i += PAGE_SIZE)
+			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE);
+
+		pageDir.Load();
+
 		pagemanager.EnablePaging();
 
-		for (int i = 0; i < 10; i++)
-		{
-			auto pageframe = pagemanager.AllocPageframe();
-			printf("new pageframe: %x\n", pageframe);
-		}
-
-		// todo integrate kernel heap with paging
+		// todo better integrate kernel heap with paging
 		auto base = pagemanager.AllocPageframe();
 		heap_init(base);
 		printf("Created 1mb kernel heap at %x\n", base);
