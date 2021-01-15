@@ -26,6 +26,8 @@ namespace Memory
         uint32_t *NewPage();
 
         uint32_t *GetPageTable(size_t idx);
+
+        static inline void FlushPage(uint32_t addr);
     };
 
 }; // namespace Memory

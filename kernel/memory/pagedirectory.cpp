@@ -5,6 +5,7 @@
 namespace Memory
 {
 
+#define PAGETABLES_VIRTUAL_LOC 0xFFC00000
 #define PAGEDIR_VIRTUAL_LOC 0xFFFFF000
 
     PageDirectory::PageDirectory()
@@ -43,11 +44,11 @@ namespace Memory
         return true;
     }
 
-    // todo page tables also need to be mapped
-
     void PageDirectory::MapSelf()
     {
-        //MapPage((paddress_t)phys_directory_ptr, (vaddress_t)PAGEDIR_VIRTUAL_LOC, PAGE_BIT_READ_WRITE);
+        // The last entry should map to itself, so that all page tables as well as the
+        // page directory are automatically mapped.
+
         phys_directory_ptr[1023] = (uint32_t)phys_directory_ptr | PAGE_BIT_PRESENT;
         virt_directory_ptr = (uint32_t *)PAGEDIR_VIRTUAL_LOC;
     }
@@ -55,21 +56,21 @@ namespace Memory
     void PageDirectory::Load()
     {
         PageManager::GetInstance()->LoadPageDirectory(phys_directory_ptr);
-        paging_enabled = true;
     }
 
     uint32_t *PageDirectory::GetPageTable(size_t idx)
     {
-        if (paging_enabled)
+        if (PageManager::GetInstance()->IsPagingEnabled())
         {
             if (virt_directory_ptr[idx] == 0x00)
             {
                 auto table = (uint32_t)NewPage();
                 virt_directory_ptr[idx] = table | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE;
-                Load();
+                FlushPage(table); // Flush TLB for that page, so that we for sure have that 
+                // Load();
             }
 
-            return ((uint32_t *)0xFFC00000) + (0x400 * idx);
+            return ((uint32_t *)PAGETABLES_VIRTUAL_LOC) + (0x400 * idx);
         }
         else
         {
@@ -81,6 +82,12 @@ namespace Memory
             }
             return (uint32_t *)table;
         }
+    }
+
+    void PageDirectory::FlushPage(uint32_t addr)
+    {
+        asm volatile("invlpg (%0)" ::"r"(addr)
+                     : "memory");
     }
 
 }; // namespace Memory

@@ -40,6 +40,7 @@ namespace Memory
 
     void PageManager::EnablePaging()
     {
+        paging_enabled = true;
         enable_paging();
     }
 

@@ -20,6 +20,8 @@ namespace Memory
 
         uint8_t *pageframes_base;
 
+        bool paging_enabled = false;
+
     public:
         void Initialize(void *memory_base, uint32_t memory_size);
 
@@ -34,6 +36,8 @@ namespace Memory
         uint8_t *GetFrameMapLocation() { return frame_map; }
 
         void RelocateFrameMap(uint8_t *frame_map) { this->frame_map = frame_map; }
+
+        bool IsPagingEnabled() { return paging_enabled; }
 
         static PageManager *GetInstance() { return instance; }
     };

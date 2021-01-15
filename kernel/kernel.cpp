@@ -104,10 +104,10 @@ extern "C"
 		// Map the page directory itself
 		pageDir.MapSelf();
 
-		// Now, we have allocated all page frames we need
+		// Now we have allocated all page frames we need
 		// before entering paging mode. This is important,
 		// because after relocating the frame map to the virtual
-		// location, it will no longer work in non-paged mode.
+		// location, the allocator will no longer work in non-paged mode.
 		pagemanager.RelocateFrameMap((uint8_t *)PAGE_ALLOC_REMAP);
 		printf("Relocated page frame allocator to %x\n", PAGE_ALLOC_REMAP);
 
@@ -116,7 +116,7 @@ extern "C"
 		pagemanager.EnablePaging();
 		printf("Entered virtual address space.\n");
 
-		// initialize the heap
+		// Initialize the heap
 		heap_init((void *)KERNEL_HEAP_ADDR, KERNEL_HEAP_SIZE);
 		printf("Created %x byte kernel heap at %x\n", KERNEL_HEAP_SIZE, KERNEL_HEAP_ADDR);
 
@@ -146,8 +146,8 @@ extern "C"
 		
 		auto *pageframe = pagemanager.AllocPageframe();
 		pageDir.MapPage(pageframe, test_addr, PAGE_BIT_READ_WRITE);
-		
 		pageDir.Load();
+
 		*test_addr = 0xAF;
 		printf("reading from %x: %x\n", test_addr, *test_addr);
 
