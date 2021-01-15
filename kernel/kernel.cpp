@@ -16,6 +16,10 @@ using namespace Kernel;
 using namespace Device;
 using namespace Memory;
 
+// One Megabyte Kernel Heap
+#define KERNEL_HEAP_SIZE 0x00100000
+#define KERNEL_HEAP_ADDR 0xC0000000
+
 void idleThreadEP()
 {
 	printf("Hello from idle thread!\n");
@@ -70,27 +74,31 @@ extern "C"
 
 		void *memBase = (void *)usableRam->baseLow;
 
+		// initialize page manager and allocator
 		PageManager pagemanager;
 		pagemanager.Initialize(memBase, usableRam->lengthLow);
 
+		// setup the page dir for the kernel
 		PageDirectory pageDir;
 
 		// Identity map the first megabyte
 		for (uint32_t i = 0; i < MBYTE; i += PAGE_SIZE)
 			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE);
 
-		// Map the kernel heap to 0xC0000000
-		auto *kernel_heap_base = pagemanager.AllocPageframe();
-		pageDir.MapPage(kernel_heap_base, (vaddress_t)0xC0000000, PAGE_BIT_READ_WRITE);
+		// Map kernel heap to 0xC0000000
+		for (int i = 0; i < KERNEL_HEAP_SIZE; i += PAGE_SIZE)
+		{
+			auto *heap_frame = pagemanager.AllocPageframe();
+			pageDir.MapPage(heap_frame, (vaddress_t)(KERNEL_HEAP_ADDR + i), PAGE_BIT_READ_WRITE);
+		}
 
+		// enable paging
 		pageDir.Load();
-
 		pagemanager.EnablePaging();
 
-		// todo better integrate kernel heap with paging
-		auto base = (void *)0xC0000000;
-		heap_init(base);
-		printf("Created kernel heap at %x\n", base);
+		// initialize the heap
+		heap_init((void *)KERNEL_HEAP_ADDR, KERNEL_HEAP_SIZE);
+		printf("Created %x byte kernel heap at %x\n", KERNEL_HEAP_SIZE, KERNEL_HEAP_ADDR);
 
 		// Load GDT
 		GDT gdt(3);

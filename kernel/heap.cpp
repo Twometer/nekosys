@@ -16,14 +16,16 @@ extern "C"
  * chunks, which we mark as used or unused in a bitmap.
  */
 
-#define HEAP_SIZE 1000000 // 1MB heap size
 #define HEAP_SEG_SIZE 128 // 128 byte allocation units
 
-#define ALLOCATION_MAP_ENTRIES HEAP_SIZE / HEAP_SEG_SIZE
-#define ALLOCATION_MAP_SIZE HEAP_SIZE / HEAP_SEG_SIZE / 8
+    //#define ALLOCATION_MAP_ENTRIES HEAP_SIZE / HEAP_SEG_SIZE
+    //#define ALLOCATION_MAP_SIZE HEAP_SIZE / HEAP_SEG_SIZE / 8
 
     uint8_t *allocation_map;
     uint8_t *heap_begin;
+
+    size_t allocation_map_entries = 0;
+    size_t allocation_map_size = 0;
 
     typedef struct
     {
@@ -31,11 +33,14 @@ extern "C"
         size_t size;
     } heap_entry;
 
-    void heap_init(void *heap_base)
+    void heap_init(void *heap_base, size_t heap_size)
     {
         allocation_map = (uint8_t *)(heap_base);
-        heap_begin = allocation_map + ALLOCATION_MAP_SIZE;
-        memset(allocation_map, 0x00, ALLOCATION_MAP_SIZE); // All zero: Nothing allocated
+        allocation_map_entries = heap_size / HEAP_SEG_SIZE;
+        allocation_map_size = allocation_map_entries / 8;
+
+        heap_begin = allocation_map + allocation_map_size;
+        memset(allocation_map, 0x00, allocation_map_size); // All zero: Nothing allocated
     }
 
     bool is_free(size_t alloc_unit)
@@ -48,7 +53,7 @@ extern "C"
     size_t get_free_heap()
     {
         size_t freeHeap = 0;
-        for (size_t i = 0; i < ALLOCATION_MAP_ENTRIES; i++)
+        for (size_t i = 0; i < allocation_map_entries; i++)
             if (is_free(i))
                 freeHeap += HEAP_SEG_SIZE;
         return freeHeap;
@@ -66,23 +71,24 @@ extern "C"
 
     int find_free_allocation_units(size_t num_alloc_units)
     {
-        for (size_t i = 0; i < ALLOCATION_MAP_ENTRIES; i++)
+        for (size_t i = 0; i < allocation_map_entries; i++)
         {
             if (is_free(i))
             {
 
-                bool found = true;
+                bool found = false;
                 size_t num = 0;
-                for (size_t j = i; j < ALLOCATION_MAP_ENTRIES; j++)
+                for (size_t j = i; j < allocation_map_entries; j++)
                 {
                     if (!is_free(j))
-                    {
-                        found = false;
                         break;
-                    }
+
                     num++;
                     if (num == num_alloc_units)
+                    {
+                        found = true;
                         break;
+                    }
                 }
 
                 if (found)

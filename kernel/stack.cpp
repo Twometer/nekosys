@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 #include <kernel/stack.h>
 
@@ -19,8 +20,8 @@ namespace Kernel
     void Stack::push(uint32_t data)
     {
         size_t data_size = sizeof(data);
-        memcpy(stack_ptr - data_size, &data, data_size);
         stack_ptr -= data_size;
+        memcpy(stack_ptr, &data, data_size);
     }
 
     void *Stack::get_stack_ptr()

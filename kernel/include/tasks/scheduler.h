@@ -19,7 +19,7 @@ namespace Kernel
         int ctr = 0;
 
     public:
-                void Initialize();
+        void Initialize();
 
         void *GetTssPtr();
 
