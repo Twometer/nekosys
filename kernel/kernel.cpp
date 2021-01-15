@@ -47,15 +47,7 @@ extern "C"
 		TTY::SetColor(0x07);
 
 		// Init
-		printf("Booting...\n");
-		GDT gdt(3);
-		gdt.Set(0, {0, 0, 0});			   // Selector 0x00: NULL
-		gdt.Set(1, {0, 0xffffffff, 0x9A}); // Selector 0x08: Code
-		gdt.Set(2, {0, 0xffffffff, 0x92}); // Selector 0x10: Data
-		//gdt.Set(3, {(uint32_t)scheduler->GetTssPtr(), 1024, 0x89}); // Selector 0x18: TSS
-		gdt.Load();
-
-		//setTss(0x18);
+		printf("Welcome :3\n");
 
 		printf("Loading memory map\n");
 		TTY::SetColor(0x08);
@@ -83,18 +75,30 @@ extern "C"
 
 		PageDirectory pageDir;
 
-		// Identity map the first 4 MB
-		for (uint32_t i = 0; i < 4 * MBYTE; i += PAGE_SIZE)
+		// Identity map the first megabyte
+		for (uint32_t i = 0; i < MBYTE; i += PAGE_SIZE)
 			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE);
+
+		// Map the kernel heap to 0xC0000000
+		auto *kernel_heap_base = pagemanager.AllocPageframe();
+		pageDir.MapPage(kernel_heap_base, (vaddress_t)0xC0000000, PAGE_BIT_READ_WRITE);
 
 		pageDir.Load();
 
 		pagemanager.EnablePaging();
 
 		// todo better integrate kernel heap with paging
-		auto base = pagemanager.AllocPageframe();
+		auto base = (void *)0xC0000000;
 		heap_init(base);
-		printf("Created 1mb kernel heap at %x\n", base);
+		printf("Created kernel heap at %x\n", base);
+
+		// Load GDT
+		GDT gdt(3);
+		gdt.Set(0, {0, 0, 0});			   // Selector 0x00: NULL
+		gdt.Set(1, {0, 0xffffffff, 0x9A}); // Selector 0x08: Code
+		gdt.Set(2, {0, 0xffffffff, 0x92}); // Selector 0x10: Data
+		//gdt.Set(3, {(uint32_t)scheduler->GetTssPtr(), 1024, 0x89}); // Selector 0x18: TSS
+		gdt.Load();
 
 		printf("Setting up interrupts\n");
 		Interrupts::SetupIdt();

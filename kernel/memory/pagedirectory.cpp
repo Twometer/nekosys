@@ -2,6 +2,8 @@
 #include <memory/pagemanager.h>
 #include <memory/pagedirectory.h>
 
+#define PAGE_DBG 0
+
 namespace Memory
 {
 
@@ -24,12 +26,16 @@ namespace Memory
         if (!IS_PAGE_ALIGNED(physicalAddr) || !IS_PAGE_ALIGNED(virtualAddr))
             return false;
 
-        uint32_t absolutePage = (uint32_t)physicalAddr / PAGE_SIZE;
+        uint32_t absolutePage = (uint32_t)virtualAddr / PAGE_SIZE;
         size_t directoryIdx = absolutePage / 1024;
         size_t pageIdx = absolutePage % 1024;
 
         permissions |= PAGE_BIT_PRESENT;
-        uint32_t tableEntry = (uint32_t)virtualAddr | (permissions & 0xFFF);
+        uint32_t tableEntry = (uint32_t)physicalAddr | (permissions & 0xFFF);
+
+#if PAGE_DBG
+        printf("%x: %x[%x]=%x\n", absolutePage, directoryIdx, pageIdx, tableEntry);
+#endif
 
         GetPageTable(directoryIdx)[pageIdx] = tableEntry;
         return true;
