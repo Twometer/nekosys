@@ -9,6 +9,8 @@ Memory map of the first megabyte:
 
 Virtual memory map:
 
-[0x00000000 - 0x00100000]: Identity-mapped: contains kernel and other first-mb stuff.  - not readable from usermode
-[0x00100000 - 0xC0000000]: Used for userspace applications
-[0xC0000000 - 0xFFFFFFFF]: Kernel space data (heap) - not readable from usermode
+[0x00000000 - 0x00100000]: Identity-mapped: contains kernel and other first-mb stuff.
+[0x00100000 - 0xC0000000]: Used for userspace applications - allowed for usermode
+[0xC0000000 - 0xC1000000]: Page frame allocator stuff
+[0xC1000000 - 0xFFC00000]: Kernel heap
+[0xFFC00000 - 0xFFFFFFFF]: Page tables

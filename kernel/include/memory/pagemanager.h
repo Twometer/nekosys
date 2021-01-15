@@ -31,7 +31,9 @@ namespace Memory
 
         void FreePageframe(pageframe_t frame);
 
-        // void MapPage(pageframe_t page, vaddress_t addr);
+        uint8_t *GetFrameMapLocation() { return frame_map; }
+
+        void RelocateFrameMap(uint8_t *frame_map) { this->frame_map = frame_map; }
 
         static PageManager *GetInstance() { return instance; }
     };

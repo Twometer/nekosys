@@ -9,10 +9,14 @@ namespace Memory
     class PageDirectory
     {
     private:
-        uint32_t *directory_ptr;
+        uint32_t *phys_directory_ptr;
+        uint32_t *virt_directory_ptr;
+        bool paging_enabled;
 
     public:
         PageDirectory();
+
+        void MapSelf();
 
         void Load();
 

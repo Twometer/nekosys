@@ -18,7 +18,8 @@ using namespace Memory;
 
 // One Megabyte Kernel Heap
 #define KERNEL_HEAP_SIZE 0x00100000
-#define KERNEL_HEAP_ADDR 0xC0000000
+#define PAGE_ALLOC_REMAP 0xC0000000
+#define KERNEL_HEAP_ADDR 0xC1000000
 
 void idleThreadEP()
 {
@@ -85,16 +86,35 @@ extern "C"
 		for (uint32_t i = 0; i < MBYTE; i += PAGE_SIZE)
 			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE);
 
-		// Map kernel heap to 0xC0000000
+		// Map the kernel heap
 		for (int i = 0; i < KERNEL_HEAP_SIZE; i += PAGE_SIZE)
 		{
 			auto *heap_frame = pagemanager.AllocPageframe();
 			pageDir.MapPage(heap_frame, (vaddress_t)(KERNEL_HEAP_ADDR + i), PAGE_BIT_READ_WRITE);
 		}
 
-		// enable paging
+		// Remap the page frame allocator's frame map
+		for (uint32_t i = 0; i < MBYTE; i += PAGE_SIZE)
+		{
+			paddress_t physical = pagemanager.GetFrameMapLocation() + i;
+			vaddress_t virtual_ = (vaddress_t)PAGE_ALLOC_REMAP + i;
+			pageDir.MapPage(physical, virtual_, PAGE_BIT_READ_WRITE);
+		}
+
+		// Map the page directory itself
+		pageDir.MapSelf();
+
+		// Now, we have allocated all page frames we need
+		// before entering paging mode. This is important,
+		// because after relocating the frame map to the virtual
+		// location, it will no longer work in non-paged mode.
+		pagemanager.RelocateFrameMap((uint8_t *)PAGE_ALLOC_REMAP);
+		printf("Relocated page frame allocator to %x\n", PAGE_ALLOC_REMAP);
+
+		// Enable Paging
 		pageDir.Load();
 		pagemanager.EnablePaging();
+		printf("Entered virtual address space.\n");
 
 		// initialize the heap
 		heap_init((void *)KERNEL_HEAP_ADDR, KERNEL_HEAP_SIZE);
@@ -120,6 +140,16 @@ extern "C"
 
 		auto time = TimeManager::GetInstance()->GetSystemTime();
 		printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
+
+		// map a new page for testing
+		vaddress_t test_addr = (vaddress_t)0xA0000000;
+		
+		auto *pageframe = pagemanager.AllocPageframe();
+		pageDir.MapPage(pageframe, test_addr, PAGE_BIT_READ_WRITE);
+		
+		pageDir.Load();
+		*test_addr = 0xAF;
+		printf("reading from %x: %x\n", test_addr, *test_addr);
 
 		// Tasking
 		Scheduler *scheduler = scheduler->GetInstance();
