@@ -15,6 +15,7 @@ extern irq%1_handler
 irq%1:
   ; save reg states
   save_all_regs
+  save_segments
   
   ; get the flags from the stack
   ; they are just for analyzing and stuff, and don't get written back
@@ -25,6 +26,7 @@ irq%1:
   call irq%1_handler
 
   ; load reg states back
+  load_segments
   load_all_regs
   iret
 %endmacro
@@ -35,6 +37,9 @@ irq%1:
 def_ireq_handler vector
 %assign vector vector + 1
 %endrep
+
+; Define the syscall handler
+def_ireq_handler 128
 
 ; IDT loader code
 global load_idt

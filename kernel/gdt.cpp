@@ -1,61 +1,104 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include <kernel/gdt.h>
 #include <kernel/panic.h>
+#include <memory/memdefs.h>
 
 using namespace Kernel;
+
+GDT *GDT::current = nullptr;
 
 extern "C"
 {
     extern void setGdt(void *, uint32_t);
 }
 
-GDT::GDT(int entries)
+GDT::GDT(size_t numEntries)
 {
-    this->size = entries * GDT_ENTRY_SIZE;
-    this->data = new uint8_t[size];
+    this->numEntries = numEntries;
+    this->entries = new GDTEntry[numEntries];
+    memset(this->entries, 0x00, numEntries * sizeof(GDTEntry));
 }
 
-void GDT::Set(int selector, const GDTEntry &entry)
+void GDT::Set(uint32_t selector, uint32_t base, uint32_t limit, GDTEntryType type, Ring ring)
 {
-    uint8_t *ptr = data + (selector * GDT_ENTRY_SIZE);
-    EncodeEntry(ptr, entry);
+    if (limit > 0xFFFF && (limit & 0xFFF) != 0xFFF)
+    {
+        Kernel::Panic("gdt_loader", "Limit %x cannot be encoded.", limit);
+    }
+
+    if ((selector % 0x08) != 0)
+    {
+        Kernel::Panic("gdt_loader", "Bad selector %x\n", selector);
+    }
+
+    // Convert to page addresses
+    int granularity = 0;
+    if (limit > 0xFFFF)
+    {
+        limit >>= 12;
+        granularity = 1;
+    }
+
+    GDTEntry &entry = entries[selector / 0x08];
+    entry.limit_low = limit & 0xFFFF; // low 16 bits
+    entry.base_low = base & 0xFFFFFF; // low 24 bits
+    entry.accessed = 0;
+    entry.read_write = 1;
+    entry.conforming = 0;
+    entry.code = (uint32_t)type;
+    entry.is_not_tss = 1;
+    entry.dpl = (uint32_t)ring;
+    entry.present = 1;
+    entry.limit_high = (limit >> 16) & 0xF; // high 4 bits
+    entry.available = 1;
+    entry.always_0 = 0;
+    entry.big = 1;
+    entry.granularity = granularity;
+    entry.base_high = (base >> 24) & 0xFF; // high 8 bits
+
+    if (type == GDTEntryType::Null)
+    {
+        entry.accessed = 0;
+        entry.read_write = 0;
+        entry.conforming = 0;
+        entry.code = 0;
+        entry.is_not_tss = 0;
+        entry.dpl = 0;
+        entry.present = 0;
+    }
+}
+
+void GDT::SetTssEntry(uint32_t selector)
+{
+    uint32_t base = (uint32_t)&tssEntry;
+    uint32_t limit = sizeof(tssEntry);
+
+    GDTEntry &entry = entries[selector / 0x08];
+    entry.limit_low = limit & 0xFFFF;
+    entry.base_low = base & 0xFFFFFF;           //isolate bottom 24 bits
+    entry.accessed = 1;                         //This indicates it's a TSS and not a LDT. This is a changed meaning
+    entry.read_write = 0;                       //This indicates if the TSS is busy or not. 0 for not busy
+    entry.conforming = 0;                       //always 0 for TSS
+    entry.code = 1;                             //For TSS this is 1 for 32bit usage, or 0 for 16bit.
+    entry.is_not_tss = 0;                       //indicate it is a TSS
+    entry.dpl = 3;                              //same meaning
+    entry.present = 1;                          //same meaning
+    entry.limit_high = (limit & 0xF0000) >> 16; //isolate top nibble
+    entry.available = 0;
+    entry.always_0 = 0;                          //same thing
+    entry.big = 0;                               //should leave zero according to manuals. No effect
+    entry.granularity = 0;                       //so that our computed GDT limit is in bytes, not pages
+    entry.base_high = (base & 0xFF000000) >> 24; //isolate top byte.
+
+    memset(&tssEntry, 0, sizeof(tssEntry));
+    tssEntry.ss0 = SEG_KRNL_DATA;
+    tssEntry.esp0 = 0x00; // todo wtf should i put here
 }
 
 void GDT::Load()
 {
-    setGdt(data, size * GDT_ENTRY_SIZE);
-}
-
-void GDT::EncodeEntry(uint8_t *target, GDTEntry source)
-{
-    // Check the limit to make sure that it can be encoded
-    if ((source.limit > 65536) && ((source.limit & 0xFFF) != 0xFFF))
-    {
-        Kernel::Panic("gdt_loader", "Invalid GDT Entry!");
-    }
-    if (source.limit > 65536)
-    {
-        // Adjust granularity if required
-        source.limit = source.limit >> 12;
-        target[6] = 0xC0;
-    }
-    else
-    {
-        target[6] = 0x40;
-    }
-
-    // Encode the limit
-    target[0] = source.limit & 0xFF;
-    target[1] = (source.limit >> 8) & 0xFF;
-    target[6] |= (source.limit >> 16) & 0xF;
-
-    // Encode the base
-    target[2] = source.base & 0xFF;
-    target[3] = (source.base >> 8) & 0xFF;
-    target[4] = (source.base >> 16) & 0xFF;
-    target[7] = (source.base >> 24) & 0xFF;
-
-    // And... Type
-    target[5] = source.type;
+    setGdt(entries, numEntries * sizeof(GDTEntry));
+    current = this;
 }

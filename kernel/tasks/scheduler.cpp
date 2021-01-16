@@ -4,7 +4,7 @@
 #include <kernel/timemanager.h>
 #include <tasks/scheduler.h>
 
-#define SCHEDULER_DBG 0
+#define SCHEDULER_DBG 1
 
 namespace Kernel
 {
@@ -102,7 +102,12 @@ namespace Kernel
 
         // load pages for new thread
         if (!newThread->pagedir->IsCurrent())
+        {
+#if SCHEDULER_DBG
+            printf("scheduler: loaded new page table\n");
+#endif
             newThread->pagedir->Load();
+        }
     }
 
     Thread *Scheduler::FindNextThread()

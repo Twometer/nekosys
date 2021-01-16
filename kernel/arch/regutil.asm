@@ -9,15 +9,29 @@ s_esi: dd 0
 s_edi: dd 0
 s_ebp: dd 0
 s_flags: dd 0
+s_ds: dd 0
 
 ; Macro for saving register to struct
 %macro save_reg 1
-mov dword [s_%1], %1
+  mov dword [s_%1], %1
 %endmacro
 
 ; Macro for loading register from struct
 %macro load_reg 1
-mov dword %1, [s_%1]
+  mov dword %1, [s_%1]
+%endmacro
+
+%macro save_segments 0
+  mov ax, ds
+  mov [s_ds], ax
+%endmacro
+
+%macro load_segments 0
+  mov [s_ds], ax
+  mov ds,ax
+  mov es,ax 
+  mov fs,ax 
+  mov gs,ax
 %endmacro
 
 %macro save_all_regs 0

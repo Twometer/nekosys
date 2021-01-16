@@ -45,13 +45,17 @@ void testExitingThread()
 void ring3Thread()
 {
 	// https://wiki.osdev.org/Getting_to_Ring_3
-
-	printf("Hello from ring 3 :3\n"); // if everything works correctly, this should crash with a GPF as it directly accesses the screen buffer
+	//asm("int $0x80");
+	for (;;)
+	{
+		;
+	}
+	//printf("Hello from ring 3 :3\n"); // if everything works correctly, this should crash with a GPF as it directly accesses the screen buffer
 }
 
 extern "C"
 {
-	extern void setTss(uint16_t selector);
+	extern void setTss(uint32_t selector);
 
 	/* nekosys Kernel entry point */
 	void nkmain()
@@ -97,7 +101,7 @@ extern "C"
 
 		// Identity map the first megabyte
 		for (uint32_t i = 0; i < MBYTE; i += PAGE_SIZE)
-			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE);
+			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
 
 		// Map the kernel heap
 		for (int i = 0; i < KERNEL_HEAP_SIZE; i += PAGE_SIZE)
@@ -135,12 +139,15 @@ extern "C"
 		printf("Created %x byte kernel heap at %x\n", KERNEL_HEAP_SIZE, KERNEL_HEAP_ADDR);
 
 		// Load GDT
-		GDT gdt(3);
-		gdt.Set(0, {0, 0, 0});			   // Selector 0x00: NULL
-		gdt.Set(1, {0, 0xffffffff, 0x9A}); // Selector 0x08: Code
-		gdt.Set(2, {0, 0xffffffff, 0x92}); // Selector 0x10: Data
-		//gdt.Set(3, {(uint32_t)scheduler->GetTssPtr(), 1024, 0x89}); // Selector 0x18: TSS
+		GDT gdt(6);
+		gdt.Set(SEG_NULL, 0x00, 0x00, GDTEntryType::Null, Ring::Ring0);
+		gdt.Set(SEG_KRNL_CODE, 0x00, 0xffffffff, GDTEntryType::Code, Ring::Ring0);
+		gdt.Set(SEG_KRNL_DATA, 0x00, 0xffffffff, GDTEntryType::Data, Ring::Ring0);
+		gdt.Set(SEG_USER_CODE, 0x00, 0xffffffff, GDTEntryType::Code, Ring::Ring3);
+		gdt.Set(SEG_USER_DATA, 0x00, 0xffffffff, GDTEntryType::Data, Ring::Ring3);
+		gdt.SetTssEntry(SEG_TSS);
 		gdt.Load();
+		setTss(SEG_TSS | RING3_MASK);
 
 		printf("Setting up interrupts\n");
 		Interrupts::SetupIdt();
@@ -163,7 +170,7 @@ extern "C"
 
 		*test_addr = 0xAF;
 		printf("reading from %x: %x\n", test_addr, *test_addr);
-		
+
 		/*PageDirectory test_dir(pageDir);
 		printf("now we have our own page directory :o\n");
 		// creating a new dir automatically loads it
@@ -177,7 +184,6 @@ extern "C"
 		// Reload the kernel page directory back
 		pageDir.Load();
 		printf("now we are back to the kernel :^)\n");*/
-		
 
 		// Tasking
 		Scheduler *scheduler = scheduler->GetInstance();
@@ -192,8 +198,13 @@ extern "C"
 		Thread testThread(testThreadEP);
 		testThread.Start();
 
+		printf("Starting exiting thread\n");
 		Thread exitingThread(testExitingThread);
 		exitingThread.Start();
+
+		printf("Starting usermode thread\n");
+		Thread usermodeThread(ring3Thread, Ring::Ring3);
+		usermodeThread.Start();
 
 		// Kernel initialized, let the scheduler take over
 		printf("System boot complete\n");

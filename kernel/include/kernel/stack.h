@@ -15,13 +15,13 @@ namespace Kernel
         uint8_t *stack_ptr;
 
     public:
-        Stack(size_t size);
+        Stack(void *stack_bottom, size_t size);
 
         ~Stack();
 
-        void push(uint32_t data);
+        void Push(uint32_t data);
 
-        void *get_stack_ptr();
+        void *GetStackPtr();
     };
 
 }; // namespace Kernel

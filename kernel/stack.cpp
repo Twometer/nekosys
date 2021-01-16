@@ -5,11 +5,11 @@
 namespace Kernel
 {
 
-    Stack::Stack(size_t size)
+    Stack::Stack(void *stack_bottom, size_t size)
     {
-        stack_bottom = new uint8_t[size];
-        stack_top = stack_bottom + size;
-        stack_ptr = stack_top;
+        this->stack_bottom = (uint8_t *)stack_bottom;
+        this->stack_top = this->stack_bottom + size;
+        this->stack_ptr = this->stack_top;
     }
 
     Stack::~Stack()
@@ -17,14 +17,14 @@ namespace Kernel
         delete[] stack_bottom;
     }
 
-    void Stack::push(uint32_t data)
+    void Stack::Push(uint32_t data)
     {
         size_t data_size = sizeof(data);
         stack_ptr -= data_size;
         memcpy(stack_ptr, &data, data_size);
     }
 
-    void *Stack::get_stack_ptr()
+    void *Stack::GetStackPtr()
     {
         return stack_ptr;
     }

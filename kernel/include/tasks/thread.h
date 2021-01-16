@@ -1,11 +1,13 @@
 #ifndef _THREAD_H
 #define _THREAD_H
 
+#include <kernel/ring.h>
 #include <kernel/stack.h>
 #include <kernel/registers.h>
 #include <memory/pagedirectory.h>
 
 #define THREAD_STACK_SIZE 4096
+#define RING3_MASK 0x03
 
 namespace Kernel
 {
@@ -19,18 +21,12 @@ namespace Kernel
         Dead
     };
 
-    enum class ThreadLevel
-    {
-        Kernel,
-        User
-    };
-
     class Thread
     {
     private:
         static int idCounter;
 
-        Stack stack;
+        Stack *stack;
 
     public:
         static Thread *current;
@@ -40,13 +36,13 @@ namespace Kernel
         uint32_t run_start_time = 0;
         uint32_t last_cpu_time = 0;
         RegisterStates registers{};
-        ThreadLevel threadLevel;
+        Ring ring;
         ThreadState threadState = ThreadState::Runnable;
         Memory::PageDirectory *pagedir;
 
         ThreadMain entryPoint;
 
-        Thread(ThreadMain entryPoint, ThreadLevel level = ThreadLevel::Kernel);
+        Thread(ThreadMain entryPoint, Ring ring = Ring::Ring0);
 
         ~Thread();
 

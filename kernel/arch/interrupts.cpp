@@ -155,6 +155,11 @@ extern "C"
 		slave_eoi();
 	}
 
+	void irq128_handler(void)
+	{
+		Interrupts::HandleInterrupt(128);
+	}
+
 #define EXCEPTION_HANDLER(vec)                                              \
 	__attribute__((interrupt)) void exc##vec(struct interrupt_frame *frame) \
 	{                                                                       \
@@ -202,6 +207,7 @@ extern "C"
 	extern int irq13();
 	extern int irq14();
 	extern int irq15();
+	extern int irq128();
 
 	extern int load_idt(void *);
 }
@@ -249,6 +255,7 @@ void Interrupts::SetupIdt()
 	SetIdtEntry(45, TYPE_INTERRUPT_GATE, (unsigned long)irq13);
 	SetIdtEntry(46, TYPE_INTERRUPT_GATE, (unsigned long)irq14);
 	SetIdtEntry(47, TYPE_INTERRUPT_GATE, (unsigned long)irq15);
+	SetIdtEntry(128, TYPE_INTERRUPT_GATE, (unsigned long)irq128);
 
 	// build idt descriptor
 	unsigned long idt_ptr[2];
@@ -286,6 +293,9 @@ void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *fr
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
 {
+	if (interrupt == 0x80)
+		printf("SYSCALL!\n");
+		
 	RegisterStates *states = &register_states;
 	for (size_t i = 0; i < entries.Size(); i++)
 	{

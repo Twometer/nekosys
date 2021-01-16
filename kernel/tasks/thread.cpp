@@ -3,6 +3,9 @@
 #include <kernel/timemanager.h>
 #include <tasks/thread.h>
 #include <tasks/scheduler.h>
+#include <memory/pagemanager.h>
+
+using namespace Memory;
 
 namespace Kernel
 {
@@ -10,7 +13,7 @@ namespace Kernel
     Thread *Thread::current = nullptr;
     int Thread::idCounter = 0;
 
-    static void thread_exit_func()
+    static void thread_exit_func_krnl()
     {
         auto curThread = Thread::current;
         printf("Thread %x died\n", curThread->id);
@@ -18,30 +21,61 @@ namespace Kernel
         asm("hlt"); // wait for the scheduler to get us out of here
     }
 
-    Thread::Thread(ThreadMain entryPoint, ThreadLevel level) : stack(THREAD_STACK_SIZE)
+    static void thread_exit_func_user()
+    {
+        // TODO replace with syscall to signal thread exit
+        auto curThread = Thread::current;
+        printf("Usermode Thread %x died\n", curThread->id);
+        curThread->threadState = ThreadState::Dead;
+        asm("hlt");
+    }
+
+    Thread::Thread(ThreadMain entryPoint, Ring ring)
     {
         this->id = idCounter++;
         this->entryPoint = entryPoint;
 
-        // put stuff on stack that iret needs later
-        // note for the flags: I observed this value from the call stack in an irq.
-        //                     I know that it keeps interrupts enabled. I don't know what else it does, but it works.
-        stack.push((uint32_t)(thread_exit_func)); // The address to return to after the thread has exited
-        stack.push(0x202);                        // Flags, 0x202 for now.
-        stack.push(0x08);                         // CS = 0x08
-        stack.push((uint32_t)entryPoint);         // IP = entry_point
-
-        if (level == ThreadLevel::Kernel)
+        if (ring == Ring::Ring0)
         {
-            pagedir = Memory::PageDirectory::kernelDir;
+            pagedir = PageDirectory::kernelDir;
+            stack = new Stack(new uint8_t[THREAD_STACK_SIZE], THREAD_STACK_SIZE);
+            // Push the kernel thread return func#
+            stack->Push((uint32_t)(thread_exit_func_krnl));
+
+            // put stuff on stack that an iret needs later
+            // note for the flags: I observed this value from the stack in an irq.
+            //                     I know that it keeps interrupts enabled. I don't know what else it does, but it works.
+            stack->Push(0x202);                // Flags, 0x202 for now.
+            stack->Push(SEG_KRNL_CODE);        // Code Segment
+            stack->Push((uint32_t)entryPoint); // IP = entry_point
         }
         else
         {
-            // TODO create userspace dir based on kernel directory
+            pagedir = new PageDirectory(*PageDirectory::kernelDir);
+
+            auto pageframe = PageManager::GetInstance()->AllocPageframe(); // todo save all pages that the thread allocates so that we don't leak memory
+            auto stack_virt = (vaddress_t)0x100000;
+            pagedir->MapPage(pageframe, stack_virt, PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
+
+            stack = new Stack(stack_virt, THREAD_STACK_SIZE);
+            // push the user thread return func
+            stack->Push((uint32_t)(thread_exit_func_user));
+
+            // put stuff on the stack that iret needs
+            stack->Push(SEG_USER_DATA | RING3_MASK);
+            stack->Push((uint32_t)this->stack->GetStackPtr());
+            stack->Push(SEG_USER_CODE | RING3_MASK);
+            stack->Push((uint32_t)entryPoint);
+            
+            registers.ds = SEG_USER_DATA | RING3_MASK;
         }
 
         // set stack pointer
-        registers.esp = (uint32_t)this->stack.get_stack_ptr();
+        registers.esp = (uint32_t)this->stack->GetStackPtr();
+
+        // make sure we restore to kernel page directory before continuing
+        if (ring == Ring::Ring3)
+            PageDirectory::kernelDir->Load();
     }
 
     Thread::~Thread()
