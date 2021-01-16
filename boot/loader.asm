@@ -164,19 +164,38 @@ init:
     push ax ; ax stores our cluster
     call cluster2sector ; now ax stores our sector - simple, right? :P
 
-    push word ax  ; print the sector we are reading for debugging
-    call printhex
-
     ; read_sectors = 0
     mov cx, 0
 
     next_sector:
+    push word es  ; print the sector we are reading for debugging
+    call printhex
+    push word bx  ; print the sector we are reading for debugging
+    call printhex
+
     push ax             ; load that sector to kernel_offset
     push bx
     call read_sector
 
     ; check if we have a next SECTOR in that cluster
     add bx, 512 ; memory_offset += 512
+    cmp bx, 0   ; did we reach the end of a segment?
+    jne no_segment_end
+
+    ; goto next segment
+    push log_newseg
+    call print
+    
+    push ax
+    mov ax, es
+    add ax, 0x1000
+    mov es, ax
+    pop ax
+
+    ;push es
+    ;call printhex
+
+    no_segment_end:
     inc ax      ; sector ++
     inc cx      ; read_sectors ++
     cmp cx, [cluster_size] ; if (read_sectors != cluster_size)
@@ -444,6 +463,7 @@ log_header: db "nekosys Bootloader", 0xa, 0xd, 0
 log_welcome: db "(c) 2020 Twometer Applications", 0xa, 0xd, 0
 log_readfat: db "Reading file system...", 0xa, 0xd, 0
 log_found: db " found", 0xa, 0xd, 0
+log_newseg: db "Next segment", 0xa, 0xd, 0
 log_ldkernel: db "Loading kernel...", 0x0a, 0x0d, 0
 log_done: db "Entering kernel... bye :3", 0x0a, 0x0d, 0
 
