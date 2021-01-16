@@ -18,7 +18,6 @@ using namespace Memory;
 
 void idleThreadEP()
 {
-	printf("Hello from idle thread!\n");
 	for (;;)
 	{
 		// the idle thread should never block the scheduler for its 25ms timeframe so yield
@@ -44,13 +43,13 @@ void testExitingThread()
 
 void ring3Thread()
 {
-	// https://wiki.osdev.org/Getting_to_Ring_3
-	//asm("int $0x80");
+	// asm("int $0x80");
+	printf("Hello from ring 3 :3\n"); // if everything works correctly, this should crash with a GPF as it directly accesses the screen buffer
 	for (;;)
 	{
 		;
 	}
-	//printf("Hello from ring 3 :3\n"); // if everything works correctly, this should crash with a GPF as it directly accesses the screen buffer
+	//
 }
 
 extern "C"

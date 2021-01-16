@@ -7,7 +7,7 @@
 #include <memory/pagedirectory.h>
 
 #define THREAD_STACK_SIZE 4096
-#define RING3_MASK 0x03
+#define RING3_MASK 0x00
 
 namespace Kernel
 {

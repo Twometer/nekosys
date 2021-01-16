@@ -15,11 +15,12 @@ struct IDT_entry
 
 struct interrupt_frame
 {
-    unsigned int ip;
+unsigned int ss;
+    unsigned int sp;
     unsigned int cs;
     unsigned int flags;
-    unsigned int sp;
-    unsigned int ss;
+    unsigned int ip;
+    
 };
 
 namespace Kernel

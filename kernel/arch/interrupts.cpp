@@ -1,3 +1,4 @@
+#include <memory/memdefs.h>
 #include <kernel/interrupts.h>
 #include <kernel/io.h>
 #include <kernel/tty.h>
@@ -280,7 +281,7 @@ void Interrupts::Disable()
 void Interrupts::SetIdtEntry(unsigned int interrupt, unsigned char type, unsigned long address)
 {
 	IDT[interrupt].offset_lowerbits = address & 0xffff;
-	IDT[interrupt].selector = 0x08; /* kernel code segment */
+	IDT[interrupt].selector = SEG_KRNL_CODE; /* kernel code segment */
 	IDT[interrupt].zero = 0;
 	IDT[interrupt].type_attr = type;
 	IDT[interrupt].offset_higherbits = (address & 0xffff0000) >> 16;
@@ -288,14 +289,15 @@ void Interrupts::SetIdtEntry(unsigned int interrupt, unsigned char type, unsigne
 
 void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *frame)
 {
-	Kernel::Panic("cpu_error", "Fatal CPU exception!\nVector: %x\nDescription: %s\nIP: %x\nCS: %x\nSS: %x\nFlags: %x\n", vector, exception_descriptors[vector], frame->ip, frame->cs, frame->sp, frame->ss, frame->flags);
+	Kernel::Panic("cpu_error", "Fatal CPU exception!\nVector: %x\nDescription: %s\nIP: %x\nSP: %x\nCS: %x\nSS: %x\nFlags: %x\n", vector, exception_descriptors[vector],
+				  frame->ip, frame->sp, frame->cs, frame->ss, frame->flags);
 }
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
 {
 	if (interrupt == 0x80)
 		printf("SYSCALL!\n");
-		
+
 	RegisterStates *states = &register_states;
 	for (size_t i = 0; i < entries.Size(); i++)
 	{

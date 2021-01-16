@@ -43,7 +43,7 @@ namespace Memory
             tempDirPtr[i] = other.virt_directory_ptr[i];
 
         // IMPORTANT: Now we have to overwrite the last entry to map to the new dir IN THE NEW TABLE
-        tempDirPtr[1023] = (uint32_t)phys_directory_ptr | PAGE_BIT_PRESENT;
+        tempDirPtr[1023] = (uint32_t)phys_directory_ptr | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE;
 
         // We then have to load it so that modifications only go to the new dir (it writes to virt_ptr)
         Load();
@@ -83,7 +83,7 @@ namespace Memory
         // The last entry should map to itself, so that all page tables as well as the
         // page directory are automatically mapped.
 
-        virt_directory_ptr[1023] = (uint32_t)phys_directory_ptr | PAGE_BIT_PRESENT;
+        virt_directory_ptr[1023] = (uint32_t)phys_directory_ptr | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE;
     }
 
     void PageDirectory::Load()

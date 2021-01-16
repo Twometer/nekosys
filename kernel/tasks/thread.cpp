@@ -48,6 +48,7 @@ namespace Kernel
             stack->Push(0x202);                // Flags, 0x202 for now.
             stack->Push(SEG_KRNL_CODE);        // Code Segment
             stack->Push((uint32_t)entryPoint); // IP = entry_point
+            registers.esp = (uint32_t)this->stack->GetStackPtr();
         }
         else
         {
@@ -62,16 +63,16 @@ namespace Kernel
             stack->Push((uint32_t)(thread_exit_func_user));
 
             // put stuff on the stack that iret needs
-            stack->Push(SEG_USER_DATA | RING3_MASK);
-            stack->Push((uint32_t)this->stack->GetStackPtr());
-            stack->Push(SEG_USER_CODE | RING3_MASK);
-            stack->Push((uint32_t)entryPoint);
-            
-            registers.ds = SEG_USER_DATA | RING3_MASK;
-        }
+            stack->Push(SEG_USER_DATA | RING3_MASK); // stackseg
+            stack->Push((uint32_t)stack_virt);       // stack ptr
+            stack->Push(0x202);                      // flags
+            stack->Push(SEG_USER_CODE | RING3_MASK); // code seg
+            stack->Push((uint32_t)entryPoint);       // ret ptr
 
-        // set stack pointer
-        registers.esp = (uint32_t)this->stack->GetStackPtr();
+            registers.ds = SEG_USER_DATA | RING3_MASK;
+            registers.esp = (uint32_t)stack_virt;
+        }
+        
 
         // make sure we restore to kernel page directory before continuing
         if (ring == Ring::Ring3)

@@ -27,7 +27,7 @@ s_ds: dd 0
 %endmacro
 
 %macro load_segments 0
-  mov [s_ds], ax
+  mov ax, [s_ds]
   mov ds,ax
   mov es,ax 
   mov fs,ax 
