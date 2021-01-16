@@ -8,6 +8,9 @@ namespace Memory
 #define PAGETABLES_VIRTUAL_LOC 0xFFC00000
 #define PAGEDIR_VIRTUAL_LOC 0xFFFFF000
 
+    PageDirectory *PageDirectory::current = nullptr;
+    PageDirectory *PageDirectory::kernelDir = nullptr;
+
     PageDirectory::PageDirectory()
     {
         phys_directory_ptr = NewPage();
@@ -56,6 +59,7 @@ namespace Memory
     void PageDirectory::Load()
     {
         PageManager::GetInstance()->LoadPageDirectory(phys_directory_ptr);
+        current = this;
     }
 
     uint32_t *PageDirectory::GetPageTable(size_t idx)
@@ -66,7 +70,7 @@ namespace Memory
             {
                 auto table = (uint32_t)NewPage();
                 virt_directory_ptr[idx] = table | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE;
-                FlushPage(table); // Flush TLB for that page, so that we for sure have that 
+                FlushPage(table); // Flush TLB for that page, so that we for sure have that
                 // Load();
             }
 

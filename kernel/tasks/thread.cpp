@@ -13,12 +13,12 @@ namespace Kernel
     static void thread_exit_func()
     {
         auto curThread = Thread::current;
-        printf("thread %x died\n", curThread->id);
+        printf("Thread %x died\n", curThread->id);
         curThread->threadState = ThreadState::Dead;
         asm("hlt"); // wait for the scheduler to get us out of here
     }
 
-    Thread::Thread(ThreadMain entryPoint) : stack(THREAD_STACK_SIZE)
+    Thread::Thread(ThreadMain entryPoint, ThreadLevel level) : stack(THREAD_STACK_SIZE)
     {
         this->id = idCounter++;
         this->entryPoint = entryPoint;
@@ -30,6 +30,15 @@ namespace Kernel
         stack.push(0x202);                        // Flags, 0x202 for now.
         stack.push(0x08);                         // CS = 0x08
         stack.push((uint32_t)entryPoint);         // IP = entry_point
+
+        if (level == ThreadLevel::Kernel)
+        {
+            pagedir = Memory::PageDirectory::kernelDir;
+        }
+        else
+        {
+            // TODO create userspace dir based on kernel directory
+        }
 
         // set stack pointer
         registers.esp = (uint32_t)this->stack.get_stack_ptr();

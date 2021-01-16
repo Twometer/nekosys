@@ -24,7 +24,11 @@ using namespace Memory;
 void idleThreadEP()
 {
 	printf("Hello from idle thread!\n");
-	CPU::Halt();
+	for (;;)
+	{
+		Thread::current->Yield(); // the idle thread should never block the scheduler for its 25ms timeframe
+		asm("hlt");
+	}
 }
 
 void testThreadEP()
@@ -121,6 +125,7 @@ extern "C"
 		// Enable Paging
 		pageDir.Load();
 		pagemanager.EnablePaging();
+		PageDirectory::kernelDir = &pageDir;
 		printf("Entered virtual address space.\n");
 
 		// Initialize the heap

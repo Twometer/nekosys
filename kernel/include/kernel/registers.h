@@ -15,7 +15,6 @@ struct RegisterStates
     uint32_t ebp = 0x00;
     uint32_t flags = 0x00;
 
-
     void CopyTo(RegisterStates *other)
     {
         other->eax = eax;

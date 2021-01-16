@@ -1,6 +1,7 @@
 #ifndef _PAGE_DIRECTORY_H
 #define _PAGE_DIRECTORY_H
 
+#include "memdefs.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -12,8 +13,11 @@ namespace Memory
         uint32_t *phys_directory_ptr;
         uint32_t *virt_directory_ptr;
         bool paging_enabled = false;
+        static PageDirectory *current;
 
     public:
+        static PageDirectory *kernelDir;
+
         PageDirectory();
 
         void MapSelf();
@@ -21,6 +25,10 @@ namespace Memory
         void Load();
 
         bool MapPage(paddress_t physicalAddr, vaddress_t virtualAddr, uint16_t permissions);
+
+        void *GetPhysicalAddress() { return phys_directory_ptr; }
+
+        bool IsCurrent() { return current == this; };
 
     private:
         uint32_t *NewPage();

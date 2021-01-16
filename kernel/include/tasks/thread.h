@@ -3,6 +3,8 @@
 
 #include <kernel/stack.h>
 #include <kernel/registers.h>
+#include <memory/pagedirectory.h>
+
 #define THREAD_STACK_SIZE 4096
 
 namespace Kernel
@@ -15,6 +17,12 @@ namespace Kernel
         Running,
         Yielded,
         Dead
+    };
+
+    enum class ThreadLevel
+    {
+        Kernel,
+        User
     };
 
     class Thread
@@ -32,11 +40,13 @@ namespace Kernel
         uint32_t run_start_time = 0;
         uint32_t last_cpu_time = 0;
         RegisterStates registers{};
+        ThreadLevel threadLevel;
         ThreadState threadState = ThreadState::Runnable;
+        Memory::PageDirectory *pagedir;
 
         ThreadMain entryPoint;
 
-        Thread(ThreadMain entryPoint);
+        Thread(ThreadMain entryPoint, ThreadLevel level = ThreadLevel::Kernel);
 
         ~Thread();
 

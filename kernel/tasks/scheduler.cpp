@@ -99,6 +99,10 @@ namespace Kernel
 
         // load regs for next thread
         newThread->registers.CopyTo(regs);
+
+        // load pages for new thread
+        if (!newThread->pagedir->IsCurrent())
+            newThread->pagedir->Load();
     }
 
     Thread *Scheduler::FindNextThread()
