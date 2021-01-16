@@ -57,6 +57,10 @@ namespace Kernel
         void Yield();
 
         uint32_t GetRuntime();
+
+        bool IsCurrent() { return current == this; };
+
+        void Kill();
     };
 
 }; // namespace Kernel

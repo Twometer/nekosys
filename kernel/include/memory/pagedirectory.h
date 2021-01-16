@@ -20,6 +20,8 @@ namespace Memory
 
         PageDirectory();
 
+        PageDirectory(const PageDirectory &other);
+
         void MapSelf();
 
         void Load();

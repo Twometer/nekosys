@@ -1,18 +1,24 @@
 #include <stdio.h>
+#include <kernel/panic.h>
 #include <memory/pagemanager.h>
 #include <memory/pagedirectory.h>
 
 namespace Memory
 {
 
-#define PAGETABLES_VIRTUAL_LOC 0xFFC00000
-#define PAGEDIR_VIRTUAL_LOC 0xFFFFF000
-
     PageDirectory *PageDirectory::current = nullptr;
     PageDirectory *PageDirectory::kernelDir = nullptr;
 
     PageDirectory::PageDirectory()
     {
+        // Don't allow creation of a new page directory
+        // after paging is enabled, as that would break
+        // just about everything :p
+        if (PageManager::GetInstance()->IsPagingEnabled())
+        {
+            Kernel::Panic("page_dir", "Cannot create an empty page dir after paging is on.");
+        }
+
         phys_directory_ptr = NewPage();
         virt_directory_ptr = phys_directory_ptr;
 
@@ -21,12 +27,34 @@ namespace Memory
             virt_directory_ptr[i] = 0x00;
     }
 
+    PageDirectory::PageDirectory(const PageDirectory &other)
+    {
+        phys_directory_ptr = NewPage();
+        virt_directory_ptr = other.virt_directory_ptr;
+
+        // Map the new directory page at a temporary location so that we can write to it
+        // Map page goes to the OLD directory, because we copied its virtual pointer
+        // (and thats also the same for all, so well)
+        MapPage((paddress_t)phys_directory_ptr, (vaddress_t)PAGE_DIR_TEMP_LOC, PAGE_BIT_READ_WRITE);
+
+        // Now, we copy the old directory
+        uint32_t *tempDirPtr = (uint32_t *)PAGE_DIR_TEMP_LOC;
+        for (int i = 0; i < 1024; i++)
+            tempDirPtr[i] = other.virt_directory_ptr[i];
+
+        // IMPORTANT: Now we have to overwrite the last entry to map to the new dir IN THE NEW TABLE
+        tempDirPtr[1023] = (uint32_t)phys_directory_ptr | PAGE_BIT_PRESENT;
+
+        // We then have to load it so that modifications only go to the new dir (it writes to virt_ptr)
+        Load();
+    }
+
     uint32_t *PageDirectory::NewPage()
     {
         return (uint32_t *)PageManager::GetInstance()->AllocPageframe();
     }
 
-    bool PageDirectory::MapPage(vaddress_t physicalAddr, vaddress_t virtualAddr, uint16_t permissions)
+    bool PageDirectory::MapPage(paddress_t physicalAddr, vaddress_t virtualAddr, uint16_t permissions)
     {
         if (!IS_PAGE_ALIGNED(physicalAddr) || !IS_PAGE_ALIGNED(virtualAddr))
             return false;
@@ -44,6 +72,9 @@ namespace Memory
 #endif
 
         GetPageTable(directoryIdx)[pageIdx] = tableEntry;
+
+        if (PageManager::GetInstance()->IsPagingEnabled())
+            FlushPage((uint32_t)physicalAddr);
         return true;
     }
 
@@ -52,12 +83,12 @@ namespace Memory
         // The last entry should map to itself, so that all page tables as well as the
         // page directory are automatically mapped.
 
-        phys_directory_ptr[1023] = (uint32_t)phys_directory_ptr | PAGE_BIT_PRESENT;
-        virt_directory_ptr = (uint32_t *)PAGEDIR_VIRTUAL_LOC;
+        virt_directory_ptr[1023] = (uint32_t)phys_directory_ptr | PAGE_BIT_PRESENT;
     }
 
     void PageDirectory::Load()
     {
+        virt_directory_ptr = (uint32_t *)PAGEDIR_VIRTUAL_LOC;
         PageManager::GetInstance()->LoadPageDirectory(phys_directory_ptr);
         current = this;
     }

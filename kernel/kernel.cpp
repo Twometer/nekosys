@@ -16,18 +16,13 @@ using namespace Kernel;
 using namespace Device;
 using namespace Memory;
 
-// One Megabyte Kernel Heap
-#define KERNEL_HEAP_SIZE 0x00100000
-#define PAGE_ALLOC_REMAP 0xC0000000
-#define KERNEL_HEAP_ADDR 0xC1000000
-
 void idleThreadEP()
 {
 	printf("Hello from idle thread!\n");
 	for (;;)
 	{
-		Thread::current->Yield(); // the idle thread should never block the scheduler for its 25ms timeframe
-		asm("hlt");
+		// the idle thread should never block the scheduler for its 25ms timeframe so yield
+		Thread::current->Yield();
 	}
 }
 
@@ -45,6 +40,13 @@ void testExitingThread()
 	//printf("This is an exiting thread\n");
 	Thread::current->Sleep(2000);
 	//printf("goodbye\n");
+}
+
+void ring3Thread()
+{
+	// https://wiki.osdev.org/Getting_to_Ring_3
+
+	printf("Hello from ring 3 :3\n"); // if everything works correctly, this should crash with a GPF as it directly accesses the screen buffer
 }
 
 extern "C"
@@ -68,7 +70,7 @@ extern "C"
 		printf("Loading memory map\n");
 		TTY::SetColor(0x08);
 		MemoryMap memoryMap;
-		memoryMap.Parse((uint8_t *)0x8000);
+		memoryMap.Parse((uint8_t *)KERNEL_HANDOVER_STRUCT_LOC);
 
 		for (size_t i = 0; i < memoryMap.GetLength(); i++)
 		{
@@ -158,10 +160,24 @@ extern "C"
 
 		auto *pageframe = pagemanager.AllocPageframe();
 		pageDir.MapPage(pageframe, test_addr, PAGE_BIT_READ_WRITE);
-		pageDir.Load();
 
 		*test_addr = 0xAF;
 		printf("reading from %x: %x\n", test_addr, *test_addr);
+		
+		/*PageDirectory test_dir(pageDir);
+		printf("now we have our own page directory :o\n");
+		// creating a new dir automatically loads it
+
+		auto *pageframe = pagemanager.AllocPageframe();
+		test_dir.MapPage(pageframe, test_addr, PAGE_BIT_READ_WRITE);
+
+		*test_addr = 0xAF;
+		printf("reading from %x: %x\n", test_addr, *test_addr);
+		
+		// Reload the kernel page directory back
+		pageDir.Load();
+		printf("now we are back to the kernel :^)\n");*/
+		
 
 		// Tasking
 		Scheduler *scheduler = scheduler->GetInstance();
@@ -179,11 +195,12 @@ extern "C"
 		Thread exitingThread(testExitingThread);
 		exitingThread.Start();
 
-		// Kernel initialized
+		// Kernel initialized, let the scheduler take over
 		printf("System boot complete\n");
 		Interrupts::Enable();
+		asm("hlt");
 
-		// The scheduler should get us out of here.
-		Device::CPU::Halt();
+		// If we got back here, something went *seriously* wrong
+		Kernel::Panic("kernel_main", "Kernel has exited, this should not happen.");
 	}
 }

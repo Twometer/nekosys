@@ -67,6 +67,13 @@ namespace Kernel
         asm("hlt");
     }
 
+    void Thread::Kill()
+    {
+        // just set our state to dead and wait for the scheduler to annihilate us
+        threadState = ThreadState::Dead;
+        asm("hlt");
+    }
+
     uint32_t Thread::GetRuntime()
     {
         return TimeManager::GetInstance()->GetUptime() - run_start_time;
