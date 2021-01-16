@@ -11,7 +11,7 @@ namespace Memory
     private:
         uint32_t *phys_directory_ptr;
         uint32_t *virt_directory_ptr;
-        bool paging_enabled;
+        bool paging_enabled = false;
 
     public:
         PageDirectory();

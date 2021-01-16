@@ -19,7 +19,7 @@ namespace Kernel
         tss = malloc(1024);
         memset(tss, 0x00, 1024);
         Thread::current = new Thread(nullptr);
-        Thread::current->yielded = true;
+        Thread::current->threadState = ThreadState::Yielded; // the "current" thread is a dummy thread and does not exist - set it to yielded for fast startup
         Interrupts::AddHandler(0x00, this);
     }
 
@@ -36,9 +36,25 @@ namespace Kernel
     void Scheduler::HandleInterrupt(unsigned int, RegisterStates *regs)
     {
         auto *currentThread = Thread::current;
-        if (currentThread->yielded || currentThread->GetRuntime() > 25)
+        if (currentThread->threadState != ThreadState::Running || currentThread->GetRuntime() > 25)
         {
-            currentThread->yielded = false;
+            if (currentThread->threadState != ThreadState::Dead)
+            {
+                // if it isn't dead, set it to runnable
+                currentThread->threadState = ThreadState::Runnable;
+            }
+            else
+            {
+                // remove dead threads
+                for (size_t i = 0; i < threads.Size(); i++)
+                {
+                    if (threads.At(i)->id == currentThread->id)
+                    {
+                        threads.Remove(i);
+                        break;
+                    }
+                }
+            }
             PreemptCurrent(regs);
         }
     }
@@ -46,7 +62,7 @@ namespace Kernel
     void Scheduler::PreemptCurrent(RegisterStates *regs)
     {
         if (threads.Size() == 0)
-            return;
+            Kernel::Panic("scheduler", "Who the fuck killed the idle process?");
 
         auto oldThread = Thread::current;
         auto newThread = FindNextThread();
@@ -63,6 +79,7 @@ namespace Kernel
 
         // set thread as current
         Thread::current = newThread;
+        Thread::current->threadState = ThreadState::Running;
         oldThread->last_cpu_time = oldThread->GetRuntime();
         newThread->run_start_time = TimeManager::GetInstance()->GetUptime();
 
@@ -98,7 +115,7 @@ namespace Kernel
 
     bool Scheduler::CanRun(Thread *thread)
     {
-        return thread != nullptr && thread->unblock_time <= TimeManager::GetInstance()->GetUptime() && !thread->yielded;
+        return thread != nullptr && thread->unblock_time <= TimeManager::GetInstance()->GetUptime() && thread->threadState == ThreadState::Runnable;
     }
 
 }; // namespace Kernel

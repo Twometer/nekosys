@@ -9,6 +9,14 @@ namespace Kernel
 {
     typedef void (*ThreadMain)(void);
 
+    enum class ThreadState
+    {
+        Runnable,
+        Running,
+        Yielded,
+        Dead
+    };
+
     class Thread
     {
     private:
@@ -24,11 +32,13 @@ namespace Kernel
         uint32_t run_start_time = 0;
         uint32_t last_cpu_time = 0;
         RegisterStates registers{};
-        bool yielded = false;
+        ThreadState threadState = ThreadState::Runnable;
 
         ThreadMain entryPoint;
 
         Thread(ThreadMain entryPoint);
+
+        ~Thread();
 
         void Start();
 

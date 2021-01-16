@@ -36,6 +36,13 @@ void testThreadEP()
 	}
 }
 
+void testExitingThread()
+{
+	//printf("This is an exiting thread\n");
+	Thread::current->Sleep(2000);
+	//printf("goodbye\n");
+}
+
 extern "C"
 {
 	extern void setTss(uint16_t selector);
@@ -143,7 +150,7 @@ extern "C"
 
 		// map a new page for testing
 		vaddress_t test_addr = (vaddress_t)0xA0000000;
-		
+
 		auto *pageframe = pagemanager.AllocPageframe();
 		pageDir.MapPage(pageframe, test_addr, PAGE_BIT_READ_WRITE);
 		pageDir.Load();
@@ -163,6 +170,9 @@ extern "C"
 		printf("Starting test thread\n");
 		Thread testThread(testThreadEP);
 		testThread.Start();
+
+		Thread exitingThread(testExitingThread);
+		exitingThread.Start();
 
 		// Kernel initialized
 		printf("System boot complete\n");
