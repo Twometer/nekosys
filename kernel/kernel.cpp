@@ -7,6 +7,7 @@
 #include <kernel/syscallhandler.h>
 #include <device/devicemanager.h>
 #include <device/pit.h>
+#include <disk/atadisk.h>
 #include <memory/memorymap.h>
 #include <memory/pagemanager.h>
 #include <memory/pagedirectory.h>
@@ -17,6 +18,7 @@
 using namespace Kernel;
 using namespace Device;
 using namespace Memory;
+using namespace Disk;
 
 void idleThreadEP()
 {
@@ -162,6 +164,15 @@ extern "C"
 
 		auto time = TimeManager::GetInstance()->GetSystemTime();
 		printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
+
+		// Disk test
+		printf("Disk test..\n");
+		IBlockDevice *device = new ATADisk(0);
+		uint8_t *demo_block = new uint8_t[512];
+		device->ReadBlock(696, 1, demo_block); // sector 696 on our test disk contains a test sector
+		printf("  Read from disk: %s\n", demo_block);
+		delete[] demo_block;
+		delete device;
 
 		// Tasking
 		Scheduler *scheduler = scheduler->GetInstance();
