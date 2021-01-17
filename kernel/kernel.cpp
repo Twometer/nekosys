@@ -4,11 +4,13 @@
 #include <kernel/panic.h>
 #include <kernel/interrupts.h>
 #include <kernel/timemanager.h>
+#include <kernel/syscallhandler.h>
 #include <device/devicemanager.h>
 #include <device/pit.h>
 #include <memory/memorymap.h>
 #include <memory/pagemanager.h>
 #include <memory/pagedirectory.h>
+#include <sys/syscall.h>
 #include <tasks/scheduler.h>
 #include <stdio.h>
 
@@ -43,10 +45,11 @@ void testExitingThread()
 
 void ring3Thread()
 {
-	for (;;)
-	{
-		;
-	}
+	const char *data = "Hello from userspace :3\n";
+	syscall(SYS_PRINT, data);
+
+	uint32_t exit_code = 0;
+	syscall(SYS_TEXIT, &exit_code);
 }
 
 extern "C"
@@ -148,6 +151,7 @@ extern "C"
 
 		printf("Setting up interrupts\n");
 		Interrupts::SetupIdt();
+		SyscallHandler::GetInstance()->Register();
 
 		printf("Setting up devices\n");
 		DeviceManager::Initialize();
@@ -160,13 +164,13 @@ extern "C"
 		printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
 
 		// map a new page for testing
-		vaddress_t test_addr = (vaddress_t)0xA0000000;
+		/*vaddress_t test_addr = (vaddress_t)0xA0000000;
 
 		auto *pageframe = pagemanager.AllocPageframe();
 		pageDir.MapPage(pageframe, test_addr, PAGE_BIT_READ_WRITE);
 
 		*test_addr = 0xAF;
-		printf("reading from %x: %x\n", test_addr, *test_addr);
+		printf("reading from %x: %x\n", test_addr, *test_addr);*/
 
 		/*PageDirectory test_dir(pageDir);
 		printf("now we have our own page directory :o\n");
@@ -205,8 +209,7 @@ extern "C"
 
 		// Kernel initialized, let the scheduler take over
 		printf("System boot complete\n");
-		Interrupts::Enable();
-		asm("hlt");
+		Interrupts::WaitForInt();
 
 		// If we got back here, something went *seriously* wrong
 		Kernel::Panic("kernel_main", "Kernel has exited, this should not happen.");

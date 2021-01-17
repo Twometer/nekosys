@@ -4,6 +4,7 @@
 #include <tasks/thread.h>
 #include <tasks/scheduler.h>
 #include <memory/pagemanager.h>
+#include <sys/syscall.h>
 
 using namespace Memory;
 
@@ -16,18 +17,15 @@ namespace Kernel
     static void thread_exit_func_krnl()
     {
         auto curThread = Thread::current;
-        printf("Thread %x died\n", curThread->id);
+        printf("KernelThread %x died\n", curThread->id);
         curThread->threadState = ThreadState::Dead;
-        asm("hlt"); // wait for the scheduler to get us out of here
+        Interrupts::WaitForInt(); // wait for the scheduler to get us out of here
     }
 
     static void thread_exit_func_user()
     {
-        // TODO replace with syscall to signal thread exit
-        auto curThread = Thread::current;
-        printf("Usermode Thread %x died\n", curThread->id);
-        curThread->threadState = ThreadState::Dead;
-        asm("hlt");
+        uint32_t exit_code = 0;
+        syscall(SYS_TEXIT, &exit_code);
     }
 
     Thread::Thread(ThreadMain entryPoint, Ring ring)
@@ -96,14 +94,14 @@ namespace Kernel
     {
         // TODO: don't wait for the interrupt, but yield instantly...?
         threadState = ThreadState::Yielded;
-        asm("hlt");
+        Interrupts::WaitForInt();
     }
 
     void Thread::Kill()
     {
         // just set our state to dead and wait for the scheduler to annihilate us
         threadState = ThreadState::Dead;
-        asm("hlt");
+        Interrupts::WaitForInt();
     }
 
     uint32_t Thread::GetRuntime()

@@ -59,6 +59,11 @@ namespace nk
             free((void *)data);
         }
 
+        void Reserve(size_t min)
+        {
+            EnsureCapacity(min);
+        }
+
     private:
         void EnsureCapacity(size_t min)
         {

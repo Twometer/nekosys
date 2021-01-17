@@ -10,6 +10,7 @@
 
 #define TYPE_INTERRUPT_GATE 0x8e
 #define TYPE_TRAP_GATE 0x8f
+#define TYPE_USER_INTERRUPT (TYPE_INTERRUPT_GATE | 0b01100000)
 
 using namespace Kernel;
 
@@ -256,7 +257,7 @@ void Interrupts::SetupIdt()
 	SetIdtEntry(45, TYPE_INTERRUPT_GATE, (unsigned long)irq13);
 	SetIdtEntry(46, TYPE_INTERRUPT_GATE, (unsigned long)irq14);
 	SetIdtEntry(47, TYPE_INTERRUPT_GATE, (unsigned long)irq15);
-	SetIdtEntry(128, TYPE_INTERRUPT_GATE, (unsigned long)irq128);
+	SetIdtEntry(128, TYPE_INTERRUPT_GATE | TYPE_USER_INTERRUPT, (unsigned long)irq128);
 
 	// build idt descriptor
 	unsigned long idt_ptr[2];
@@ -268,14 +269,20 @@ void Interrupts::SetupIdt()
 	load_idt(idt_ptr);
 }
 
+void Interrupts::WaitForInt()
+{
+	asm volatile("sti");
+	asm volatile("hlt");
+}
+
 void Interrupts::Enable()
 {
-	asm("sti");
+	asm volatile("sti");
 }
 
 void Interrupts::Disable()
 {
-	asm("cli");
+	asm volatile("cli");
 }
 
 void Interrupts::SetIdtEntry(unsigned int interrupt, unsigned char type, unsigned long address)
@@ -295,9 +302,6 @@ void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *fr
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
 {
-	if (interrupt == 0x80)
-		printf("SYSCALL!\n");
-
 	RegisterStates *states = &register_states;
 	for (size_t i = 0; i < entries.Size(); i++)
 	{

@@ -4,13 +4,15 @@
 ; Constants
 CCFLAGS = -std=gnu++11 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -fno-pie -fno-rtti -O2 -mgeneral-regs-only
 
-; Tools
+; Assembler
 [asm, multi]:
     nasm -f {format=bin} {input} -o {output}
 
+; Kernel compiler
 [kcc, single]:
-    neko-gcc {input} -o {output} -T kernel.ld {CCFLAGS} {include}
+    neko-gcc {input} -o {output} -D __KERNEL -T kernel.ld {CCFLAGS} {include}
 
+; Userspace compiler (TODO)
 [cc, single]:
     neko-gcc -c {input} -o {output} {CCFLAGS} {include}
 

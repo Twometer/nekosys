@@ -10,6 +10,7 @@ extern "C"
 #endif
 
     __attribute__((__noreturn__)) void abort(void);
+    __attribute__((__noreturn__)) void exit(int retval);
     void *malloc(size_t size);
     void free(void *ptr);
 

@@ -49,6 +49,8 @@ namespace Kernel
 
         static void Disable();
 
+        static void WaitForInt();
+
         static void HandleException(unsigned int vector, struct interrupt_frame *frame);
 
         static void SetIdtEntry(unsigned int interrupt, unsigned char type, unsigned long address);

@@ -17,9 +17,11 @@ namespace Kernel
     public:
         Stack(void *stack_bottom, size_t size);
 
-        ~Stack();
+        Stack(void *stack_ptr);
 
         void Push(uint32_t data);
+
+        uint32_t Pop();
 
         void *GetStackPtr();
     };

@@ -3,5 +3,5 @@
 void Device::CPU::Halt()
 {
     for (;;)
-        asm("hlt");
+        asm volatile("hlt");
 }
