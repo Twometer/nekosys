@@ -23,7 +23,8 @@ default:
     % kernel
 
 image:
-    nkimg -s build/boot.bin -l build/loader.bin -k build/NEKOKRNL -o build/neko.img
+    cp build/NEKOKRNL fsroot
+    nkimg -s build/boot.bin -l build/loader.bin -r fsroot -o build/neko.img
 
 qemu:
     % image
