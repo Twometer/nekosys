@@ -163,29 +163,6 @@ extern "C"
 		auto time = TimeManager::GetInstance()->GetSystemTime();
 		printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
 
-		// map a new page for testing
-		/*vaddress_t test_addr = (vaddress_t)0xA0000000;
-
-		auto *pageframe = pagemanager.AllocPageframe();
-		pageDir.MapPage(pageframe, test_addr, PAGE_BIT_READ_WRITE);
-
-		*test_addr = 0xAF;
-		printf("reading from %x: %x\n", test_addr, *test_addr);*/
-
-		/*PageDirectory test_dir(pageDir);
-		printf("now we have our own page directory :o\n");
-		// creating a new dir automatically loads it
-
-		auto *pageframe = pagemanager.AllocPageframe();
-		test_dir.MapPage(pageframe, test_addr, PAGE_BIT_READ_WRITE);
-
-		*test_addr = 0xAF;
-		printf("reading from %x: %x\n", test_addr, *test_addr);
-		
-		// Reload the kernel page directory back
-		pageDir.Load();
-		printf("now we are back to the kernel :^)\n");*/
-
 		// Tasking
 		Scheduler *scheduler = scheduler->GetInstance();
 		scheduler->Initialize();

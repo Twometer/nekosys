@@ -15,12 +15,11 @@ struct IDT_entry
 
 struct interrupt_frame
 {
-unsigned int ss;
+    unsigned int ss;
     unsigned int sp;
     unsigned int cs;
     unsigned int flags;
     unsigned int ip;
-    
 };
 
 namespace Kernel
@@ -41,7 +40,7 @@ namespace Kernel
     {
     private:
         static nk::Vector<InterruptHandlerEntry> entries;
-        
+
     public:
         static void SetupIdt();
 

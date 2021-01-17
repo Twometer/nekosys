@@ -15,7 +15,7 @@ namespace Kernel
 
     private:
         nk::DateTime system_time{};
-        uint32_t uptime = 0;
+        volatile uint32_t uptime = 0;
 
     public:
         void AdvanceTime(uint32_t ms);
