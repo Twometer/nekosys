@@ -29,7 +29,7 @@ void testThreadEP()
 {
 	for (;;)
 	{
-		//printf("Hello from thread #2 %d\n", TimeManager::GetInstance()->GetUptime());
+		printf("Hello from thread #2 %d\n", TimeManager::GetInstance()->GetUptime());
 		Thread::current->Sleep(1000);
 	}
 }
@@ -43,13 +43,10 @@ void testExitingThread()
 
 void ring3Thread()
 {
-	// asm("int $0x80");
-	printf("Hello from ring 3 :3\n"); // if everything works correctly, this should crash with a GPF as it directly accesses the screen buffer
 	for (;;)
 	{
 		;
 	}
-	//
 }
 
 extern "C"
@@ -99,6 +96,7 @@ extern "C"
 		PageDirectory pageDir;
 
 		// Identity map the first megabyte
+		// IMPORTANT FIXME: The first MB is only mapped into userspace here, because the test-ring3 func is in there, and it obviously needs to be able to access itself.
 		for (uint32_t i = 0; i < MBYTE; i += PAGE_SIZE)
 			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
 
@@ -146,7 +144,7 @@ extern "C"
 		gdt.Set(SEG_USER_DATA, 0x00, 0xffffffff, GDTEntryType::Data, Ring::Ring3);
 		gdt.SetTssEntry(SEG_TSS);
 		gdt.Load();
-		setTss(SEG_TSS | RING3_MASK);
+		setTss(SEG_TSS);
 
 		printf("Setting up interrupts\n");
 		Interrupts::SetupIdt();

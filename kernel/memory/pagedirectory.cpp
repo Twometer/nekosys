@@ -100,7 +100,7 @@ namespace Memory
             if (virt_directory_ptr[idx] == 0x00)
             {
                 auto table = (uint32_t)NewPage();
-                virt_directory_ptr[idx] = table | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE;
+                virt_directory_ptr[idx] = table | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER;
                 FlushPage(table); // Flush TLB for that page, so that we for sure have that
                 // Load();
             }
@@ -113,7 +113,7 @@ namespace Memory
             if (table == 0x00) // Allocate page table if it does not exist
             {
                 table = (uint32_t)NewPage();
-                virt_directory_ptr[idx] = table | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE;
+                virt_directory_ptr[idx] = table | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER;
             }
             return (uint32_t *)table;
         }
@@ -121,6 +121,9 @@ namespace Memory
 
     void PageDirectory::FlushPage(uint32_t addr)
     {
+        if (!IS_PAGE_ALIGNED(addr))
+            Kernel::Panic("page_directory", "Can't flush non-page-aligned memory.");
+
         asm volatile("invlpg (%0)" ::"r"(addr)
                      : "memory");
     }

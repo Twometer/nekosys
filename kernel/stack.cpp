@@ -4,17 +4,12 @@
 
 namespace Kernel
 {
-
+    
     Stack::Stack(void *stack_bottom, size_t size)
     {
         this->stack_bottom = (uint8_t *)stack_bottom;
         this->stack_top = this->stack_bottom + size;
         this->stack_ptr = this->stack_top;
-    }
-
-    Stack::~Stack()
-    {
-        delete[] stack_bottom;
     }
 
     void Stack::Push(uint32_t data)

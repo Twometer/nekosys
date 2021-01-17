@@ -42,12 +42,10 @@ namespace Kernel
             // Push the kernel thread return func#
             stack->Push((uint32_t)(thread_exit_func_krnl));
 
-            // put stuff on stack that an iret needs later
-            // note for the flags: I observed this value from the stack in an irq.
-            //                     I know that it keeps interrupts enabled. I don't know what else it does, but it works.
-            stack->Push(0x202);                // Flags, 0x202 for now.
+            stack->Push(0x202);                // Flags, 0x202: interrupt enable = true
             stack->Push(SEG_KRNL_CODE);        // Code Segment
             stack->Push((uint32_t)entryPoint); // IP = entry_point
+            registers.ds = SEG_KRNL_DATA;
             registers.esp = (uint32_t)this->stack->GetStackPtr();
         }
         else
@@ -63,16 +61,15 @@ namespace Kernel
             stack->Push((uint32_t)(thread_exit_func_user));
 
             // put stuff on the stack that iret needs
-            stack->Push(SEG_USER_DATA | RING3_MASK); // stackseg
-            stack->Push((uint32_t)stack_virt);       // stack ptr
-            stack->Push(0x202);                      // flags
-            stack->Push(SEG_USER_CODE | RING3_MASK); // code seg
-            stack->Push((uint32_t)entryPoint);       // ret ptr
+            stack->Push(SEG_USER_DATA | 0b11);             // stackseg
+            stack->Push((uint32_t)(stack->GetStackPtr())); // stack ptr
+            stack->Push(0x202);                            // flags
+            stack->Push(SEG_USER_CODE | 0b11);             // code seg
+            stack->Push((uint32_t)entryPoint);             // ret ptr
 
-            registers.ds = SEG_USER_DATA | RING3_MASK;
-            registers.esp = (uint32_t)stack_virt;
+            registers.ds = SEG_USER_DATA | 0b11;
+            registers.esp = (uint32_t)stack->GetStackPtr();
         }
-        
 
         // make sure we restore to kernel page directory before continuing
         if (ring == Ring::Ring3)

@@ -17,17 +17,12 @@ irq%1:
   save_all_regs
   save_segments
   
-  ; get the flags from the stack
-  ; they are just for analyzing and stuff, and don't get written back
-  ;mov dword eax, [esp + 8]
-  ;mov dword [s_flags], eax
-
-  ; call interrupt handler
+  ; call the interrupt handler
   call irq%1_handler
 
   ; load reg states back
-  load_segments
   load_all_regs
+  load_segments
   iret
 %endmacro
 

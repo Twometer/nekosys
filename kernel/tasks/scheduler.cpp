@@ -4,7 +4,7 @@
 #include <kernel/timemanager.h>
 #include <tasks/scheduler.h>
 
-#define SCHEDULER_DBG 1
+#define SCHEDULER_DBG 0
 
 namespace Kernel
 {
@@ -89,8 +89,8 @@ namespace Kernel
         {
             auto &newregs = newThread->registers;
             printf("scheduler: %d -> %d after %dms\n", oldThread->id, newThread->id, oldThread->GetRuntime());
-            printf("  old: %x, %x\n", regs->esp, regs->eax);
-            printf("  new: %x, %x\n", newregs.esp, newregs.eax);
+            printf("  old: %x, %x\n", regs->esp, regs->ds);
+            printf("  new: %x, %x\n", newregs.esp, newregs.ds);
         }
 #endif
 

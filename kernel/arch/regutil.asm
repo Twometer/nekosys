@@ -22,16 +22,15 @@ s_ds: dd 0
 %endmacro
 
 %macro save_segments 0
-  mov ax, ds
-  mov [s_ds], ax
+  mov [s_ds], ds
 %endmacro
 
 %macro load_segments 0
   mov ax, [s_ds]
-  mov ds,ax
-  mov es,ax 
-  mov fs,ax 
-  mov gs,ax
+  mov ds, ax
+  mov es, ax 
+  mov fs, ax 
+  mov gs, ax
 %endmacro
 
 %macro save_all_regs 0
