@@ -33,7 +33,7 @@ void testThreadEP()
 {
 	for (;;)
 	{
-		printf("Hello from thread #2 %d\n", TimeManager::GetInstance()->GetUptime());
+		//printf("Hello from thread #2 %d\n", TimeManager::GetInstance()->GetUptime());
 		Thread::current->Sleep(1000);
 	}
 }
@@ -168,11 +168,15 @@ extern "C"
 		// Disk test
 		printf("Disk test..\n");
 		IBlockDevice *device = new ATADisk(0);
-		uint8_t *demo_block = new uint8_t[512];
-		device->ReadBlock(696, 1, demo_block); // sector 696 on our test disk contains a test sector
-		printf("  Read from disk: %s\n", demo_block);
-		delete[] demo_block;
+		if (device->IsAvailable())
+		{
+			uint8_t *demo_block = new uint8_t[512];
+			device->ReadBlock(696, 1, demo_block); // sector 696 on our test disk contains a test sector
+			printf("  Read from disk: %s\n", demo_block);
+			delete[] demo_block;
+		}
 		delete device;
+		Interrupts::Disable(); // disk may have enabled it
 
 		// Tasking
 		Scheduler *scheduler = scheduler->GetInstance();
