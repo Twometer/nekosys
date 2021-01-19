@@ -115,6 +115,7 @@ namespace Disk
             ;
 
         IO::Out8(DRIVE_PORT_CMD, DRIVE_COMMAND_READ);
+
         WaitForInterrupt();
         for (size_t i = 0; i < block_num; i++)
         {

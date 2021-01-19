@@ -181,18 +181,19 @@ extern "C"
 			vfs.Mount("/", fs);
 			vfs.ListDirectory("/");
 
-			auto testEntry = vfs.GetFileMeta("/test.txt");
+			auto testEntry = vfs.GetFileMeta("/bigfile.txt");
 			if (testEntry.type != DirEntryType::Invalid)
-				printf("Found test.txt with size %d\n", testEntry.size);
+				printf("Found bigfile.txt with size %d\n", testEntry.size);
 			else
 				printf("Test file not found\n");
 
-			uint32_t fileHandle = vfs.Open("/test.txt");
+			uint32_t fileHandle = vfs.Open("/bigfile.txt");
 
-			char buf[testEntry.size + 1];
+			char *buf = new char[testEntry.size + 1];
 			buf[testEntry.size] = 0;
+
 			vfs.Read(fileHandle, testEntry.size, (uint8_t *)buf);
-			printf("test.txt contents:\n%s\n", buf);
+			printf("bigfile.txt contents:\n%s\n", buf);
 
 			vfs.Close(fileHandle);
 
@@ -204,6 +205,8 @@ extern "C"
 		}
 		delete device;
 		Interrupts::Disable(); // disk may have enabled it
+
+		printf("Free kernel heap: %dKB/1024KB\n", get_free_heap() / 1024);
 
 		// Tasking
 		printf("Initializing task system\n");

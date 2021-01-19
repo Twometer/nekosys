@@ -94,6 +94,11 @@ namespace FS
         {
             LoadCluster(cluster);
             auto offset = size - remaining;
+
+#if FAT16_DEBUG
+            printf("fat_16: writing to offset %d\n", (int)offset);
+#endif
+
             if (remaining < clusterSize)
             {
                 memcpy(dst + offset, current_cluster, remaining);
@@ -105,7 +110,7 @@ namespace FS
                 remaining -= clusterSize;
             }
 
-        } while (((uint16_t *)fat_cache)[cluster] != 0xFFFF);
+        } while ((cluster = ((uint16_t *)fat_cache)[cluster]) != 0xFFFF);
     }
 
     void Fat16::ListDirectory(const nk::String &path)
@@ -169,6 +174,7 @@ namespace FS
     void Fat16::LoadCluster(uint32_t cluster)
     {
 #if FAT16_DEBUG
+        printf("fat_16: cluster_size = %d\n", blocks_per_alloc);
         printf("fat_16: loading cluster %d\n", (long)cluster);
 #endif
 
@@ -176,6 +182,10 @@ namespace FS
         auto start_sector = cluster_start + blocks_per_alloc * hw_cluster;
         for (int i = 0; i < blocks_per_alloc; i++)
         {
+#if FAT16_DEBUG
+            printf("fat_16: loading %d to %x\n", (long)(start_sector + i), (long)(current_cluster + i * 512));
+#endif
+
             blockDevice->ReadBlock(start_sector + i, 1, current_cluster + i * 512);
         }
     }
