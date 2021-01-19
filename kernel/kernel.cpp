@@ -175,10 +175,10 @@ extern "C"
 		if (device->IsAvailable())
 		{
 			auto partitions = MBR::Parse(device);
-			FileSystem *fat = new Fat16(device, partitions.At(0));
+			FileSystem *fs = new Fat16(device, partitions.At(0));
 
 			VirtualFileSystem vfs;
-			vfs.Mount("/", fat);
+			vfs.Mount("/", fs);
 			vfs.ListDirectory("/");
 
 			auto testEntry = vfs.GetFileMeta("/test.txt");
@@ -187,7 +187,16 @@ extern "C"
 			else
 				printf("Test file not found\n");
 
-			delete fat;
+			uint32_t fileHandle = vfs.Open("/test.txt");
+
+			char buf[testEntry.size + 1];
+			buf[testEntry.size] = 0;
+			vfs.Read(fileHandle, testEntry.size, (uint8_t *)buf);
+			printf("test.txt contents:\n%s\n", buf);
+
+			vfs.Close(fileHandle);
+
+			delete fs;
 		}
 		else
 		{

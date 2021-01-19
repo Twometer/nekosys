@@ -15,6 +15,11 @@ namespace FS
     private:
         nk::Vector<MountPoint *> mounts;
 
+        nk::Vector<FileHandle *> fileHandles;
+
+        uint32_t idCounter;
+        
+
     public:
         void Mount(const nk::String &path, FileSystem *fs);
 

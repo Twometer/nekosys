@@ -21,6 +21,7 @@ using namespace Kernel;
 
 #define ERR 0x01
 #define DRQ 0x08
+#define DRDY 0x40
 #define BSY 0x80
 
 namespace Disk
@@ -91,6 +92,7 @@ namespace Disk
         delete diskName;
     }
 
+    // FIXME: Disk hangs after reading more than one block
     void ATADisk::ReadBlock(uint64_t block_idx, uint64_t block_num, uint8_t *data)
     {
         while (IO::In8(DRIVE_PORT_STATUS) & BSY)
@@ -108,6 +110,10 @@ namespace Disk
         IO::Out8(DRIVE_PORT_LBALO, (uint8_t)block_idx);
         IO::Out8(DRIVE_PORT_LBAMID, (uint8_t)(block_idx >> 8));
         IO::Out8(DRIVE_PORT_LBAHI, (uint8_t)(block_idx >> 16));
+
+        while (!(IO::In8(DRIVE_PORT_STATUS) & DRDY))
+            ;
+
         IO::Out8(DRIVE_PORT_CMD, DRIVE_COMMAND_READ);
         WaitForInterrupt();
         for (size_t i = 0; i < block_num; i++)
@@ -124,6 +130,9 @@ namespace Disk
     void ATADisk::HandleInterrupt(unsigned int, RegisterStates *)
     {
         interrupted = true;
+#if DISK_DEBUG
+        printf("disk: interrupted\n");
+#endif
     }
 
     void ATADisk::WaitForInterrupt()

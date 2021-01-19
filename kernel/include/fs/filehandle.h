@@ -12,8 +12,12 @@ namespace FS
     {
         uint32_t id;
         FileSystem *fs;
-        DirEntry *entry;
+        DirEntry entry;
         uint32_t offset;
+
+        FileHandle(uint32_t id, FileSystem *fs, DirEntry entry)
+            : id(id), fs(fs), entry(entry), offset(0) {}
+            
     };
 
 } // namespace FS

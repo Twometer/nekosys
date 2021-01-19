@@ -47,14 +47,44 @@ namespace FS
 
     uint32_t VirtualFileSystem::Open(const nk::String &path)
     {
+        auto mountPoint = FindMountPoint(path);
+        if (mountPoint == nullptr)
+        {
+            printf("vfs: Mount point not found for %s\n", path.CStr());
+            return 0;
+        }
+
+        auto entry = mountPoint->fs->GetFileMeta(GetRelativePath(mountPoint, path));
+        FileHandle *handle = new FileHandle(++idCounter, mountPoint->fs, entry);
+        fileHandles.Add(handle);
+        return handle->id;
     }
 
     void VirtualFileSystem::Read(uint32_t fileHandle, size_t size, uint8_t *dst)
     {
+        for (int i = 0; i < fileHandles.Size(); i++)
+        {
+            auto handle = fileHandles.At(i);
+            if (handle->id == fileHandle)
+            {
+                handle->fs->Read(handle->entry, size, dst);
+                break;
+            }
+        }
     }
 
     void VirtualFileSystem::Close(uint32_t fileHandle)
     {
+        for (int i = 0; i < fileHandles.Size(); i++)
+        {
+            auto handle = fileHandles.At(i);
+            if (handle->id == fileHandle)
+            {
+                fileHandles.Remove(i);
+                delete handle;
+                return;
+            }
+        }
     }
 
     void VirtualFileSystem::ListDirectory(const nk::String &path)
