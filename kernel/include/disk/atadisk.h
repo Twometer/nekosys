@@ -2,12 +2,12 @@
 #define _ATA_DISK_H
 
 #include <kernel/interrupts.h>
-#include <device/blockdevice.h>
+#include <disk/blockdevice.h>
 
 namespace Disk
 {
 
-    class ATADisk : public Device::IBlockDevice, Kernel::InterruptHandler
+    class ATADisk : public Disk::IBlockDevice, Kernel::InterruptHandler
     {
     private:
         int max_sectors = 0;

@@ -1,14 +1,18 @@
 #ifndef _MOUNT_POINT_H
 #define _MOUNT_POINT_H
 
+#include <nk/string.h>
 #include <fs/filesystem.h>
 
 namespace FS
 {
     struct MountPoint
     {
-        const char *path;
+        nk::String path;
         FileSystem *fs;
+
+        MountPoint(const nk::String &path, FileSystem *fs)
+            : path(path), fs(fs){};
     };
 } // namespace FS
 

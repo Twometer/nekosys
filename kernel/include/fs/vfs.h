@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <nk/vector.h>
+#include <nk/string.h>
 #include <fs/mountpoint.h>
 #include <fs/file.h>
 
@@ -14,15 +15,20 @@ namespace FS
         nk::Vector<MountPoint *> mounts;
 
     public:
-        void Mount(const char *path, FileSystem *fs);
+        void Mount(const nk::String &path, FileSystem *fs);
 
-        void Unmount(const char *path);
+        void Unmount(const nk::String &path);
 
-        bool Exists(const char *path);
+        bool Exists(const nk::String &path);
 
-        File *GetFile(const char *path);
+        File *GetFile(const nk::String &path);
 
         uint8_t *ReadFile(File *file);
+
+        void ListDirectory(const nk::String &path);
+
+    private:
+        MountPoint *FindMountPoint(const nk::String &path);
     };
 } // namespace FS
 

@@ -12,6 +12,8 @@
 #include <memory/pagemanager.h>
 #include <memory/pagedirectory.h>
 #include <fs/mbr.h>
+#include <fs/vfs.h>
+#include <fs/fat16.h>
 #include <sys/syscall.h>
 #include <tasks/scheduler.h>
 #include <stdio.h>
@@ -180,10 +182,17 @@ extern "C"
 				printf("  type=%d, start=%d, len=%d\n", part->partitionType, part->startSector, part->numSectors);
 			}
 
-			uint8_t *demo_block = new uint8_t[512];
-			device->ReadBlock(696, 1, demo_block); // sector 696 on our test disk contains a test sector
-			printf("  Read from disk: %s\n", demo_block);
-			delete[] demo_block;
+			FileSystem *fat = new Fat16(device, partitions.At(0));
+
+			VirtualFileSystem vfs;
+			vfs.Mount("/", fat);
+			vfs.ListDirectory("/");
+
+			//uint8_t *demo_block = new uint8_t[512];
+			//device->ReadBlock(696, 1, demo_block); // sector 696 on our test disk contains a test sector
+			//printf("  Read from disk: %s\n", demo_block);
+			//delete[] demo_block;
+			delete fat;
 		}
 		else
 		{

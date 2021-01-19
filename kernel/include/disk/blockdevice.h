@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-namespace Device
+namespace Disk
 {
 
     class IBlockDevice
@@ -21,6 +21,6 @@ namespace Device
         bool IsAvailable() { return available; }
     };
 
-} // namespace Device
+} // namespace Disk
 
 #endif

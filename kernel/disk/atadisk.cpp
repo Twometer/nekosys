@@ -116,7 +116,7 @@ namespace Disk
         }
     }
 
-    void ATADisk::WriteBlock(uint64_t block_idx, uint64_t block_num, uint8_t *data)
+    void ATADisk::WriteBlock(uint64_t, uint64_t, uint8_t *)
     {
         // not yet implemented
     }

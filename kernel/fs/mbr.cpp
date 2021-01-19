@@ -5,7 +5,7 @@
 namespace FS
 {
 
-    const nk::Vector<Partition *> MBR::Parse(Device::IBlockDevice *device)
+    const nk::Vector<Partition *> MBR::Parse(Disk::IBlockDevice *device)
     {
         uint8_t *mbr = new uint8_t[512];
         device->ReadBlock(0, 1, mbr);

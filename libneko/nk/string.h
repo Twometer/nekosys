@@ -10,14 +10,29 @@ namespace nk
     class String
     {
     private:
-        size_t length;
-        const char *cstring;
-        bool ownsBuf = false;
+        const char *cstring = nullptr;
+        size_t length = 0;
+
+    private:
+        String(const char *cstring, size_t len)
+        {
+            length = len;
+            auto buf = new char[len + 1];
+            memcpy(buf, cstring, length);
+            buf[len] = 0;
+            this->cstring = buf;
+        }
 
     public:
         String() : cstring(nullptr), length(0) {}
 
-        String(const char *cstring) : cstring(cstring), length(strlen(cstring)) {}
+        String(const char *cstring)
+        {
+            length = strlen(cstring);
+            auto buf = new char[length + 1];
+            memcpy(buf, cstring, length + 1);
+            this->cstring = buf;
+        }
 
         String(const String &other)
         {
@@ -26,8 +41,7 @@ namespace nk
 
         ~String()
         {
-            if (ownsBuf)
-                delete cstring;
+            delete cstring;
         }
 
         const char *CStr() const
@@ -70,20 +84,31 @@ namespace nk
             return EqualsImpl(other);
         }
 
+        String Append(const String &other) const
+        {
+            auto newlen = length + other.length + 1;
+            char tmpbuf[newlen];
+            memcpy(tmpbuf, cstring, length);
+            memcpy(tmpbuf + length, other.cstring, other.length);
+            tmpbuf[newlen - 1] = 0;
+            return String(tmpbuf);
+        }
+
+        String Substring(size_t offset) const
+        {
+            return String(&cstring[offset], length - offset);
+        }
+
         String &operator=(const String &other)
         {
             if (this != &other)
             {
-                if (ownsBuf)
-                {
-                    delete cstring;
-                }
+                delete cstring;
 
                 length = other.length;
                 auto str = new char[other.length + 1];
                 memcpy(str, other.cstring, length + 1);
                 cstring = str;
-                ownsBuf = true;
             }
             return *this;
         }
