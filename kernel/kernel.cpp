@@ -11,6 +11,7 @@
 #include <memory/memorymap.h>
 #include <memory/pagemanager.h>
 #include <memory/pagedirectory.h>
+#include <fs/mbr.h>
 #include <sys/syscall.h>
 #include <tasks/scheduler.h>
 #include <stdio.h>
@@ -19,6 +20,7 @@ using namespace Kernel;
 using namespace Device;
 using namespace Memory;
 using namespace Disk;
+using namespace FS;
 
 void idleThreadEP()
 {
@@ -170,15 +172,28 @@ extern "C"
 		IBlockDevice *device = new ATADisk(0);
 		if (device->IsAvailable())
 		{
+			auto partitions = MBR::Parse(device);
+			printf("Disk has %d partitions\n", partitions.Size());
+			for (size_t i = 0; i < partitions.Size(); i++)
+			{
+				auto part = partitions.At(i);
+				printf("  type=%d, start=%d, len=%d\n", part->partitionType, part->startSector, part->numSectors);
+			}
+
 			uint8_t *demo_block = new uint8_t[512];
 			device->ReadBlock(696, 1, demo_block); // sector 696 on our test disk contains a test sector
 			printf("  Read from disk: %s\n", demo_block);
 			delete[] demo_block;
 		}
+		else
+		{
+			printf("Disk is not available\n");
+		}
 		delete device;
 		Interrupts::Disable(); // disk may have enabled it
 
 		// Tasking
+		printf("Initializing task system\n");
 		Scheduler *scheduler = scheduler->GetInstance();
 		scheduler->Initialize();
 
