@@ -3,6 +3,8 @@
 
 using namespace Kernel;
 
+#define DISK_DEBUG 0
+
 #define DRIVE_IRQ_BASE 14
 
 #define DRIVE_PORT_DATA 0x1F0
@@ -91,8 +93,15 @@ namespace Disk
 
     void ATADisk::ReadBlock(uint64_t block_idx, uint64_t block_num, uint8_t *data)
     {
+        while (IO::In8(DRIVE_PORT_STATUS) & BSY)
+            ;
+
         if (block_num == 256)
             block_num = 0;
+
+#if DISK_DEBUG
+        printf("disk: reading %d blocks from %d\n", (int)block_num, (int)block_idx);
+#endif
 
         IO::Out8(DRIVE_PORT_SELECT, 0xE0 | ((block_idx >> 24) & 0x0F));
         IO::Out8(DRIVE_PORT_SECTOR_COUNT, (uint8_t)block_num);
@@ -119,6 +128,9 @@ namespace Disk
 
     void ATADisk::WaitForInterrupt()
     {
+#if DISK_DEBUG
+        printf("disk: waiting for interrupt\n");
+#endif
         interrupted = false;
         Interrupts::Enable();
         while (!interrupted)
