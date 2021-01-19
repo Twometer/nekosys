@@ -22,7 +22,7 @@ namespace FS
 
         virtual bool Exists(const nk::String &path) = 0;
 
-        virtual DirEntry *GetFileMeta(const nk::String &path) = 0;
+        virtual DirEntry GetFileMeta(const nk::String &path) = 0;
 
         virtual void ListDirectory(const nk::String &path) = 0;
     };

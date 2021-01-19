@@ -31,8 +31,18 @@ namespace FS
         return mountPoint->fs->Exists(path);
     }
 
-    DirEntry *VirtualFileSystem::GetFileMeta(const nk::String &path)
+    DirEntry VirtualFileSystem::GetFileMeta(const nk::String &path)
     {
+        auto mountPoint = FindMountPoint(path);
+        if (mountPoint == nullptr)
+        {
+            printf("vfs: Mount point not found for %s\n", path.CStr());
+            return DirEntry::Invalid;
+        }
+#if VFS_DEBUG
+        printf("vfs: get_file_meta %s\n", mountPoint->path.CStr());
+#endif
+        return mountPoint->fs->GetFileMeta(GetRelativePath(mountPoint, path));
     }
 
     uint32_t VirtualFileSystem::Open(const nk::String &path)
@@ -63,7 +73,9 @@ namespace FS
 
     nk::String VirtualFileSystem::GetRelativePath(MountPoint *mountPoint, const nk::String &absolutePath)
     {
-        return absolutePath.Substring(mountPoint->path.Length()).Append("/");
+        nk::String base = "/";
+        nk::String relative = absolutePath.Substring(mountPoint->path.Length());
+        return base.Append(relative);
     }
 
     MountPoint *VirtualFileSystem::FindMountPoint(const nk::String &path)

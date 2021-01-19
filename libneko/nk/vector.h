@@ -34,6 +34,11 @@ namespace nk
             size--;
         }
 
+        void Clear()
+        {
+            size = 0;
+        }
+
         const T &At(size_t index) const
         {
             return data[index];

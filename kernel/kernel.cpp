@@ -181,8 +181,12 @@ extern "C"
 			vfs.Mount("/", fat);
 			vfs.ListDirectory("/");
 
-			
-			
+			auto testEntry = vfs.GetFileMeta("/test.txt");
+			if (testEntry.type != DirEntryType::Invalid)
+				printf("Found test.txt with size %d\n", testEntry.size);
+			else
+				printf("Test file not found\n");
+
 			delete fat;
 		}
 		else

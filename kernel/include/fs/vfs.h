@@ -22,7 +22,7 @@ namespace FS
 
         bool Exists(const nk::String &path);
 
-        DirEntry *GetFileMeta(const nk::String &path);
+        DirEntry GetFileMeta(const nk::String &path);
 
         uint32_t Open(const nk::String &path);
 

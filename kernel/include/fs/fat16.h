@@ -28,7 +28,7 @@ namespace FS
 
         bool Exists(const nk::String &path) override;
 
-        DirEntry *GetFileMeta(const nk::String &path) override;
+        DirEntry GetFileMeta(const nk::String &path) override;
 
         void ListDirectory(const nk::String &path) override;
 

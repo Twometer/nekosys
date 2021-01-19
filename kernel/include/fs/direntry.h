@@ -14,13 +14,16 @@ namespace FS
         Folder,
         Hidden,
         VolumeLabel,
-        System
+        System,
+        Invalid
     };
 
     struct DirEntry
     {
+        static const DirEntry Invalid;
+
         nk::String name;
-        
+
         DirEntryType type;
 
         size_t size;

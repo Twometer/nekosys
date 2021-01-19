@@ -4,8 +4,11 @@
 
 #define FAT16_DEBUG 0
 
+#define DIRENT_SIZE 32
+
 namespace FS
 {
+    // FIXME: Fat16 FS currently only knows the root directory
 
     Fat16::Fat16(Disk::IBlockDevice *blockDevice, Partition *partition) : FileSystem(blockDevice, partition)
     {
@@ -26,7 +29,7 @@ namespace FS
 
         root_dir_sector = partition->startSector + reserved_blocks + blocks_per_fat * num_fats;
 
-        auto rootdirSize = 32 * root_dir_entries;
+        auto rootdirSize = DIRENT_SIZE * root_dir_entries;
         root_directory = new uint8_t[rootdirSize];
         blockDevice->ReadBlock(root_dir_sector, rootdirSize / 512, root_directory);
 
@@ -37,20 +40,33 @@ namespace FS
 
     bool Fat16::Exists(const nk::String &path)
     {
-        return false;
+        return GetFileMeta(path).type != DirEntryType::Invalid;
     }
 
-    DirEntry *Fat16::GetFileMeta(const nk::String &path)
+    DirEntry Fat16::GetFileMeta(const nk::String &path)
     {
-        return nullptr;
+        auto fn = path.Substring(1);
+
+        bool eof = false;
+        for (size_t i = 0; i < root_dir_entries; i++)
+        {
+            auto entry = ParseDirEntry(root_directory + i * DIRENT_SIZE, eof);
+            if (eof)
+                break;
+
+            if (entry.name == fn)
+                return entry;
+        }
+
+        return DirEntry::Invalid;
     }
 
     void Fat16::ListDirectory(const nk::String &path)
     {
         bool eof = false;
-        for (size_t i = 0; i < 512; i += 32)
+        for (size_t i = 0; i < root_dir_entries; i++)
         {
-            auto entry = ParseDirEntry(root_directory + i, eof);
+            auto entry = ParseDirEntry(root_directory + i * DIRENT_SIZE, eof);
             if (eof)
                 break;
 
