@@ -1,5 +1,5 @@
-#ifndef _SINGLETON_H
-#define _SINGLETON_H
+#ifndef _NK_SINGLETON_H
+#define _NK_SINGLETON_H
 
 #define DECLARE_SINGLETON(classname) \
 private:                             \

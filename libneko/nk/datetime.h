@@ -1,5 +1,5 @@
-#ifndef _DATETIME_H
-#define _DATETIME_H
+#ifndef _NK_DATETIME_H
+#define _NK_DATETIME_H
 
 #include <stdint.h>
 
