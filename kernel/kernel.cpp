@@ -175,23 +175,14 @@ extern "C"
 		if (device->IsAvailable())
 		{
 			auto partitions = MBR::Parse(device);
-			printf("Disk has %d partitions\n", partitions.Size());
-			for (size_t i = 0; i < partitions.Size(); i++)
-			{
-				auto part = partitions.At(i);
-				printf("  type=%d, start=%d, len=%d\n", part->partitionType, part->startSector, part->numSectors);
-			}
-
 			FileSystem *fat = new Fat16(device, partitions.At(0));
 
 			VirtualFileSystem vfs;
 			vfs.Mount("/", fat);
 			vfs.ListDirectory("/");
 
-			//uint8_t *demo_block = new uint8_t[512];
-			//device->ReadBlock(696, 1, demo_block); // sector 696 on our test disk contains a test sector
-			//printf("  Read from disk: %s\n", demo_block);
-			//delete[] demo_block;
+			
+			
 			delete fat;
 		}
 		else

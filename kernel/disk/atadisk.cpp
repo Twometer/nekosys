@@ -109,9 +109,9 @@ namespace Disk
         IO::Out8(DRIVE_PORT_LBAMID, (uint8_t)(block_idx >> 8));
         IO::Out8(DRIVE_PORT_LBAHI, (uint8_t)(block_idx >> 16));
         IO::Out8(DRIVE_PORT_CMD, DRIVE_COMMAND_READ);
+        WaitForInterrupt();
         for (size_t i = 0; i < block_num; i++)
         {
-            WaitForInterrupt();
             ReadRaw((uint16_t *)(data + 256 * i), 256);
         }
     }

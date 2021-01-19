@@ -1,5 +1,7 @@
 #include <fs/vfs.h>
 
+#define VFS_DEBUG 0
+
 namespace FS
 {
 
@@ -29,26 +31,39 @@ namespace FS
         return mountPoint->fs->Exists(path);
     }
 
-    File *VirtualFileSystem::GetFile(const nk::String &path)
+    DirEntry *VirtualFileSystem::GetFileMeta(const nk::String &path)
     {
-        auto mountPoint = FindMountPoint(path);
-        auto subPath = path.Substring(mountPoint->path.Length());
-        return mountPoint->fs->GetFile(subPath);
     }
 
-    uint8_t *VirtualFileSystem::ReadFile(File *file)
+    uint32_t VirtualFileSystem::Open(const nk::String &path)
     {
-        // TODO this api is shit
-        /*auto mountPoint = FindMountPoint(file->path);
-        auto subPath = file->path.Substring(mountPoint->path.Length());
-        mountPoint->fs->ReadFile(sub)*/
+    }
+
+    void VirtualFileSystem::Read(uint32_t fileHandle, size_t size, uint8_t *dst)
+    {
+    }
+
+    void VirtualFileSystem::Close(uint32_t fileHandle)
+    {
     }
 
     void VirtualFileSystem::ListDirectory(const nk::String &path)
     {
         auto mountPoint = FindMountPoint(path);
-        auto subPath = path.Substring(mountPoint->path.Length()).Append("/");
-        mountPoint->fs->ListDirectory(subPath);
+        if (mountPoint == nullptr)
+        {
+            printf("vfs: Mount point not found for %s\n", path.CStr());
+            return;
+        }
+#if VFS_DEBUG
+        printf("vfs: list_dir %s\n", mountPoint->path.CStr());
+#endif
+        mountPoint->fs->ListDirectory(GetRelativePath(mountPoint, path));
+    }
+
+    nk::String VirtualFileSystem::GetRelativePath(MountPoint *mountPoint, const nk::String &absolutePath)
+    {
+        return absolutePath.Substring(mountPoint->path.Length()).Append("/");
     }
 
     MountPoint *VirtualFileSystem::FindMountPoint(const nk::String &path)

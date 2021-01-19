@@ -3,7 +3,7 @@
 
 #include <disk/blockdevice.h>
 #include <fs/partition.h>
-#include <fs/file.h>
+#include <fs/direntry.h>
 #include <nk/string.h>
 
 namespace FS
@@ -22,9 +22,7 @@ namespace FS
 
         virtual bool Exists(const nk::String &path) = 0;
 
-        virtual File *GetFile(const nk::String &path) = 0;
-
-        virtual uint8_t *ReadFile(File *file) = 0;
+        virtual DirEntry *GetFileMeta(const nk::String &path) = 0;
 
         virtual void ListDirectory(const nk::String &path) = 0;
     };

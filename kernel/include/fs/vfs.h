@@ -5,7 +5,8 @@
 #include <nk/vector.h>
 #include <nk/string.h>
 #include <fs/mountpoint.h>
-#include <fs/file.h>
+#include <fs/direntry.h>
+#include <fs/filehandle.h>
 
 namespace FS
 {
@@ -21,13 +22,19 @@ namespace FS
 
         bool Exists(const nk::String &path);
 
-        File *GetFile(const nk::String &path);
+        DirEntry *GetFileMeta(const nk::String &path);
 
-        uint8_t *ReadFile(File *file);
+        uint32_t Open(const nk::String &path);
+
+        void Read(uint32_t fileHandle, size_t size, uint8_t *dst);
+
+        void Close(uint32_t fileHandle);
 
         void ListDirectory(const nk::String &path);
 
     private:
+        nk::String GetRelativePath(MountPoint *mountPoint, const nk::String &absolutePath);
+
         MountPoint *FindMountPoint(const nk::String &path);
     };
 } // namespace FS

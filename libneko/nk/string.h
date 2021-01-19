@@ -51,7 +51,7 @@ namespace nk
 
         bool StartsWith(const String &other) const
         {
-            if (other.length < length)
+            if (other.length > length)
                 return false;
 
             for (size_t i = 0; i < other.length; i++)
