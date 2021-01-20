@@ -53,12 +53,13 @@ kernel:
     [kcc]
         input: build/intermediate/*.o
                kernel/**.cpp
-               kernel/**.c
                libc/**.c
                libc/**.cpp
+               libelf/**.cpp
 
         include: -I kernel/include
                  -I libc/include
                  -I libneko
+                 -I libelf/include
 
         output: build/NEKOKRNL

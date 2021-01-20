@@ -24,6 +24,7 @@ A map for nekosys' memory layout can be found at [memory.md](memory.md)
 ## Libraries
 - `libc`: Basic C functionality such as print, malloc etc.
 - `libneko`: Standard C++ library providing useful containers, templates, etc.
+- `libelf`: Parser for ELF binaries
 - ...
 
 ## Userland

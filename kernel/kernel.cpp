@@ -16,6 +16,7 @@
 #include <fs/fat16.h>
 #include <sys/syscall.h>
 #include <tasks/scheduler.h>
+#include <elf/elf.h>
 #include <stdio.h>
 
 using namespace Kernel;
@@ -181,22 +182,26 @@ extern "C"
 			vfs.Mount("/", fs);
 			vfs.ListDirectory("/");
 
-			auto testEntry = vfs.GetFileMeta("/bigfile.txt");
+			auto testEntry = vfs.GetFileMeta("/test.app");
 			if (testEntry.type != DirEntryType::Invalid)
-				printf("Found bigfile.txt with size %d\n", testEntry.size);
+				printf("Found test.app with size %d\n", testEntry.size);
 			else
 				printf("Test file not found\n");
 
-			uint32_t fileHandle = vfs.Open("/bigfile.txt");
+			uint32_t fileHandle = vfs.Open("/test.app");
 
 			char *buf = new char[testEntry.size + 1];
 			buf[testEntry.size] = 0;
 
 			vfs.Read(fileHandle, testEntry.size, (uint8_t *)buf);
-			printf("bigfile.txt contents:\n%s\n", buf);
+			ELF::Image elfImage((uint8_t *)buf, testEntry.size);
+
+			if (!elfImage.IsValid())
+				printf(" elf image not valid\n");
 
 			vfs.Close(fileHandle);
 
+			delete buf;
 			delete fs;
 		}
 		else

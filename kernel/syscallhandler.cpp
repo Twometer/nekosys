@@ -6,13 +6,13 @@ namespace Kernel
 {
     DEFINE_SINGLETON(SyscallHandler)
 
-    uint32_t syscall_print(void *param)
+    uint32_t sys$$print(void *param)
     {
         printf("%s", param);
         return 0;
     }
 
-    uint32_t syscall_texit(void *param)
+    uint32_t sys$$texit(void *param)
     {
         uint32_t exit_code = *(uint32_t *)(param);
         printf("UserThread %d exited with exit code %d\n", Thread::current->id, exit_code);
@@ -26,8 +26,8 @@ namespace Kernel
 
     void SyscallHandler::Register()
     {
-        AddSyscall(SYS_TEXIT, syscall_texit);
-        AddSyscall(SYS_PRINT, syscall_print);
+        AddSyscall(SYS_TEXIT, sys$$texit);
+        AddSyscall(SYS_PRINT, sys$$print);
         Interrupts::AddHandler(0x80, this);
     }
 
