@@ -7,7 +7,7 @@ nekosys uses the custom [NekoMake](https://github.com/nekosys-os/nkm) build syst
 ## Disk layout
 - Sector 0: MBR and `boot.asm` stage one loader: Loads Stage 2 so that we can use more than 512 bytes
 - Sector 1+: `loader.asm` stage two loader: Parses the FAT, loads the kernel into memory and executes it
-- The kernel is in a file called `NEKOKRNL` on the disk
+- The kernel is in a file called `koneko.bin` on the disk
 
 The disk must be formatted with FAT-16. Neko's [nkimg](https://github.com/nekosys-os/image-builder)
 is a very useful tool for this job.

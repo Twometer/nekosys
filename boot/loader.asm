@@ -473,7 +473,7 @@ err_nokrnl: db "Kernel file not found!", 0xa, 0xd, 0
 
 ; Other strings
 newline: db 0x0a, 0x0d, 0
-kernel_file: db "NEKOKRNL", 0
+kernel_file: db "koneko.bin", 0
 hextable: db "0123456789ABCDEF"
 
 times 1024 - ($-$$) db 0 ; pad to 2 sectors

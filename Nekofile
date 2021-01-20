@@ -41,7 +41,6 @@ default:
 ; Reset build directory
 clean:
     rm -rf build/
-    rm -rf sysroot/
 
     ; Build dirs
     mkdir -p build/kernel
@@ -106,12 +105,12 @@ kernel:
     [kcc]
         input: build/kernel/*.o
                kernel/**.cpp
-        output: build/NEKOKRNL
+        output: build/koneko.bin
 
 ; Creates a bootable image
 image:
-    cp build/NEKOKRNL fsroot
-    nkimg -s build/boot.bin -l build/loader.bin -r fsroot -o build/neko.img
+    cp build/koneko.bin sysroot
+    nkimg -s build/boot.bin -l build/loader.bin -r sysroot -o build/neko.img
 
 ; Compile, create an image, and run in QEMU
 run:
