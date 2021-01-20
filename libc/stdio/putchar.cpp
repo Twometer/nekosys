@@ -1,8 +1,8 @@
 #include <kernel/tty.h>
+#include <stdio.h>
 
 extern "C"
 {
-#include <stdio.h>
 
 	int putchar(int ic)
 	{

@@ -1,13 +1,13 @@
 #include <kernel/panic.h>
 #include <device/devicemanager.h>
 #include <string.h>
-extern "C"
-{
 #include <kernel/heap.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 
+extern "C"
+{
     /*
  * Simple heap implementation for getting the kernel started.
  * Should probably be replaced with something more efficient in

@@ -14,6 +14,12 @@ extern "C"
     void *malloc(size_t size);
     void free(void *ptr);
 
+/* dummy stuff for gcc to stop complaining */
+int atexit(void (*)(void));
+int atoi(const char*);
+void free(void*);
+char* getenv(const char*);
+
 #ifdef __cplusplus
 }
 #endif

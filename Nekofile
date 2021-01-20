@@ -1,8 +1,14 @@
 ; NekoMake build script for nekosys
 ;
 
-; Constants
-CCFLAGS = -std=gnu++11 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -Wall -Wextra -fno-pie -fno-rtti -O2 -mgeneral-regs-only
+; Compiler
+GCC = neko-gcc
+
+; Compiler base config
+CCBASECONF = -std=gnu++11 -Wall -Wextra -O2 -mgeneral-regs-only -mno-red-zone -fno-exceptions -fno-pie -fno-rtti
+
+; Compiler flags for kernel
+KFLAGS = -ffreestanding
 
 ; Assembler
 [asm, multi]:
@@ -10,56 +16,105 @@ CCFLAGS = -std=gnu++11 -ffreestanding -mno-red-zone -fno-exceptions -nostdlib -W
 
 ; Kernel compiler
 [kcc, single]:
-    neko-gcc {input} -o {output} -D __KERNEL -T kernel.ld {CCFLAGS} {include}
+    {GCC} {input} -o {output} -T kernel.ld {KFLAGS} {CCBASECONF}
 
-; Userspace compiler (TODO)
-[cc, single]:
-    neko-gcc -c {input} -o {output} {CCFLAGS} {include}
+; Lib compiler
+[flibcc, multi]:
+    {GCC} -c {input} -o {output} {CCBASECONF} {flags}
+[libcc, multi]:
+    {GCC} -c {input} -o {output} {CCBASECONF}
 
-; Targets
+; GNU ar
+[ar, multi]:
+    ar rcs {output} {input}
+
+; Default: Compile everything
 default:
     % clean
+    % sysroot
+    % libk
+    % libc
+    % libelf
     % bootloader
     % kernel
 
-image:
-    cp build/NEKOKRNL fsroot
-    nkimg -s build/boot.bin -l build/loader.bin -r fsroot -o build/neko.img
-
-qemu:
-    % image
-    qemu-system-i386 -m 512M -drive format=raw,file=build/neko.img -usb -vga std -d cpu_reset -no-reboot
-
-run:
-    % default
-    % qemu
-
+; Reset build directory
 clean:
     rm -rf build/
-    mkdir build/
-    mkdir build/intermediate
+    rm -rf sysroot/
 
+    ; Build dirs
+    mkdir -p build/kernel
+    mkdir -p build/libk
+    mkdir -p build/libc
+    mkdir -p build/libelf
+
+    ; Sysroot
+    mkdir -p sysroot/usr/include
+    mkdir -p sysroot/usr/lib
+
+; Set up the sysroot
+sysroot:
+    cp -RT kernel/include sysroot/usr/include
+    cp -RT libc/include sysroot/usr/include
+    cp -RT libelf/include sysroot/usr/include
+    cp -RT libneko sysroot/usr/include
+
+; Compile kernel version of libc
+libk:
+    [flibcc]
+        input: libc/**.c
+               libc/**.cpp
+        flags: -ffreestanding -D__KERNEL
+        output: build/libk/~.o
+    [ar]
+        input: build/libk/*.o
+        output: sysroot/usr/lib/libk.a
+
+; Compile regular libc
+libc:
+    [flibcc]
+        input: libc/**.c
+               libc/**.cpp
+        flags: -ffreestanding 
+        output: build/libc/~.o
+    [ar]
+        input: build/libc/*.o
+        output: sysroot/usr/lib/libc.a
+
+libelf:
+    [libcc]
+        input: libelf/**.cpp
+        output: build/libelf/~.o
+    [ar]
+        input: build/libelf/*.o
+        output: sysroot/usr/lib/libelf.a
+
+; Compiles the bootloader
 bootloader:
     [asm]
         input: boot/*.asm
-        output: build/~.bin
+        output: build/~.bin  
 
+; Compiles the kernel
 kernel:
     [asm]
         input: kernel/**.asm
         format: elf32
-        output: build/intermediate/~.o
+        output: build/kernel/~.o
 
     [kcc]
-        input: build/intermediate/*.o
+        input: build/kernel/*.o
                kernel/**.cpp
-               libc/**.c
-               libc/**.cpp
-               libelf/**.cpp
-
-        include: -I kernel/include
-                 -I libc/include
-                 -I libneko
-                 -I libelf/include
-
         output: build/NEKOKRNL
+
+; Creates a bootable image
+image:
+    cp build/NEKOKRNL fsroot
+    nkimg -s build/boot.bin -l build/loader.bin -r fsroot -o build/neko.img
+
+; Compile, create an image, and run in QEMU
+run:
+    % default
+    % image
+    qemu-system-i386 -m 512M -drive format=raw,file=build/neko.img -usb -vga std -d cpu_reset -no-reboot

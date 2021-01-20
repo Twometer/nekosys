@@ -10,8 +10,6 @@ extern "C" void __cxa_pure_virtual()
 atexitFuncEntry_t __atexitFuncs[ATEXIT_FUNC_MAX];
 uarch_t __atexitFuncCount = 0;
 
-void *__dso_handle = 0;
-
 int __cxa_atexit(void (*f)(void *), void *objptr, void *dso){
     if(__atexitFuncCount >= ATEXIT_FUNC_MAX){
         return -1;
