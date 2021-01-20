@@ -8,7 +8,7 @@ GCC = neko-gcc
 CCBASECONF = -std=gnu++11 -Wall -Wextra -O2 -mgeneral-regs-only -mno-red-zone -fno-exceptions -fno-pie -fno-rtti
 
 ; Compiler flags for kernel
-KFLAGS = -ffreestanding
+KFLAGS = -ffreestanding -nostdlib -lelf -lk
 
 ; Assembler
 [asm, multi]:

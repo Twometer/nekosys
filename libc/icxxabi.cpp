@@ -10,8 +10,14 @@ extern "C" void __cxa_pure_virtual()
 atexitFuncEntry_t __atexitFuncs[ATEXIT_FUNC_MAX];
 uarch_t __atexitFuncCount = 0;
 
-int __cxa_atexit(void (*f)(void *), void *objptr, void *dso){
-    if(__atexitFuncCount >= ATEXIT_FUNC_MAX){
+#ifdef __KERNEL
+void *__dso_handle = 0;
+#endif
+
+int __cxa_atexit(void (*f)(void *), void *objptr, void *dso)
+{
+    if (__atexitFuncCount >= ATEXIT_FUNC_MAX)
+    {
         return -1;
     }
     __atexitFuncs[__atexitFuncCount].destructorFunc = f;
@@ -21,40 +27,46 @@ int __cxa_atexit(void (*f)(void *), void *objptr, void *dso){
     return 0;
 }
 
-void __cxa_finalize(void *f){
+void __cxa_finalize(void *f)
+{
     signed i = __atexitFuncCount;
-    if(!f){
-        while(i--){
-            if(__atexitFuncs[i].destructorFunc){
+    if (!f)
+    {
+        while (i--)
+        {
+            if (__atexitFuncs[i].destructorFunc)
+            {
                 (*__atexitFuncs[i].destructorFunc)(__atexitFuncs[i].objPtr);
             }
         }
         return;
     }
 
-    for(; i >= 0; i--){
-        if(__atexitFuncs[i].destructorFunc == f){
+    for (; i >= 0; i--)
+    {
+        if (__atexitFuncs[i].destructorFunc == f)
+        {
             (*__atexitFuncs[i].destructorFunc)(__atexitFuncs[i].objPtr);
             __atexitFuncs[i].destructorFunc = 0;
         }
     }
 }
- 
+
 void *operator new(size_t size)
 {
     return malloc(size);
 }
- 
+
 void *operator new[](size_t size)
 {
     return malloc(size);
 }
- 
+
 void operator delete(void *p)
 {
     free(p);
 }
- 
+
 void operator delete[](void *p)
 {
     free(p);
