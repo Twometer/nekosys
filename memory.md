@@ -9,6 +9,9 @@ This file describes how the memory is generally laid out when nekosys is running
 [0x8200 + 400h]: Placeholder for some FAT sectors
 [0xA000 + ...h]: Stores the kernel. Maximum length is 0x75FFF (471K, up to the end of low memory)
 ```
+> Note that the kernel is saved as a flat binary instead of an ELF file, so that we
+> save memory (no header) in the first MB, as well as make the bootloader smaller
+> and simpler
 
 ### Virtual memory
 ```
