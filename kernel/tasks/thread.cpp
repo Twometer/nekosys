@@ -67,11 +67,10 @@ namespace Kernel
 
             registers.ds = SEG_USER_DATA | 0b11;
             registers.esp = (uint32_t)stack->GetStackPtr();
-        }
 
-        // make sure we restore to kernel page directory before continuing
-        if (ring == Ring::Ring3)
+            // make sure we restore to kernel page directory before continuing
             PageDirectory::kernelDir->Load();
+        }
     }
 
     Thread::~Thread()

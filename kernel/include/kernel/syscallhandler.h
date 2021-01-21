@@ -14,7 +14,7 @@ namespace Kernel
     {
         DECLARE_SINGLETON(SyscallHandler)
     private:
-        nk::Vector<syscall_t> syscalls;
+        nk::Vector<syscall_t> *syscalls;
 
     public:
         void Register();

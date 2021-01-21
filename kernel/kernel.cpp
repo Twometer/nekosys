@@ -182,13 +182,13 @@ extern "C"
 			vfs.Mount("/", fs);
 			vfs.ListDirectory("/");
 
-			auto testEntry = vfs.GetFileMeta("/test.app");
+			auto testEntry = vfs.GetFileMeta("/hlwrld.app");
 			if (testEntry.type != DirEntryType::Invalid)
-				printf("Found test.app with size %d\n", testEntry.size);
+				printf("Found test app with size %d\n", testEntry.size);
 			else
 				printf("Test file not found\n");
 
-			uint32_t fileHandle = vfs.Open("/test.app");
+			uint32_t fileHandle = vfs.Open("/hlwrld.app");
 
 			char *buf = new char[testEntry.size + 1];
 			buf[testEntry.size] = 0;

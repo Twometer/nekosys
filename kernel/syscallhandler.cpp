@@ -28,6 +28,7 @@ namespace Kernel
 
     SyscallHandler::SyscallHandler()
     {
+        syscalls = new nk::Vector<syscall_t>();
     }
 
     void SyscallHandler::Register()
@@ -55,8 +56,7 @@ namespace Kernel
         uint32_t syscall_num = stack.Pop();                 // Syscall number
         void *param_ptr = (void *)stack.Pop();              // Pointer to the param struct
         uint32_t *retval = (uint32_t *)stack.GetStackPtr(); // Stack now points at the retval ptr
-
-        auto syscall_ptr = syscalls.At(syscall_num);
+        auto syscall_ptr = syscalls->At(syscall_num);
         if (syscall_ptr == nullptr)
         {
             *retval = -1;
@@ -71,8 +71,8 @@ namespace Kernel
 
     void SyscallHandler::AddSyscall(uint32_t number, syscall_t call)
     {
-        syscalls.Reserve(number);
-        syscalls.At(number) = call;
+        syscalls->Reserve(number + 1);
+        syscalls->At(number) = call;
     }
 
 } // namespace Kernel
