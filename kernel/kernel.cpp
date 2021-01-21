@@ -197,7 +197,13 @@ extern "C"
 			ELF::Image elfImage((uint8_t *)buf, testEntry.size);
 
 			if (!elfImage.IsValid())
+			{
 				printf(" elf image not valid\n");
+			}
+			else
+			{
+				// todo
+			}
 
 			vfs.Close(fileHandle);
 

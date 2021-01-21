@@ -86,7 +86,8 @@ namespace ELF
         uint8_t *data;
         size_t data_size;
 
-        Elf32_Ehdr *header;
+        Elf32_Ehdr *elf_header;
+        Elf32_Phdr *program_header;
 
         bool is_valid;
 
@@ -94,6 +95,10 @@ namespace ELF
         Image(uint8_t *data, size_t data_size);
 
         bool IsValid() { return is_valid; }
+
+        Elf32_Ehdr *ElfHeader() { return elf_header; }
+
+        Elf32_Phdr *ProgramHeader() { return program_header; }
 
     private:
         bool CheckMagic();
