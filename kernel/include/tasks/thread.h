@@ -2,8 +2,8 @@
 #define _THREAD_H
 
 #include <kernel/ring.h>
-#include <kernel/stack.h>
 #include <kernel/registers.h>
+#include <memory/stack.h>
 #include <memory/pagedirectory.h>
 
 #define THREAD_STACK_SIZE 4096
@@ -23,27 +23,31 @@ namespace Kernel
     class Thread
     {
     private:
+        static Thread *current;
         static int idCounter;
 
-        Stack *stack;
+        int id;
+        Ring ring;
+        RegisterStates registers{};
+        ThreadState threadState = ThreadState::Runnable;
+
+        Memory::PageDirectory *pagedir;
+        Memory::Stack *stack = nullptr;
+
+        uint32_t currentSliceStart = 0;
+        uint32_t unblockTime = 0;
+
+    private:
+        Thread(Memory::PageDirectory *pagedir, Memory::Stack *stack, Ring ring);
 
     public:
-        static Thread *current;
-
-        int id;
-        uint32_t unblock_time = 0;
-        uint32_t run_start_time = 0;
-        uint32_t last_cpu_time = 0;
-        RegisterStates registers{};
-        Ring ring;
-        ThreadState threadState = ThreadState::Runnable;
-        Memory::PageDirectory *pagedir;
-
-        ThreadMain entryPoint;
-
-        Thread(ThreadMain entryPoint, Ring ring = Ring::Ring0);
-
         ~Thread();
+
+        static Thread *CreateKernelThread(ThreadMain entryPoint);
+
+        static Thread *CreateUserThread(ThreadMain entryPoint, Memory::PageDirectory *pagedir, Memory::Stack *stack);
+
+        static Thread *CreateDummyThread();
 
         void Start();
 
@@ -51,11 +55,29 @@ namespace Kernel
 
         void Yield();
 
-        uint32_t GetRuntime();
+        void Kill();
+
+        int GetId() { return id; }
 
         bool IsCurrent() { return current == this; };
+        void MakeCurrent() { current = this; }
 
-        void Kill();
+        ThreadState GetState() { return threadState; }
+        void SetState(ThreadState state) { threadState = state; }
+
+        uint32_t GetRuntime();
+
+        uint32_t GetUnblockTime() { return unblockTime; }
+
+        Memory::PageDirectory *GetPageDir() { return pagedir; }
+
+        Ring GetRing() { return ring; }
+
+        RegisterStates &GetRegisters() { return registers; }
+
+        void BeginSlice();
+
+        static Thread *Current() { return current; }
     };
 
 }; // namespace Kernel

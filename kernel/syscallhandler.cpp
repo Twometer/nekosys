@@ -1,6 +1,8 @@
 #include <kernel/syscallhandler.h>
-#include <kernel/stack.h>
+#include <memory/stack.h>
 #include <tasks/thread.h>
+
+using namespace Memory;
 
 namespace Kernel
 {
@@ -21,8 +23,8 @@ namespace Kernel
     uint32_t sys$$texit(void *param)
     {
         uint32_t exit_code = *(uint32_t *)(param);
-        printf("UserThread %d exited with exit code %d\n", Thread::current->id, exit_code);
-        Thread::current->Kill();
+        printf("UserThread %d exited with exit code %d\n", Thread::Current()->GetId(), exit_code);
+        Thread::Current()->Kill();
         return 0;
     }
 
@@ -60,7 +62,7 @@ namespace Kernel
         if (syscall_ptr == nullptr)
         {
             *retval = -1;
-            printf("warn: Thread %d attempted invalid syscall %x\n", Thread::current->id, syscall_num);
+            printf("warn: Thread %d attempted invalid syscall %x\n", Thread::Current()->GetId(), syscall_num);
             return;
         }
         else

@@ -46,7 +46,7 @@ namespace Memory
 
     pageframe_t PageManager::AllocPageframe()
     {
-        // todo make this more efficient
+        // FIXME: This can probably be more efficient
         for (uint32_t i = last_page_idx; i < num_pages; i++)
         {
             if (frame_map[i] == PAGE_FREE)

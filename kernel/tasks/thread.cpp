@@ -8,74 +8,74 @@
 
 using namespace Memory;
 
+// FIXME: All blocking methods should not wait for the
+//        timer interrupt but pass control to the scheduler
+//        instantly
+
 namespace Kernel
 {
-
     Thread *Thread::current = nullptr;
     int Thread::idCounter = 0;
 
-    static void thread_exit_func_krnl()
+    static void kernel_thread_exit()
     {
-        auto curThread = Thread::current;
-        printf("KernelThread %x died\n", curThread->id);
-        curThread->threadState = ThreadState::Dead;
-        Interrupts::WaitForInt(); // wait for the scheduler to get us out of here
+        auto thread = Thread::Current();
+        thread->SetState(ThreadState::Dead);
+        printf("Kernel thread %x died\n", thread->GetId());
+
+        // wait for the scheduler to get us out of here
+        Interrupts::WaitForInt();
     }
 
-    static void thread_exit_func_user()
+    Thread::Thread(PageDirectory *pagedir, Stack *stack, Ring ring)
+        : id(idCounter++), pagedir(pagedir), stack(stack), ring(ring)
     {
-        uint32_t exit_code = 0;
-        syscall(SYS_TEXIT, &exit_code);
-    }
-
-    Thread::Thread(ThreadMain entryPoint, Ring ring)
-    {
-        this->id = idCounter++;
-        this->entryPoint = entryPoint;
-
-        if (ring == Ring::Ring0)
-        {
-            pagedir = PageDirectory::kernelDir;
-            stack = new Stack(new uint8_t[THREAD_STACK_SIZE], THREAD_STACK_SIZE);
-            // Push the kernel thread return func#
-            stack->Push((uint32_t)(thread_exit_func_krnl));
-
-            stack->Push(0x202);                // Flags, 0x202: interrupt enable = true
-            stack->Push(SEG_KRNL_CODE);        // Code Segment
-            stack->Push((uint32_t)entryPoint); // IP = entry_point
-            registers.ds = SEG_KRNL_DATA;
-            registers.esp = (uint32_t)this->stack->GetStackPtr();
-        }
-        else
-        {
-            pagedir = new PageDirectory(*PageDirectory::kernelDir);
-
-            auto pageframe = PageManager::GetInstance()->AllocPageframe(); // todo save all pages that the thread allocates so that we don't leak memory
-            auto stack_virt = (vaddress_t)0x100000;
-            pagedir->MapPage(pageframe, stack_virt, PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
-
-            stack = new Stack(stack_virt, THREAD_STACK_SIZE);
-            // push the user thread return func
-            stack->Push((uint32_t)(thread_exit_func_user));
-
-            // put stuff on the stack that iret needs
-            stack->Push(SEG_USER_DATA | 0b11);             // stackseg
-            stack->Push((uint32_t)(stack->GetStackPtr())); // stack ptr
-            stack->Push(0x202);                            // flags
-            stack->Push(SEG_USER_CODE | 0b11);             // code seg
-            stack->Push((uint32_t)entryPoint);             // ret ptr
-
-            registers.ds = SEG_USER_DATA | 0b11;
-            registers.esp = (uint32_t)stack->GetStackPtr();
-
-            // make sure we restore to kernel page directory before continuing
-            PageDirectory::kernelDir->Load();
-        }
     }
 
     Thread::~Thread()
     {
-        printf("thread dying\n");
+        // TODO
+    }
+
+    Thread *Thread::CreateKernelThread(ThreadMain entryPoint)
+    {
+        auto stack = new Stack(new uint8_t[THREAD_STACK_SIZE], THREAD_STACK_SIZE);
+        stack->Push((uint32_t)kernel_thread_exit); // Kernel thread return func
+        stack->Push(0x202);                        // Flags: Interrupts enabled
+        stack->Push(SEG_KRNL_CODE);                // Code segment
+        stack->Push((uint32_t)entryPoint);         // IP = entry point
+
+        auto thread = new Thread(PageDirectory::kernelDir, stack, Ring::Ring0);
+
+        auto &regs = thread->GetRegisters();
+        regs.ds = SEG_KRNL_DATA;
+        regs.esp = (uint32_t)stack->GetStackPtr();
+
+        return thread;
+    }
+
+    Thread *Thread::CreateUserThread(ThreadMain entryPoint, Memory::PageDirectory *pagedir, Stack *stack)
+    {
+        stack->Push(SEG_USER_DATA | 0b11);           // Stack segment
+        stack->Push((uint32_t)stack->GetStackPtr()); // Stack pointer
+        stack->Push(0x202);                          // Flags: Interrupts enabled
+        stack->Push(SEG_USER_CODE | 0b11);           // Code segment
+        stack->Push((uint32_t)entryPoint);           // IP = entry point
+
+        auto thread = new Thread(pagedir, stack, Ring::Ring3);
+
+        auto &regs = thread->GetRegisters();
+        regs.ds = SEG_USER_DATA;
+        regs.esp = (uint32_t)stack->GetStackPtr();
+
+        return thread;
+    }
+
+    Thread *Thread::CreateDummyThread()
+    {
+        auto thread = new Thread(nullptr, nullptr, Ring::Ring0);
+        thread->SetState(ThreadState::Yielded);
+        return thread;
     }
 
     void Thread::Start()
@@ -85,19 +85,24 @@ namespace Kernel
 
     void Thread::Sleep(int ms)
     {
-        unblock_time = TimeManager::GetInstance()->GetUptime() + ms;
+        unblockTime = TimeManager::GetInstance()->GetUptime() + ms;
         Yield();
     }
 
     void Thread::Yield()
     {
-        // TODO: don't wait for the interrupt, but yield instantly...?
+        if (!IsCurrent())
+            return;
+
         threadState = ThreadState::Yielded;
         Interrupts::WaitForInt();
     }
 
     void Thread::Kill()
     {
+        if (!IsCurrent())
+            return;
+
         // just set our state to dead and wait for the scheduler to annihilate us
         threadState = ThreadState::Dead;
         Interrupts::WaitForInt();
@@ -105,7 +110,12 @@ namespace Kernel
 
     uint32_t Thread::GetRuntime()
     {
-        return TimeManager::GetInstance()->GetUptime() - run_start_time;
+        return TimeManager::GetInstance()->GetUptime() - currentSliceStart;
+    }
+
+    void Thread::BeginSlice()
+    {
+        currentSliceStart = TimeManager::GetInstance()->GetUptime();
     }
 
 }; // namespace Kernel

@@ -94,7 +94,7 @@ void GDT::SetTssEntry(uint32_t selector)
 
     memset(&tssEntry, 0, sizeof(tssEntry));
     tssEntry.ss0 = SEG_KRNL_DATA;
-    tssEntry.esp0 = (uint32_t) (new uint8_t[4096] + 4096); // todo wtf should i put here
+    tssEntry.esp0 = (uint32_t)(new uint8_t[4096] + 4096); // todo wtf should i put here
 }
 
 void GDT::Load()

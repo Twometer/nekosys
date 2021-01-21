@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-namespace Kernel
+namespace Memory
 {
 
     class Stack
@@ -26,6 +26,6 @@ namespace Kernel
         void *GetStackPtr();
     };
 
-}; // namespace Kernel
+}; // namespace Memory
 
 #endif

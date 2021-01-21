@@ -30,7 +30,7 @@ void idleThreadEP()
 	for (;;)
 	{
 		// the idle thread should never block the scheduler for its 25ms timeframe so yield
-		Thread::current->Yield();
+		Thread::Current()->Yield();
 	}
 }
 
@@ -39,14 +39,14 @@ void testThreadEP()
 	for (;;)
 	{
 		//printf("Hello from thread #2 %d\n", TimeManager::GetInstance()->GetUptime());
-		Thread::current->Sleep(1000);
+		Thread::Current()->Sleep(1000);
 	}
 }
 
 void testExitingThread()
 {
 	//printf("This is an exiting thread\n");
-	Thread::current->Sleep(2000);
+	Thread::Current()->Sleep(2000);
 	//printf("goodbye\n");
 }
 
@@ -176,24 +176,28 @@ extern "C"
 		if (device->IsAvailable())
 		{
 			auto partitions = MBR::Parse(device);
+			if (partitions.Size() == 0)
+			{
+				Kernel::Panic("main", "Partitions not found");
+			}
 			FileSystem *fs = new Fat16(device, partitions.At(0));
 
-			VirtualFileSystem vfs;
-			vfs.Mount("/", fs);
-			vfs.ListDirectory("/");
+			VirtualFileSystem *vfs = new VirtualFileSystem();
+			vfs->Mount("/", fs);
+			vfs->ListDirectory("/");
 
-			auto testEntry = vfs.GetFileMeta("/hlwrld.app");
+			auto testEntry = vfs->GetFileMeta("/hlwrld.app");
 			if (testEntry.type != DirEntryType::Invalid)
 				printf("Found test app with size %d\n", testEntry.size);
 			else
 				printf("Test file not found\n");
 
-			uint32_t fileHandle = vfs.Open("/hlwrld.app");
+			uint32_t fileHandle = vfs->Open("/hlwrld.app");
 
 			char *buf = new char[testEntry.size + 1];
 			buf[testEntry.size] = 0;
 
-			vfs.Read(fileHandle, testEntry.size, (uint8_t *)buf);
+			vfs->Read(fileHandle, testEntry.size, (uint8_t *)buf);
 			ELF::Image elfImage((uint8_t *)buf, testEntry.size);
 
 			if (!elfImage.IsValid())
@@ -202,13 +206,14 @@ extern "C"
 			}
 			else
 			{
-				// todo
+				// TODO
 			}
 
-			vfs.Close(fileHandle);
+			vfs->Close(fileHandle);
 
 			delete buf;
 			delete fs;
+			delete vfs;
 		}
 		else
 		{
@@ -225,21 +230,21 @@ extern "C"
 		scheduler->Initialize();
 
 		printf("Starting idle thread\n");
-		Thread idleThread(idleThreadEP);
-		idleThread.Start();
+		Thread *idleThread = Thread::CreateKernelThread(idleThreadEP);
+		idleThread->Start();
 
 		// Test thread
 		printf("Starting test thread\n");
-		Thread testThread(testThreadEP);
-		testThread.Start();
+		Thread *testThread = Thread::CreateKernelThread(testThreadEP);
+		testThread->Start();
 
 		printf("Starting exiting thread\n");
-		Thread exitingThread(testExitingThread);
-		exitingThread.Start();
+		Thread *exitingThread = Thread::CreateKernelThread(testExitingThread);
+		exitingThread->Start();
 
-		printf("Starting usermode thread\n");
-		Thread usermodeThread(ring3Thread, Ring::Ring3);
-		usermodeThread.Start();
+		// printf("Starting usermode thread\n");
+		// Thread usermodeThread(ring3Thread, Ring::Ring3);
+		// usermodeThread.Start();
 
 		// Kernel initialized, let the scheduler take over
 		printf("System boot complete\n");

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include <kernel/stack.h>
+#include <memory/stack.h>
 
-namespace Kernel
+namespace Memory
 {
 
     Stack::Stack(void *stack_bottom, size_t size)
@@ -38,4 +38,4 @@ namespace Kernel
         return stack_ptr;
     }
 
-}; // namespace Kernel
+}; // namespace Memory

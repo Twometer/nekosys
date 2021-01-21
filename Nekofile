@@ -51,6 +51,8 @@ clean:
     ; Sysroot
     mkdir -p sysroot/usr/include
     mkdir -p sysroot/usr/lib
+    rm -rf sysroot/usr/include/*
+    rm -rf sysroot/usr/lib/*
 
 ; Set up the sysroot
 sysroot:

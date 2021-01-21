@@ -18,8 +18,14 @@ namespace Kernel
     {
         tss = malloc(1024);
         memset(tss, 0x00, 1024);
-        Thread::current = new Thread(nullptr);
-        Thread::current->threadState = ThreadState::Yielded; // the "current" thread is a dummy thread and does not exist - set it to yielded for fast startup
+
+        // The dummy thread is the "thread" that
+        // did execution before the scheduler managed it.
+        // We define that here for easier handling below.
+        auto dummyThread = Thread::CreateDummyThread();
+        dummyThread->MakeCurrent();
+
+        // Register timer interrupt
         Interrupts::AddHandler(0x00, this);
     }
 
@@ -35,20 +41,20 @@ namespace Kernel
 
     void Scheduler::HandleInterrupt(unsigned int, RegisterStates *regs)
     {
-        auto *currentThread = Thread::current;
-        if (currentThread->threadState != ThreadState::Running || currentThread->GetRuntime() > 25)
+        auto *currentThread = Thread::Current();
+        if (currentThread->GetState() != ThreadState::Running || currentThread->GetRuntime() > 25)
         {
-            if (currentThread->threadState != ThreadState::Dead)
+            if (currentThread->GetState() != ThreadState::Dead)
             {
                 // if it isn't dead, set it to runnable
-                currentThread->threadState = ThreadState::Runnable;
+                currentThread->SetState(ThreadState::Runnable);
             }
             else
             {
                 // remove dead threads
                 for (size_t i = 0; i < threads.Size(); i++)
                 {
-                    if (threads.At(i)->id == currentThread->id)
+                    if (threads.At(i)->GetId() == currentThread->GetId())
                     {
                         threads.Remove(i);
                         break;
@@ -64,55 +70,51 @@ namespace Kernel
         if (threads.Size() == 0)
             Kernel::Panic("scheduler", "Who the fuck killed the idle process?");
 
-        auto oldThread = Thread::current;
+        auto oldThread = Thread::Current();
         auto newThread = FindNextThread();
         ContextSwitch(oldThread, newThread, regs);
     }
 
     void Scheduler::ContextSwitch(Thread *oldThread, Thread *newThread, RegisterStates *regs)
     {
-        if (newThread == oldThread || newThread->id == oldThread->id)
+        if (newThread == oldThread || newThread->GetId() == oldThread->GetId())
         {
             // well...
             return;
         }
 
-        // set thread as current
-        Thread::current = newThread;
-        Thread::current->threadState = ThreadState::Running;
-        oldThread->last_cpu_time = oldThread->GetRuntime();
-        newThread->run_start_time = TimeManager::GetInstance()->GetUptime();
+        // Set new thread as current
+        newThread->MakeCurrent();
+        newThread->SetState(ThreadState::Running);
+        newThread->BeginSlice();
 
 // context switch:
 #if SCHEDULER_DBG
-        if (oldThread->id != 0)
-        {
-            auto &newregs = newThread->registers;
-            printf("scheduler: %d -> %d after %dms\n", oldThread->id, newThread->id, oldThread->GetRuntime());
-            printf("  old: %x, %x\n", regs->esp, regs->ds);
-            printf("  new: %x, %x\n", newregs.esp, newregs.ds);
-        }
+        auto &newregs = newThread->GetRegisters();
+        printf("scheduler: %d -> %d after %dms\n", oldThread->GetId(), newThread->GetId(), oldThread->GetRuntime());
+        printf("  old: %x, %x\n", regs->esp, regs->ds);
+        printf("  new: %x, %x\n", newregs.esp, newregs.ds);
 #endif
 
-        // save current regs to old thread
-        regs->CopyTo(&oldThread->registers);
+        // Save current regs to old thread
+        regs->CopyTo(&oldThread->GetRegisters());
 
-        // load regs for next thread
-        newThread->registers.CopyTo(regs);
+        // Load regs for next thread
+        newThread->GetRegisters().CopyTo(regs);
 
-        // load pages for new thread
-        if (!newThread->pagedir->IsCurrent())
+        // Load pages for new thread
+        if (!newThread->GetPageDir()->IsCurrent())
         {
 #if SCHEDULER_DBG
             printf("scheduler: loaded new page table\n");
 #endif
-            newThread->pagedir->Load();
+            newThread->GetPageDir()->Load();
         }
     }
 
     Thread *Scheduler::FindNextThread()
     {
-        // TODO: This is a shitty scheduler function
+        // FIXME: This is a shitty scheduler function
         Thread *nextThread = nullptr;
         do
         {
@@ -124,7 +126,7 @@ namespace Kernel
 
     bool Scheduler::CanRun(Thread *thread)
     {
-        return thread != nullptr && thread->unblock_time <= TimeManager::GetInstance()->GetUptime() && thread->threadState == ThreadState::Runnable;
+        return thread != nullptr && thread->GetUnblockTime() <= TimeManager::GetInstance()->GetUptime() && thread->GetState() == ThreadState::Runnable;
     }
 
 }; // namespace Kernel

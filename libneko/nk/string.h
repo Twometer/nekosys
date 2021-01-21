@@ -63,7 +63,7 @@ namespace nk
 
         char operator[](size_t index) const
         {
-            if (index >= length) // todo exception
+            if (index >= length) // FIXME: Should not fail silently
                 return 0;
             return cstring[index];
         }

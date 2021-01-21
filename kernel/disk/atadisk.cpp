@@ -145,7 +145,7 @@ namespace Disk
         Interrupts::Enable();
         while (!interrupted)
         {
-            // todo yield...?
+            // FIXME: Needs yield and timeout
         }
         Interrupts::Disable();
     }
