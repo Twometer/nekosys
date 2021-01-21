@@ -1,5 +1,5 @@
 #include <stdint.h>
-#include <memory/memorymap.h>
+#include <kernel/memory/memorymap.h>
 #include <kernel/panic.h>
 
 namespace Memory

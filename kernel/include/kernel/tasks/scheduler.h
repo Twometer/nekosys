@@ -2,9 +2,9 @@
 #define _SCHEDULER_H
 
 #include <kernel/interrupts.h>
+#include <kernel/tasks/thread.h>
 #include <nk/vector.h>
 #include <nk/singleton.h>
-#include <tasks/thread.h>
 
 namespace Kernel
 {

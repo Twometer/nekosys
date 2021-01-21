@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <kernel/timemanager.h>
-#include <tasks/thread.h>
-#include <tasks/scheduler.h>
-#include <memory/pagemanager.h>
+#include <kernel/tasks/thread.h>
+#include <kernel/tasks/scheduler.h>
+#include <kernel/memory/pagemanager.h>
 #include <sys/syscall.h>
 
 using namespace Memory;

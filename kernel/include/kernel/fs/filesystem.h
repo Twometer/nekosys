@@ -1,9 +1,9 @@
 #ifndef _FILE_SYSTEM_H
 #define _FILE_SYSTEM_H
 
-#include <disk/blockdevice.h>
-#include <fs/partition.h>
-#include <fs/direntry.h>
+#include <kernel/disk/blockdevice.h>
+#include <kernel/fs/partition.h>
+#include <kernel/fs/direntry.h>
 #include <nk/string.h>
 
 namespace FS

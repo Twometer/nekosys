@@ -1,7 +1,7 @@
 #ifndef _FAT_16
 #define _FAT_16
 
-#include <fs/filesystem.h>
+#include <kernel/fs/filesystem.h>
 
 namespace FS
 {

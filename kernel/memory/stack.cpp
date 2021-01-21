@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <memory/stack.h>
+#include <kernel/memory/stack.h>
 
 namespace Memory
 {

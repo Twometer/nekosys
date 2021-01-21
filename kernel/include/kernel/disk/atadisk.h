@@ -2,7 +2,7 @@
 #define _ATA_DISK_H
 
 #include <kernel/interrupts.h>
-#include <disk/blockdevice.h>
+#include <kernel/disk/blockdevice.h>
 
 namespace Disk
 {

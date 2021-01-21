@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <kernel/panic.h>
 #include <kernel/timemanager.h>
-#include <tasks/scheduler.h>
+#include <kernel/tasks/scheduler.h>
 
 #define SCHEDULER_DBG 0
 

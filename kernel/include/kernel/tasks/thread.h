@@ -3,8 +3,8 @@
 
 #include <kernel/ring.h>
 #include <kernel/registers.h>
-#include <memory/stack.h>
-#include <memory/pagedirectory.h>
+#include <kernel/memory/stack.h>
+#include <kernel/memory/pagedirectory.h>
 
 #define THREAD_STACK_SIZE 4096
 

@@ -1,4 +1,4 @@
-#include <device/cmos.h>
+#include <kernel/device/cmos.h>
 #include <kernel/timemanager.h>
 
 namespace Kernel

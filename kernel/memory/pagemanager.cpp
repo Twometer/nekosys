@@ -1,6 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
-#include <memory/pagemanager.h>
+#include <kernel/memory/pagemanager.h>
 #include <kernel/panic.h>
 
 extern "C"

@@ -1,7 +1,7 @@
 #include <kernel/panic.h>
-#include <device/devicemanager.h>
-#include <string.h>
+#include <kernel/device/devicemanager.h>
 #include <kernel/heap.h>
+#include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>

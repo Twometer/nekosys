@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdarg.h>
-#include <device/cpu.h>
+#include <kernel/device/cpu.h>
 #include <kernel/interrupts.h>
 #include <kernel/panic.h>
 #include <kernel/tty.h>

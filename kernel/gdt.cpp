@@ -3,7 +3,7 @@
 #include <string.h>
 #include <kernel/gdt.h>
 #include <kernel/panic.h>
-#include <memory/memdefs.h>
+#include <kernel/memory/memdefs.h>
 
 using namespace Kernel;
 

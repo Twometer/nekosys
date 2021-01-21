@@ -1,5 +1,5 @@
+#include <kernel/device/pit.h>
 #include <kernel/io.h>
-#include <device/pit.h>
 
 using namespace Kernel;
 

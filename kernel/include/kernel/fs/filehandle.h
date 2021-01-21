@@ -2,8 +2,8 @@
 #define _FILE_DESCRIPTOR_H
 
 #include <stdint.h>
-#include <fs/filesystem.h>
-#include <fs/direntry.h>
+#include <kernel/fs/filesystem.h>
+#include <kernel/fs/direntry.h>
 
 namespace FS
 {

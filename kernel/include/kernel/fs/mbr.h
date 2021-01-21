@@ -1,8 +1,8 @@
 #ifndef _MBR_H
 #define _MBR_H
 
-#include <disk/blockdevice.h>
-#include <fs/partition.h>
+#include <kernel/disk/blockdevice.h>
+#include <kernel/fs/partition.h>
 #include <nk/vector.h>
 
 namespace FS

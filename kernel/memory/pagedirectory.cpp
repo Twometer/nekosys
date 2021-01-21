@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <kernel/panic.h>
-#include <memory/pagemanager.h>
-#include <memory/pagedirectory.h>
+#include <kernel/memory/pagemanager.h>
+#include <kernel/memory/pagedirectory.h>
 
 namespace Memory
 {

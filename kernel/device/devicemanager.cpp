@@ -1,4 +1,4 @@
-#include <device/devicemanager.h>
+#include <kernel/device/devicemanager.h>
 
 using namespace Device;
 

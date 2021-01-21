@@ -1,4 +1,4 @@
-#include <fs/vfs.h>
+#include <kernel/fs/vfs.h>
 
 #define VFS_DEBUG 0
 

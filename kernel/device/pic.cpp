@@ -1,4 +1,4 @@
-#include <device/pic.h>
+#include <kernel/device/pic.h>
 #include <kernel/io.h>
 
 using namespace Device;

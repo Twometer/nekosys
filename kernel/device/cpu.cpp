@@ -1,4 +1,4 @@
-#include <device/cpu.h>
+#include <kernel/device/cpu.h>
 
 void Device::CPU::Halt()
 {

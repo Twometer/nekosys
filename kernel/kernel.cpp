@@ -5,17 +5,17 @@
 #include <kernel/interrupts.h>
 #include <kernel/timemanager.h>
 #include <kernel/syscallhandler.h>
-#include <device/devicemanager.h>
-#include <device/pit.h>
-#include <disk/atadisk.h>
-#include <memory/memorymap.h>
-#include <memory/pagemanager.h>
-#include <memory/pagedirectory.h>
-#include <fs/mbr.h>
-#include <fs/vfs.h>
-#include <fs/fat16.h>
+#include <kernel/device/devicemanager.h>
+#include <kernel/device/pit.h>
+#include <kernel/disk/atadisk.h>
+#include <kernel/memory/memorymap.h>
+#include <kernel/memory/pagemanager.h>
+#include <kernel/memory/pagedirectory.h>
+#include <kernel/tasks/scheduler.h>
+#include <kernel/fs/mbr.h>
+#include <kernel/fs/vfs.h>
+#include <kernel/fs/fat16.h>
 #include <sys/syscall.h>
-#include <tasks/scheduler.h>
 #include <elf/elf.h>
 #include <stdio.h>
 

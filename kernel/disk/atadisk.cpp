@@ -1,5 +1,5 @@
 #include <kernel/io.h>
-#include <disk/atadisk.h>
+#include <kernel/disk/atadisk.h>
 
 using namespace Kernel;
 

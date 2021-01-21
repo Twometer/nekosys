@@ -2,7 +2,7 @@
 #define _MOUNT_POINT_H
 
 #include <nk/string.h>
-#include <fs/filesystem.h>
+#include <kernel/fs/filesystem.h>
 
 namespace FS
 {

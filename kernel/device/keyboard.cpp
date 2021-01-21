@@ -1,7 +1,7 @@
 #include <kernel/tty.h>
 #include <kernel/interrupts.h>
 #include <kernel/io.h>
-#include <device/keyboard.h>
+#include <kernel/device/keyboard.h>
 #include <stdio.h>
 
 using namespace Kernel;

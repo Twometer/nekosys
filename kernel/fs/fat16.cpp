@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <fs/fat16.h>
+#include <kernel/fs/fat16.h>
 #include <nk/buffer.h>
 
 #define FAT16_DEBUG 0

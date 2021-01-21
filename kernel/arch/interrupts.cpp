@@ -1,11 +1,11 @@
-#include <memory/memdefs.h>
+#include <kernel/memory/memdefs.h>
 #include <kernel/interrupts.h>
 #include <kernel/io.h>
 #include <kernel/tty.h>
 #include <kernel/panic.h>
-#include <device/keyboard.h>
-#include <device/cpu.h>
-#include <device/pic.h>
+#include <kernel/device/keyboard.h>
+#include <kernel/device/cpu.h>
+#include <kernel/device/pic.h>
 #include <stdio.h>
 
 #define TYPE_INTERRUPT_GATE 0x8e

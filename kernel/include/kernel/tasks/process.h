@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 #include <nk/vector.h>
-#include <tasks/thread.h>
+#include <kernel/tasks/thread.h>
 
 typedef uint32_t pid_t;
 

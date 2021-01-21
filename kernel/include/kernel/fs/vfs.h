@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include <nk/vector.h>
 #include <nk/string.h>
-#include <fs/mountpoint.h>
-#include <fs/direntry.h>
-#include <fs/filehandle.h>
+#include <kernel/fs/mountpoint.h>
+#include <kernel/fs/direntry.h>
+#include <kernel/fs/filehandle.h>
 
 namespace FS
 {

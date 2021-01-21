@@ -1,6 +1,6 @@
 #include <kernel/syscallhandler.h>
-#include <memory/stack.h>
-#include <tasks/thread.h>
+#include <kernel/memory/stack.h>
+#include <kernel/tasks/thread.h>
 
 using namespace Memory;
 
