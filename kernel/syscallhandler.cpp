@@ -8,9 +8,11 @@ namespace Kernel
 {
     DEFINE_SINGLETON(SyscallHandler)
 
-    uint32_t sys$$exit(void *param)
+    uint32_t sys$$texit(void *param)
     {
-        printf("Process exited\n");
+        uint32_t exit_code = *(uint32_t *)(param);
+        printf("UserThread %d exited with exit code %d\n", Thread::Current()->GetId(), exit_code);
+        Thread::Current()->Kill();
         return 0;
     }
 
@@ -20,11 +22,10 @@ namespace Kernel
         return 0;
     }
 
-    uint32_t sys$$texit(void *param)
+    uint32_t sys$$exit(void *param)
     {
-        uint32_t exit_code = *(uint32_t *)(param);
-        printf("UserThread %d exited with exit code %d\n", Thread::Current()->GetId(), exit_code);
-        Thread::Current()->Kill();
+        printf("User process exited\n");
+        sys$$texit(param);
         return 0;
     }
 

@@ -54,7 +54,7 @@ namespace ELF
             return;
         }
 
-        program_header = (Elf32_Phdr *)(data + elf_header->e_phoff);
+        program_headers = (Elf32_Phdr *)(data + elf_header->e_phoff);
         is_valid = true;
     }
 

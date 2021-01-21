@@ -42,6 +42,16 @@
 #define ELFDATA2LSB 1
 #define ELFDATA2MSB 2
 
+#define PT_NULL 0
+#define PT_LOAD 1
+#define PT_DYNAMIC 2
+#define PT_INTERP 3
+#define PT_NOTE 4
+#define PT_SHLIB 5
+#define PT_PHDR 6
+#define PT_LOPROC 0x70000000
+#define PT_HIPROC 0x7fffffff
+
 namespace ELF
 {
     typedef uint32_t Elf32_Addr;
@@ -87,18 +97,20 @@ namespace ELF
         size_t data_size;
 
         Elf32_Ehdr *elf_header;
-        Elf32_Phdr *program_header;
+        Elf32_Phdr *program_headers;
 
         bool is_valid;
 
     public:
         Image(uint8_t *data, size_t data_size);
 
-        bool IsValid() { return is_valid; }
+        bool IsValid() const { return is_valid; }
 
-        Elf32_Ehdr *ElfHeader() { return elf_header; }
+        Elf32_Ehdr *GetElfHeader() const { return elf_header; }
 
-        Elf32_Phdr *ProgramHeader() { return program_header; }
+        Elf32_Phdr *GetProgramHeaders() const { return program_headers; }
+
+        uint8_t *GetData() const { return data; }
 
     private:
         bool CheckMagic();

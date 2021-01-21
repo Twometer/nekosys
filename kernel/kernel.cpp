@@ -12,6 +12,7 @@
 #include <kernel/memory/pagemanager.h>
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/tasks/scheduler.h>
+#include <kernel/tasks/elfloader.h>
 #include <kernel/fs/mbr.h>
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/fat16.h>
@@ -173,6 +174,7 @@ extern "C"
 		// Disk test
 		printf("Disk test..\n");
 		IBlockDevice *device = new ATADisk(0);
+		Thread *elfThread = nullptr;
 		if (device->IsAvailable())
 		{
 			auto partitions = MBR::Parse(device);
@@ -206,8 +208,8 @@ extern "C"
 			}
 			else
 			{
-				printf(" elf image is valid, loading...");
-				// TODO
+				printf(" elf image is valid, loading...\n");
+				elfThread = ElfLoader::LoadElf(elfImage);
 			}
 
 			vfs->Close(fileHandle);
@@ -243,14 +245,18 @@ extern "C"
 		Thread *exitingThread = Thread::CreateKernelThread(testExitingThread);
 		exitingThread->Start();
 
-		printf("Starting usermode thread\n");
+		printf("Starting thread loaded from ELF\n");
+		if (elfThread != nullptr)
+			elfThread->Start();
+
+		/*printf("Starting usermode thread\n");
 		PageDirectory *pagedir = new PageDirectory(*PageDirectory::GetKernelDir());
 		auto pageframe = pagemanager.AllocPageframe();
 		pagedir->MapPage(pageframe, (vaddress_t)0x100000, PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
 		Stack *stack = new Stack((vaddress_t)0x100000, 4096);
 		Thread *usermodeThread = Thread::CreateUserThread(ring3Thread, pagedir, stack);
 		usermodeThread->Start();
-		PageDirectory::GetKernelDir()->Load();
+		PageDirectory::GetKernelDir()->Load();*/
 
 		// Kernel initialized, let the scheduler take over
 		printf("System boot complete\n");

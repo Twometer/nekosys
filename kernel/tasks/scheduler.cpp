@@ -105,10 +105,10 @@ namespace Kernel
         // Load pages for new thread
         if (!newThread->GetPageDir()->IsCurrent())
         {
+            newThread->GetPageDir()->Load();
 #if SCHEDULER_DBG
             printf("scheduler: loaded new page table\n");
 #endif
-            newThread->GetPageDir()->Load();
         }
     }
 
