@@ -45,7 +45,7 @@ namespace Kernel
         stack->Push(SEG_KRNL_CODE);                // Code segment
         stack->Push((uint32_t)entryPoint);         // IP = entry point
 
-        auto thread = new Thread(PageDirectory::kernelDir, stack, Ring::Ring0);
+        auto thread = new Thread(PageDirectory::GetKernelDir(), stack, Ring::Ring0);
 
         auto &regs = thread->GetRegisters();
         regs.ds = SEG_KRNL_DATA;

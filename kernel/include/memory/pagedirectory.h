@@ -14,10 +14,9 @@ namespace Memory
         uint32_t *virt_directory_ptr;
         bool paging_enabled = false;
         static PageDirectory *current;
-
-    public:
         static PageDirectory *kernelDir;
 
+    public:
         PageDirectory();
 
         PageDirectory(const PageDirectory &other);
@@ -31,6 +30,10 @@ namespace Memory
         void *GetPhysicalAddress() { return phys_directory_ptr; }
 
         bool IsCurrent() { return current == this; };
+
+        static PageDirectory *GetKernelDir() { return kernelDir; }
+
+        static void SetKernelDir(PageDirectory *dir) { kernelDir = dir; }
 
     private:
         uint32_t *NewPage();

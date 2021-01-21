@@ -138,7 +138,7 @@ extern "C"
 		// Enable Paging
 		pageDir.Load();
 		pagemanager.EnablePaging();
-		PageDirectory::kernelDir = &pageDir;
+		PageDirectory::SetKernelDir(&pageDir);
 		printf("Entered virtual address space.\n");
 
 		// Initialize the heap
@@ -206,6 +206,7 @@ extern "C"
 			}
 			else
 			{
+				printf(" elf image is valid, loading...");
 				// TODO
 			}
 
@@ -233,7 +234,7 @@ extern "C"
 		Thread *idleThread = Thread::CreateKernelThread(idleThreadEP);
 		idleThread->Start();
 
-		// Test thread
+		// Test threads
 		printf("Starting test thread\n");
 		Thread *testThread = Thread::CreateKernelThread(testThreadEP);
 		testThread->Start();
@@ -242,9 +243,14 @@ extern "C"
 		Thread *exitingThread = Thread::CreateKernelThread(testExitingThread);
 		exitingThread->Start();
 
-		// printf("Starting usermode thread\n");
-		// Thread usermodeThread(ring3Thread, Ring::Ring3);
-		// usermodeThread.Start();
+		printf("Starting usermode thread\n");
+		PageDirectory *pagedir = new PageDirectory(*PageDirectory::GetKernelDir());
+		auto pageframe = pagemanager.AllocPageframe();
+		pagedir->MapPage(pageframe, (vaddress_t)0x100000, PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
+		Stack *stack = new Stack((vaddress_t)0x100000, 4096);
+		Thread *usermodeThread = Thread::CreateUserThread(ring3Thread, pagedir, stack);
+		usermodeThread->Start();
+		PageDirectory::GetKernelDir()->Load();
 
 		// Kernel initialized, let the scheduler take over
 		printf("System boot complete\n");
