@@ -6,6 +6,12 @@ namespace Kernel
 {
     DEFINE_SINGLETON(SyscallHandler)
 
+    uint32_t sys$$exit(void *param)
+    {
+        printf("Process exited\n");
+        return 0;
+    }
+
     uint32_t sys$$print(void *param)
     {
         printf("%s", param);
@@ -28,6 +34,7 @@ namespace Kernel
     {
         AddSyscall(SYS_TEXIT, sys$$texit);
         AddSyscall(SYS_PRINT, sys$$print);
+        AddSyscall(SYS_EXIT, sys$$exit);
         Interrupts::AddHandler(0x80, this);
     }
 

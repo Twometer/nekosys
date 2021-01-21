@@ -6,6 +6,7 @@
 #define SYS_INVAL 0
 #define SYS_TEXIT 1
 #define SYS_PRINT 2
+#define SYS_EXIT 3
 
 #ifdef __cplusplus
 extern "C"

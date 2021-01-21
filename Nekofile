@@ -22,10 +22,10 @@ KFLAGS = -ffreestanding -nostdlib -lelf -lk
 [flibcc, multi]:
     {GCC} -c {input} -o {output} {CCBASECONF} {flags}
 [libcc, multi]:
-    {GCC} -c {input} -o {output} {CCBASECONF}
+    {GCC} -c {input} -o {output}
 
 ; GNU ar
-[ar, multi]:
+[ar, single]:
     ar rcs {output} {input}
 
 ; Default: Compile everything
@@ -72,14 +72,15 @@ libk:
 
 ; Compile regular libc
 libc:
-    [flibcc]
+    [libcc]
         input: libc/**.c
                libc/**.cpp
-        flags: -ffreestanding 
+               libc/**.S
         output: build/libc/~.o
     [ar]
         input: build/libc/*.o
         output: sysroot/usr/lib/libc.a
+    cp build/libc/crt0.o sysroot/usr/lib
 
 libelf:
     [libcc]
