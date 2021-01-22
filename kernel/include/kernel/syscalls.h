@@ -13,6 +13,7 @@
 #define SYS_FREAD 6
 #define SYS_FWRITE 7
 #define SYS_FCLOSE 8
+#define SYS_PAGEALLOC 9
 
 #ifdef __cplusplus
 extern "C"
@@ -57,5 +58,6 @@ uint32_t sys$$fopen(void *param);
 uint32_t sys$$fread(void *param);
 uint32_t sys$$fwrite(void *param);
 uint32_t sys$$fclose(void *param);
+uint32_t sys$$pagealloc(void *param);
 
 #endif

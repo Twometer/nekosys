@@ -36,6 +36,7 @@ namespace Kernel
 
         uint32_t currentSliceStart = 0;
         uint32_t unblockTime = 0;
+        uint32_t freeMemBase = 0;
 
     private:
         Thread(Memory::PageDirectory *pagedir, Memory::Stack *stack, Ring ring);
@@ -65,6 +66,9 @@ namespace Kernel
         ThreadState GetState() { return threadState; }
         void SetState(ThreadState state) { threadState = state; }
 
+        uint32_t GetFreeMemBase() { return freeMemBase; }
+        void SetFreeMemBase(uint32_t ptr) { freeMemBase = ptr; }
+
         uint32_t GetRuntime();
 
         uint32_t GetUnblockTime() { return unblockTime; }
@@ -76,6 +80,8 @@ namespace Kernel
         RegisterStates &GetRegisters() { return registers; }
 
         void BeginSlice();
+
+        void *MapNewPage(size_t num);
 
         static Thread *Current() { return current; }
     };

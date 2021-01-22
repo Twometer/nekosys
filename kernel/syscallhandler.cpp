@@ -25,6 +25,7 @@ namespace Kernel
         AddSyscall(SYS_FREAD, sys$$fread);
         AddSyscall(SYS_FWRITE, sys$$fwrite);
         AddSyscall(SYS_FCLOSE, sys$$fclose);
+        AddSyscall(SYS_PAGEALLOC, sys$$pagealloc);
 
         Interrupts::AddHandler(0x80, this);
     }

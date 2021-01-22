@@ -10,7 +10,9 @@ typedef uint32_t pid_t;
 class Process
 {
     pid_t pid;
-    nk::Vector<Kernel::Thread *> threads;
+    nk::Vector<Kernel::Thread *> *threads;
+    nk::Vector<uint32_t> *pages;
+    uint32_t highmem;
 
     void Kill();
 };

@@ -51,7 +51,7 @@ uint32_t sys$$fopen(void *param)
 uint32_t sys$$fread(void *param)
 {
     auto params = (sys$$fread_param *)param;
-    FS::VirtualFileSystem::GetInstance()->Read(params->fd, params->offset, params->length, (uint8_t*)params->dst);
+    FS::VirtualFileSystem::GetInstance()->Read(params->fd, params->offset, params->length, (uint8_t *)params->dst);
     return 0;
 }
 
@@ -66,4 +66,10 @@ uint32_t sys$$fclose(void *param)
     auto params = (sys$$fclose_param *)param;
     FS::VirtualFileSystem::GetInstance()->Close(params->fd);
     return 0;
+}
+
+uint32_t sys$$pagealloc(void *param)
+{
+    int num = *(int *)param;
+    return (uint32_t)Thread::Current()->MapNewPage(num);
 }

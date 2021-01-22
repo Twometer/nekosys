@@ -64,6 +64,7 @@ namespace Kernel
         printf("elf_loader: Creating thread with ip=%x, sp=%x\n", elfHeader->e_entry, stack->GetStackPtr());
 #endif
         auto thread = Thread::CreateUserThread((ThreadMain)elfHeader->e_entry, pagedir, stack);
+        thread->SetFreeMemBase((uint32_t)(alignedStack + 4096));
         
         // Return to kernel
         PageDirectory::GetKernelDir()->Load();
