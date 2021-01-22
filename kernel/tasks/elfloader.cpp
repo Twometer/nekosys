@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define ELFLOADER_DEBUG 1
+#define ELFLOADER_DEBUG 0
 
 using namespace Memory;
 
@@ -35,7 +35,7 @@ namespace Kernel
             auto page = PAGE_ALIGN_DOWN(header.p_vaddr);
             MapNewZeroedPage(pagedir, page);
 
-#ifdef ELFLOADER_DEBUG
+#if ELFLOADER_DEBUG
             printf("elf_loader: Loading %d bytes from %x to %x (page %x)\n", header.p_filesz, header.p_offset, header.p_vaddr, PAGE_ALIGN_DOWN(header.p_vaddr));
 #endif
             memcpy((void *)header.p_vaddr, (void *)(image.GetData() + header.p_offset), header.p_filesz);
@@ -51,7 +51,7 @@ namespace Kernel
         }
 
         auto alignedStack = PAGE_ALIGN_UP(stackAddr);
-#ifdef ELFLOADER_DEBUG
+#if ELFLOADER_DEBUG
         printf("elf_loader: Making a stack at %x\n", alignedStack);
 #endif
         MapNewZeroedPage(pagedir, alignedStack);
@@ -60,7 +60,7 @@ namespace Kernel
         stack->Push(0x00);
 
         // Set up thread
-#ifdef ELFLOADER_DEBUG
+#if ELFLOADER_DEBUG
         printf("elf_loader: Creating thread with ip=%x, sp=%x\n", elfHeader->e_entry, stack->GetStackPtr());
 #endif
         auto thread = Thread::CreateUserThread((ThreadMain)elfHeader->e_entry, pagedir, stack);
@@ -79,7 +79,7 @@ namespace Kernel
             return;
         }
 
-#ifdef ELFLOADER_DEBUG
+#if ELFLOADER_DEBUG
         printf("elf_loader: Making new zeroed page at virtual %x\n", vaddr);
 #endif
 

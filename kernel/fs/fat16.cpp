@@ -61,16 +61,17 @@ namespace FS
 
     DirEntry Fat16::GetFileMeta(const nk::String &path)
     {
-        auto fn = path.Substring(1);
+        auto nkPath = nk::Path(path);
+        auto directory = LoadDirectory(nkPath.GetDirectoryPath());
 
         bool eof = false;
-        for (size_t i = 0; i < root_dir_entries; i++)
+        for (size_t i = 0; i < 128; i++)
         {
-            auto entry = ParseDirEntry(root_directory + i * DIRENT_SIZE, eof);
+            auto entry = ParseDirEntry(directory + i * DIRENT_SIZE, eof);
             if (eof)
                 break;
 
-            if (entry.name == fn)
+            if (entry.name == nkPath.GetFilename())
                 return entry;
         }
 
@@ -115,10 +116,14 @@ namespace FS
 
     void Fat16::ListDirectory(const nk::String &path)
     {
+        printf("List of %s:\n", path.CStr());
+
+        auto directory = LoadDirectory(path);
+
         bool eof = false;
-        for (size_t i = 0; i < root_dir_entries; i++)
+        for (size_t i = 0; i < 128; i++)
         {
-            auto entry = ParseDirEntry(root_directory + i * DIRENT_SIZE, eof);
+            auto entry = ParseDirEntry(directory + i * DIRENT_SIZE, eof);
             if (eof)
                 break;
 
@@ -131,6 +136,38 @@ namespace FS
                 printf(" [d] %s\n", entry.name.CStr());
             }
         }
+    }
+
+    uint8_t *Fat16::LoadDirectory(const nk::Path &path)
+    {
+        if (path.IsRoot())
+            return root_directory;
+
+        auto &parts = path.GetParts();
+
+        uint8_t *basePtr = root_directory;
+        for (size_t i = 0; i < parts.Size(); i++)
+        {
+            auto &part = parts.At(i);
+
+            bool eof = false;
+            for (size_t i = 0; i < 128; i++)
+            {
+                auto dirEnt = ParseDirEntry(basePtr + i * DIRENT_SIZE, eof);
+                if (eof)
+                    return nullptr;
+                if (dirEnt.name == part)
+                {
+                    LoadCluster(dirEnt.location);
+                    break;
+                }
+            }
+
+            // if we got here, we found the subdir
+
+            basePtr = current_cluster;
+        }
+        return basePtr;
     }
 
     DirEntry Fat16::ParseDirEntry(uint8_t *data, bool &eof)

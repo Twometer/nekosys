@@ -84,11 +84,23 @@ namespace nk
             return EqualsImpl(other);
         }
 
+        String Append(const char other) const
+        {
+            auto newlen = length + 2;
+            char tmpbuf[newlen];
+            if (cstring != nullptr)
+                memcpy(tmpbuf, cstring, length);
+            tmpbuf[newlen - 2] = other;
+            tmpbuf[newlen - 1] = 0;
+            return String(tmpbuf);
+        }
+
         String Append(const String &other) const
         {
             auto newlen = length + other.length + 1;
             char tmpbuf[newlen];
-            memcpy(tmpbuf, cstring, length);
+            if (cstring != nullptr)
+                memcpy(tmpbuf, cstring, length);
             memcpy(tmpbuf + length, other.cstring, other.length);
             tmpbuf[newlen - 1] = 0;
             return String(tmpbuf);

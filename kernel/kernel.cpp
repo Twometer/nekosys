@@ -186,15 +186,15 @@ extern "C"
 
 			VirtualFileSystem *vfs = new VirtualFileSystem();
 			vfs->Mount("/", fs);
-			vfs->ListDirectory("/");
+			vfs->ListDirectory("/usr/include/kernel/fs");
 
-			auto testEntry = vfs->GetFileMeta("/hlwrld.app");
+			auto testEntry = vfs->GetFileMeta("/app/hlwrld.app");
 			if (testEntry.type != DirEntryType::Invalid)
 				printf("Found test app with size %d\n", testEntry.size);
 			else
 				printf("Test file not found\n");
 
-			uint32_t fileHandle = vfs->Open("/hlwrld.app");
+			uint32_t fileHandle = vfs->Open("/app/hlwrld.app");
 
 			char *buf = new char[testEntry.size + 1];
 			buf[testEntry.size] = 0;
@@ -204,11 +204,11 @@ extern "C"
 
 			if (!elfImage.IsValid())
 			{
-				printf(" elf image not valid\n");
+				printf("elf: image not valid\n");
 			}
 			else
 			{
-				printf(" elf image is valid, loading...\n");
+				printf("elf: image is valid, loading...\n");
 				elfThread = ElfLoader::LoadElf(elfImage);
 			}
 

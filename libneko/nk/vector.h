@@ -49,12 +49,12 @@ namespace nk
             return data[index];
         }
 
-        size_t Size()
+        size_t Size() const
         {
             return size;
         }
 
-        size_t Capacity()
+        size_t Capacity() const
         {
             return capacity;
         }

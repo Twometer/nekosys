@@ -2,6 +2,7 @@
 #define _FAT_16
 
 #include <kernel/fs/filesystem.h>
+#include <nk/path.h>
 
 namespace FS
 {
@@ -39,6 +40,8 @@ namespace FS
         void ListDirectory(const nk::String &path) override;
 
     private:
+        uint8_t *LoadDirectory(const nk::Path &path);
+
         DirEntry ParseDirEntry(uint8_t *data, bool &eof);
 
         void LoadCluster(uint32_t cluster);

@@ -14,14 +14,12 @@ namespace Kernel
         DECLARE_SINGLETON(Scheduler)
 
     private:
-        void *tss;
         nk::Vector<Thread *> threads;
+
         int ctr = 0;
 
     public:
         void Initialize();
-
-        void *GetTssPtr();
 
         void Start(Thread *thread);
 

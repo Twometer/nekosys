@@ -16,9 +16,6 @@ namespace Kernel
 
     void Scheduler::Initialize()
     {
-        tss = malloc(1024);
-        memset(tss, 0x00, 1024);
-
         // The dummy thread is the "thread" that
         // did execution before the scheduler managed it.
         // We define that here for easier handling below.
@@ -27,11 +24,6 @@ namespace Kernel
 
         // Register timer interrupt
         Interrupts::AddHandler(0x00, this);
-    }
-
-    void *Scheduler::GetTssPtr()
-    {
-        return tss;
     }
 
     void Scheduler::Start(Thread *thread)
