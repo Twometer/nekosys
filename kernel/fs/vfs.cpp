@@ -62,7 +62,7 @@ namespace FS
 
     void VirtualFileSystem::Read(uint32_t fileHandle, size_t size, uint8_t *dst)
     {
-        for (int i = 0; i < fileHandles.Size(); i++)
+        for (size_t i = 0; i < fileHandles.Size(); i++)
         {
             auto handle = fileHandles.At(i);
             if (handle->id == fileHandle)
@@ -75,7 +75,7 @@ namespace FS
 
     void VirtualFileSystem::Close(uint32_t fileHandle)
     {
-        for (int i = 0; i < fileHandles.Size(); i++)
+        for (size_t i = 0; i < fileHandles.Size(); i++)
         {
             auto handle = fileHandles.At(i);
             if (handle->id == fileHandle)

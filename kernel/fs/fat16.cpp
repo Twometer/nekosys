@@ -184,9 +184,9 @@ namespace FS
         }
 
         uint8_t attr = dirbuf.Read<uint8_t>(0x0B);
-        uint16_t perms = dirbuf.Read<uint16_t>(0x14);
-        uint16_t lastModifiedTime = dirbuf.Read<uint16_t>(0x16);
-        uint16_t lastModifiedDate = dirbuf.Read<uint16_t>(0x18);
+        //uint16_t perms = dirbuf.Read<uint16_t>(0x14);
+        //uint16_t lastModifiedTime = dirbuf.Read<uint16_t>(0x16);
+        //uint16_t lastModifiedDate = dirbuf.Read<uint16_t>(0x18);
         uint16_t cluster = dirbuf.Read<uint16_t>(0x1A);
         uint32_t filesize = dirbuf.Read<uint32_t>(0x1C);
 
