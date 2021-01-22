@@ -2,7 +2,7 @@
 #include <kernel/fs/fat16.h>
 #include <nk/buffer.h>
 
-#define FAT16_DEBUG 1
+#define FAT16_DEBUG 0
 
 #define DIRENT_SIZE 32
 
@@ -227,8 +227,8 @@ namespace FS
     void Fat16::LoadCluster(uint32_t cluster)
     {
 #if FAT16_DEBUG
-        //printf("fat_16: cluster_size = %d\n", blocks_per_alloc);
-        //printf("fat_16: loading cluster %d\n", (long)cluster);
+        printf("fat_16: cluster_size = %d\n", blocks_per_alloc);
+        printf("fat_16: loading cluster %d\n", (long)cluster);
 #endif
 
         auto hw_cluster = cluster - 2;
@@ -236,7 +236,7 @@ namespace FS
         for (int i = 0; i < blocks_per_alloc; i++)
         {
 #if FAT16_DEBUG
-            //printf("fat_16: loading %d to %x\n", (long)(start_sector + i), (long)(current_cluster + i * 512));
+            printf("fat_16: loading %d to %x\n", (long)(start_sector + i), (long)(current_cluster + i * 512));
 #endif
 
             blockDevice->ReadBlock(start_sector + i, 1, current_cluster + i * 512);

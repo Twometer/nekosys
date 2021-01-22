@@ -21,6 +21,10 @@ namespace Kernel
         AddSyscall(SYS_PRINT, sys$$print);
         AddSyscall(SYS_EXIT, sys$$exit);
         AddSyscall(SYS_PUTCHAR, sys$$putchar);
+        AddSyscall(SYS_FOPEN, sys$$fopen);
+        AddSyscall(SYS_FREAD, sys$$fread);
+        AddSyscall(SYS_FWRITE, sys$$fwrite);
+        AddSyscall(SYS_FCLOSE, sys$$fclose);
 
         Interrupts::AddHandler(0x80, this);
     }
