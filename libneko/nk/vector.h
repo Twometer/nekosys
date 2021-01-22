@@ -67,6 +67,8 @@ namespace nk
         void Reserve(size_t min)
         {
             EnsureCapacity(min);
+            if (min > size)
+                size = min;
         }
 
     private:
