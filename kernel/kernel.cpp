@@ -72,7 +72,7 @@ extern "C"
 		// Banner
 		TTY::Clear();
 		TTY::SetColor(0x9f);
-		printf("neko kernel 0.02\n");
+		printf("neko kernel 0.03\n");
 		TTY::SetColor(0x07);
 
 		// Init

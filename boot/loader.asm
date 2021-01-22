@@ -168,9 +168,9 @@ init:
     mov cx, 0
 
     next_sector:
-    push word es  ; print the sector we are reading for debugging
+    push word ax  ; print the sector we are reading for debugging
     call printhex
-    push word bx  ; print the sector we are reading for debugging
+    push word bx  ; print the memory target address for debugging
     call printhex
 
     push ax             ; load that sector to kernel_offset
@@ -217,7 +217,7 @@ init:
     ; But we should not get here
     jmp halt_system
 
-; disk parameters
+;; DISK PARAMETERS ;;
 disk: db 0x0
 num_heads: dw 0x0000
 sectors_per_track: dw 0x0000
@@ -227,7 +227,7 @@ root_dir_beg: dw 0x0000
 cluster_size: dw 0x0000
 reserved_sectors: dw 0x0000
 
-; generic jmp targets
+;; GENERIC JMP TARGETS ;;
 on_disk_error:
     push err_diskio
     call print
@@ -238,8 +238,10 @@ halt_system:
     hlt
     jmp halt_system
 
-; subroutines
-cluster2sector: ; (word cluster)
+;; SUBROUTINES ;;
+
+; word cluster2sector(word cluster)
+cluster2sector:
     push bp ; stack frame
     mov bp, sp
 
@@ -257,7 +259,8 @@ cluster2sector: ; (word cluster)
     pop bp
     ret 2
 
-streq: ; (word aPtr, word bPtr)
+; bool streq(word *aPtr, word *bPtr)
+streq:
     push bp ; stack frame
     mov bp, sp
 
@@ -298,50 +301,48 @@ streq: ; (word aPtr, word bPtr)
     pop bp
     ret 4
 
-read_sector: ; (word sector, word destPtr)
-    push bp     ; save stack frame
+; LBA addressing mode packet for BIOS call 0x13
+disk_packet:
+               db 0x10 ; size of packet (16 bytes)
+               db 0x00 ; always zero
+num_blocks:    dw 1   
+dst_addr:      dw 0x00 ; memory dst address
+dst_seg:       dw 0x00 ; memory dst segment
+src_lba:       dd 0x00 ; lba location
+               dd 0x00
+    
+; void read_sector(word lba, word *dest)
+read_sector:
+    push bp
     mov bp, sp
+    pusha
 
+    ; configure disk packet
+    mov word [num_blocks], 1
+    mov [dst_seg], es
+    
+    mov ax, [bp + 4]
+    mov [dst_addr], ax
 
-    pusha ;save register states to stack
-
-    ; compute chs addr
-    ; i wrote this and it worked first try - wtf
-    mov ax, [bp+6] ; divisor (LBA sector)
-    mov bx, [sectors_per_track] ; dividend
-    xor dx, dx ; clear dx
-    div bx ; divide ax / bx
-    ; ax: quot
-    ; dx: rem
-    mov cl, dl ; CL = sector = (lba % sectors_per_track)
-    inc cl ;                                             +1
-
-    mov bx, num_heads ; divide temp (result of last div, in ax) by num_heads
-    xor dx, dx ; clear dx
-    div bx ; divide and remainder now in dx which is head num, quot is cylinder
-    mov ch, al ; cylinder
-    mov dh, dl ; head
-
-    ; stack grows upwards, so bp+6 is the 1st arg and bp+4 is the 2nd
-
-    ; after we computed that address and stored it in the correct registers,
-    ; call the 0x13 interrupt to read from disk
-    mov ah, 0x2         ; op
-    mov al, 0x1    ; sector count
-    mov bx, [bp+4] ; dst address
-    mov dl, [disk] ;diskno
+    mov ax, [bp + 6]
+    mov [src_lba], ax
+    
+    ; send disk packet
+    mov si, disk_packet
+    mov ah, 0x42
+    mov dl, [disk]
     int 0x13
-    jc on_disk_error ; carry flag means error
+    
+    ; catch errors
+    jc on_disk_error
 
-
-    popa ;load register states back from stack
-
-    mov sp, bp ;return stack frame
+    popa
+    mov sp, bp
     pop bp
+    ret 4
 
-    ret 4 ; clean stack and return
-
-printhex: ; (word number)
+; void printhex(word num)
+printhex:
     push bp     ; save stack frame
     mov bp, sp
 
@@ -391,7 +392,8 @@ printhex: ; (word number)
 
     ret 2 ; clean stack and return
 
-printchar: ; (word char)
+; void printchar(word char)
+printchar:
     push bp     ; save stack frame
     mov bp, sp
 
@@ -406,7 +408,8 @@ printchar: ; (word char)
 
     ret 2 ; clean stack and return
 
-print: ; (word msgPtr)
+; void print(word *message)
+print:
     push bp     ; save stack frame
     mov bp, sp
 
@@ -430,7 +433,8 @@ print: ; (word msgPtr)
 
     ret 2 ; clean stack and return
 
-clearscreen: ; ()
+; void clearScreen()
+clearscreen:
     push bp     ; save stack frame
     mov bp, sp
 

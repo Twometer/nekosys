@@ -3,25 +3,30 @@ org 0x7C00 ; BIOS offset
 
 ; entry point
 boot:
-    xor ax, ax ; Zero registers
-    mov ds, ax ; data segment at zero
-    mov es, ax ; extra segment at zero
+    ; Reset segment registers
+    xor ax, ax
+    mov ds, ax ; Data segment
+    mov es, ax ; Extra segment
     
-    jmp 0:startup ; jump to where we really think we are (0:0x7c00)
+    ; Make sure that we are at 0:0x7C00 and the BIOS didn't mess with us
+    jmp 0:startup
     startup: equ $
 
-    mov ax, 0x07E0      ; let's make a stack (8k in size)
+    ; Let's make a stack (4k in size)
+    mov ax, 0x0900      
     mov ss, ax
-    mov sp, 0x2000
+    mov sp, 0x1000
 
-    mov [disk], dl ; save our disk
+    ; Save the disk number
+    mov [disk], dl
 
+    ; Load stage 2
     mov ah, 0x2 ; op
     mov al, 0x2 ; sector count: TWO SECTORS
     mov ch, 0x0 ; cyl
     mov cl, 0x2 ; sector
     mov dh, 0x0 ; head
-    mov bx, 0x7E00 ; put it at 0x7f00
+    mov bx, 0x7E00 ; put it at 0x7E00
     mov dl, [disk] ;diskno
     int 0x13
 

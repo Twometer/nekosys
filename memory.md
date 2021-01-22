@@ -7,6 +7,7 @@ This file describes how the memory is generally laid out when nekosys is running
 [0x7E00 + 400h]: Stage 2 bootloader
 [0x8000 + 200h]: Stores the kernel handover data after Stage 2 bootloader is gone
 [0x8200 + 400h]: Placeholder for some FAT sectors
+[0x0900:0x1000]: Real mode stack
 [0xA000 + ...h]: Stores the kernel. Maximum length is 0x75FFF (471K, up to the end of low memory)
 ```
 > Note that the kernel is saved as a flat binary instead of an ELF file, so that we
