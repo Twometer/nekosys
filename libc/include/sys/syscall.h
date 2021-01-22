@@ -7,6 +7,7 @@
 #define SYS_TEXIT 1
 #define SYS_PRINT 2
 #define SYS_EXIT 3
+#define SYS_PUTCHAR 4
 
 #ifdef __cplusplus
 extern "C"

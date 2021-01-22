@@ -1,8 +1,7 @@
-#include <sys/syscall.h>
+#include <stdio.h>
 
 int main(int argc, char **argv)
 {
-	const char *data = "Hello world :3\n";
-	syscall(SYS_PRINT, data);
+	printf("Hello world :3\n");
 	return 0;
 }
