@@ -6,6 +6,7 @@
 
 namespace FS
 {
+#define FAT_END 0xFFFF
 
     class Fat16 : public FileSystem
     {
@@ -35,7 +36,7 @@ namespace FS
 
         DirEntry GetFileMeta(const nk::String &path) override;
 
-        void Read(const DirEntry &entry, size_t size, uint8_t *dst) override;
+        void Read(const DirEntry &entry, size_t offset, size_t size, uint8_t *dst) override;
 
         void ListDirectory(const nk::String &path) override;
 
@@ -45,6 +46,8 @@ namespace FS
         DirEntry ParseDirEntry(uint8_t *data, bool &eof);
 
         void LoadCluster(uint32_t cluster);
+
+        uint16_t NextCluster(uint16_t cluster);
     };
 
 } // namespace FS

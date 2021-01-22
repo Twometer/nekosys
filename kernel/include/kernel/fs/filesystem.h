@@ -24,7 +24,7 @@ namespace FS
 
         virtual DirEntry GetFileMeta(const nk::String &path) = 0;
 
-        virtual void Read(const DirEntry &entry, size_t size, uint8_t *dst) = 0;
+        virtual void Read(const DirEntry &entry, size_t offset, size_t size, uint8_t *dst) = 0;
 
         virtual void ListDirectory(const nk::String &path) = 0;
     };

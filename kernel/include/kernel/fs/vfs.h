@@ -33,7 +33,7 @@ namespace FS
 
         uint32_t Open(const nk::String &path);
 
-        void Read(uint32_t fileHandle, size_t size, uint8_t *dst);
+        void Read(uint32_t fileHandle, size_t offset, size_t size, uint8_t *dst);
 
         void Close(uint32_t fileHandle);
 

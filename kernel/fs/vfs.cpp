@@ -71,7 +71,7 @@ namespace FS
         return handle->id;
     }
 
-    void VirtualFileSystem::Read(uint32_t fileHandle, size_t size, uint8_t *dst)
+    void VirtualFileSystem::Read(uint32_t fileHandle, size_t offset, size_t size, uint8_t *dst)
     {
         if (fileHandle == 0)
             return;
@@ -81,7 +81,7 @@ namespace FS
             auto handle = fileHandles.At(i);
             if (handle->id == fileHandle)
             {
-                handle->fs->Read(handle->entry, size, dst);
+                handle->fs->Read(handle->entry, offset, size, dst);
                 break;
             }
         }

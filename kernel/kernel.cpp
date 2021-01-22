@@ -190,7 +190,7 @@ extern "C"
 
 		auto buf = new uint8_t[entry.size];
 		auto handle = vfs->Open("/bin/hlwrld.app");
-		vfs->Read(handle, entry.size, buf);
+		vfs->Read(handle, 0, entry.size, buf);
 		vfs->Close(handle);
 
 		ELF::Image image(buf, entry.size);
