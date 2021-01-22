@@ -13,7 +13,7 @@ namespace Kernel
         static Thread *LoadElf(const ELF::Image &image);
 
     private:
-        static void MapNewZeroedPage(Memory::PageDirectory *dir, vaddress_t vaddr);
+        static void *MapNewZeroedPages(Memory::PageDirectory *dir, vaddress_t vaddr, size_t sizeInBytes);
     };
 
 } // namespace Kernel

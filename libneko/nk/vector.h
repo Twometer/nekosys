@@ -78,6 +78,7 @@ namespace nk
             {
                 size_t newCapacity = min * 2;
                 T *newData = (T *)malloc(sizeof(T) * newCapacity);
+                memset(newData, 0, sizeof(T) * newCapacity);
                 if (this->data != nullptr)
                 {
                     memcpy(newData, data, sizeof(T) * size);

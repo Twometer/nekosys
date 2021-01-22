@@ -71,5 +71,6 @@ uint32_t sys$$fclose(void *param)
 uint32_t sys$$pagealloc(void *param)
 {
     int num = *(int *)param;
-    return (uint32_t)Thread::Current()->MapNewPage(num);
+    auto ptr = (uint32_t)Thread::Current()->MapNewPage(num);
+    return ptr;
 }

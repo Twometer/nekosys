@@ -63,7 +63,7 @@ namespace FS
     {
         auto nkPath = nk::Path(path);
         auto directory = LoadDirectory(nkPath.GetDirectoryPath());
-
+        
         bool eof = false;
         for (size_t i = 0; i < 128; i++)
         {

@@ -1,4 +1,5 @@
 #include <sys/syscall.h>
+#include <stdio.h>
 
 int liballoc_lock()
 {
@@ -10,12 +11,13 @@ int liballoc_unlock()
 	return 0;
 }
 
-void* liballoc_alloc(int pages)
+void *liballoc_alloc(int pages)
 {
-	return (void*) syscall(SYS_PAGEALLOC, &pages);
+	int page = syscall(SYS_PAGEALLOC, &pages);
+	return (void *)page;
 }
 
-int liballoc_free(void* ptr, int pages)
+int liballoc_free(void *ptr, int pages)
 {
 	// TODO
 }

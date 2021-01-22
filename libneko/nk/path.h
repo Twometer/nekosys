@@ -22,8 +22,9 @@ namespace nk
             {
                 if (path[i] == '/')
                 {
-                    if (temp.Length() > 0)
+                    if (temp.Length() > 0) {
                         parts->Add(temp);
+                    }
                     temp = String();
                 }
                 else

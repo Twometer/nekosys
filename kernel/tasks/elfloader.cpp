@@ -24,7 +24,7 @@ namespace Kernel
             return nullptr;
 
         auto pagedir = new PageDirectory(*PageDirectory::GetKernelDir());
-        auto stackAddr = 0;
+        void *executableEndAddr = 0;
 
         for (size_t i = 0; i < elfHeader->e_phnum; i++)
         {
@@ -33,29 +33,25 @@ namespace Kernel
                 continue;
 
             auto page = PAGE_ALIGN_DOWN(header.p_vaddr);
-            MapNewZeroedPage(pagedir, page);
+            executableEndAddr = MapNewZeroedPages(pagedir, page, header.p_filesz);
 
 #if ELFLOADER_DEBUG
             printf("elf_loader: Loading %d bytes from %x to %x (page %x)\n", header.p_filesz, header.p_offset, header.p_vaddr, PAGE_ALIGN_DOWN(header.p_vaddr));
 #endif
             memcpy((void *)header.p_vaddr, (void *)(image.GetData() + header.p_offset), header.p_filesz);
-
-            if (stackAddr < header.p_vaddr)
-                stackAddr = header.p_vaddr;
         }
 
-        if (stackAddr == 0)
+        if (executableEndAddr == 0)
         {
             printf("elf_loader: error: No address loaded\n");
             return nullptr;
         }
 
-        auto alignedStack = PAGE_ALIGN_UP(stackAddr);
 #if ELFLOADER_DEBUG
-        printf("elf_loader: Making a stack at %x\n", alignedStack);
+        printf("elf_loader: Making a stack at %x\n", executableEndAddr);
 #endif
-        MapNewZeroedPage(pagedir, alignedStack);
-        auto stack = new Stack(alignedStack, 4096);
+        MapNewZeroedPages(pagedir, (vaddress_t)executableEndAddr, 4096);
+        auto stack = new Stack(executableEndAddr, 4096);
         stack->Push(0x00);
         stack->Push(0x00);
 
@@ -64,29 +60,39 @@ namespace Kernel
         printf("elf_loader: Creating thread with ip=%x, sp=%x\n", elfHeader->e_entry, stack->GetStackPtr());
 #endif
         auto thread = Thread::CreateUserThread((ThreadMain)elfHeader->e_entry, pagedir, stack);
-        thread->SetFreeMemBase((uint32_t)(alignedStack + 4096));
-        
+        thread->SetFreeMemBase((uint32_t)(executableEndAddr + 4096));
+
         // Return to kernel
         PageDirectory::GetKernelDir()->Load();
 
         return thread;
     }
 
-    void ElfLoader::MapNewZeroedPage(PageDirectory *dir, vaddress_t vaddr)
+    void *ElfLoader::MapNewZeroedPages(PageDirectory *dir, vaddress_t vaddr, size_t sizeInBytes)
     {
         if (!IS_PAGE_ALIGNED(vaddr))
         {
             printf("elf_loader: error: Can't make zeroed page at non-aligned address %x\n", vaddr);
-            return;
+            return nullptr;
         }
 
+        auto numPages = (int)PAGE_ALIGN_UP(sizeInBytes) / PAGE_SIZE;
+
 #if ELFLOADER_DEBUG
-        printf("elf_loader: Making new zeroed page at virtual %x\n", vaddr);
+        printf("elf_loader: Making %d new zeroed pages at virtual %x\n", numPages, vaddr);
 #endif
 
-        auto pageframe = PageManager::GetInstance()->AllocPageframe();
-        dir->MapPage(pageframe, vaddr, PAGE_BIT_ALLOW_USER | PAGE_BIT_READ_WRITE);
-        memset(vaddr, 0, PAGE_SIZE);
+        vaddress_t a = vaddr;
+        for (size_t i = 0; i < numPages; i++)
+        {
+            auto pageframe = PageManager::GetInstance()->AllocPageframe();
+            dir->MapPage(pageframe, a, PAGE_BIT_ALLOW_USER | PAGE_BIT_READ_WRITE);
+            a += PAGE_SIZE;
+        }
+
+        
+        memset(vaddr, 0, sizeInBytes);
+        return a;
     }
 
 } // namespace Kernel
