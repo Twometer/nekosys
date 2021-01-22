@@ -29,6 +29,11 @@ namespace FS
         size_t size;
 
         uint32_t location;
+
+        inline bool IsValid()
+        {
+            return type != DirEntryType::Invalid;
+        }
     };
 
 } // namespace FS

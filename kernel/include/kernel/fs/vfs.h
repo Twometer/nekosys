@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <nk/vector.h>
 #include <nk/string.h>
+#include <nk/singleton.h>
 #include <kernel/fs/mountpoint.h>
 #include <kernel/fs/direntry.h>
 #include <kernel/fs/filehandle.h>
@@ -12,13 +13,14 @@ namespace FS
 {
     class VirtualFileSystem
     {
+        DECLARE_SINGLETON(VirtualFileSystem)
+        
     private:
         nk::Vector<MountPoint *> mounts;
 
         nk::Vector<FileHandle *> fileHandles;
 
         uint32_t idCounter;
-        
 
     public:
         void Mount(const nk::String &path, FileSystem *fs);

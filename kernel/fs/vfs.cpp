@@ -5,6 +5,12 @@
 namespace FS
 {
 
+    DEFINE_SINGLETON(VirtualFileSystem)
+
+    VirtualFileSystem::VirtualFileSystem()
+    {
+    }
+
     void VirtualFileSystem::Mount(const nk::String &path, FileSystem *fs)
     {
         mounts.Add(new MountPoint(path, fs));
@@ -55,6 +61,11 @@ namespace FS
         }
 
         auto entry = mountPoint->fs->GetFileMeta(GetRelativePath(mountPoint, path));
+        if (entry.type == DirEntryType::Invalid)
+        {
+            return 0;
+        }
+
         FileHandle *handle = new FileHandle(++idCounter, mountPoint->fs, entry);
         fileHandles.Add(handle);
         return handle->id;
@@ -62,6 +73,9 @@ namespace FS
 
     void VirtualFileSystem::Read(uint32_t fileHandle, size_t size, uint8_t *dst)
     {
+        if (fileHandle == 0)
+            return;
+
         for (size_t i = 0; i < fileHandles.Size(); i++)
         {
             auto handle = fileHandles.At(i);
@@ -75,6 +89,9 @@ namespace FS
 
     void VirtualFileSystem::Close(uint32_t fileHandle)
     {
+        if (fileHandle == 0)
+            return;
+
         for (size_t i = 0; i < fileHandles.Size(); i++)
         {
             auto handle = fileHandles.At(i);

@@ -51,15 +51,6 @@ void testExitingThread()
 	//printf("goodbye\n");
 }
 
-void ring3Thread()
-{
-	const char *data = "Hello from userspace :3\n";
-	syscall(SYS_PRINT, data);
-
-	uint32_t exit_code = 0;
-	syscall(SYS_TEXIT, &exit_code);
-}
-
 extern "C"
 {
 	extern void setTss(uint32_t selector);
@@ -94,7 +85,7 @@ extern "C"
 		MemoryMapEntry *usableRam = memoryMap.GetLargestChunk();
 		if (usableRam->lengthLow < 64 * 1024 * 1024)
 		{
-			Kernel::Panic("init", "Nekosys requires 64MB of memory, only %dMB were found.", (usableRam->lengthLow / (1024 * 1024)));
+			Kernel::Panic("boot", "Nekosys requires 64MB of memory, only %dMB were found.", (usableRam->lengthLow / (1024 * 1024)));
 		}
 
 		void *memBase = (void *)usableRam->baseLow;
@@ -109,7 +100,7 @@ extern "C"
 		// Identity map the first megabyte
 		// IMPORTANT FIXME: The first MB is only mapped into userspace here, because the test-ring3 func is in there, and it obviously needs to be able to access itself.
 		for (uint32_t i = 0; i < MBYTE; i += PAGE_SIZE)
-			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
+			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE);
 
 		// Map the kernel heap
 		for (int i = 0; i < KERNEL_HEAP_SIZE; i += PAGE_SIZE)
@@ -171,64 +162,51 @@ extern "C"
 		auto time = TimeManager::GetInstance()->GetSystemTime();
 		printf("Current time and date: %d.%d.%d %d:%d:%d\n", time.day, time.month, time.year, time.hour, time.minute, time.second);
 
-		// Disk test
-		printf("Disk test..\n");
+		printf("Initializing disk..\n");
 		IBlockDevice *device = new ATADisk(0);
-		Thread *elfThread = nullptr;
-		if (device->IsAvailable())
+		if (!device->IsAvailable())
 		{
-			auto partitions = MBR::Parse(device);
-			if (partitions.Size() == 0)
-			{
-				Kernel::Panic("main", "Partitions not found");
-			}
-			FileSystem *fs = new Fat16(device, partitions.At(0));
-
-			VirtualFileSystem *vfs = new VirtualFileSystem();
-			vfs->Mount("/", fs);
-			vfs->ListDirectory("/usr/include/kernel/fs");
-
-			auto testEntry = vfs->GetFileMeta("/app/hlwrld.app");
-			if (testEntry.type != DirEntryType::Invalid)
-				printf("Found test app with size %d\n", testEntry.size);
-			else
-				printf("Test file not found\n");
-
-			uint32_t fileHandle = vfs->Open("/app/hlwrld.app");
-
-			char *buf = new char[testEntry.size + 1];
-			buf[testEntry.size] = 0;
-
-			vfs->Read(fileHandle, testEntry.size, (uint8_t *)buf);
-			ELF::Image elfImage((uint8_t *)buf, testEntry.size);
-
-			if (!elfImage.IsValid())
-			{
-				printf("elf: image not valid\n");
-			}
-			else
-			{
-				printf("elf: image is valid, loading...\n");
-				elfThread = ElfLoader::LoadElf(elfImage);
-			}
-
-			vfs->Close(fileHandle);
-
-			delete buf;
-			delete fs;
-			delete vfs;
+			Kernel::Panic("boot", "Disk is not available. Nekosys requires a disk.");
 		}
-		else
+
+		auto partitions = MBR::Parse(device);
+		if (partitions.Size() == 0)
 		{
-			printf("Disk is not available\n");
+			Kernel::Panic("boot", "MBR contains no partitions!");
 		}
-		delete device;
-		Interrupts::Disable(); // disk may have enabled it
+
+		printf("Mounting root filesystem...\n");
+		FileSystem *fs = new Fat16(device, partitions.At(0));
+
+		auto vfs = VirtualFileSystem::GetInstance();
+		vfs->Mount("/", fs);
+
+		printf("Loading startup app\n");
+		auto entry = vfs->GetFileMeta("/app/hlwrld.app");
+		if (!entry.IsValid())
+		{
+			Kernel::Panic("boot", "Startup app not found");
+		}
+
+		auto buf = new uint8_t[entry.size];
+		auto handle = vfs->Open("/app/hlwrld.app");
+		vfs->Read(handle, entry.size, buf);
+		vfs->Close(handle);
+
+		ELF::Image image(buf, entry.size);
+		if (!image.IsValid())
+		{
+			Kernel::Panic("boot", "Startup app not valid ELF");
+		}
+
+		auto startupApp = ElfLoader::LoadElf(image);
 
 		printf("Free kernel heap: %dKB/1024KB\n", get_free_heap() / 1024);
 
 		// Tasking
 		printf("Initializing task system\n");
+		Interrupts::Disable();
+
 		Scheduler *scheduler = scheduler->GetInstance();
 		scheduler->Initialize();
 
@@ -246,17 +224,7 @@ extern "C"
 		exitingThread->Start();
 
 		printf("Starting thread loaded from ELF\n");
-		if (elfThread != nullptr)
-			elfThread->Start();
-
-		/*printf("Starting usermode thread\n");
-		PageDirectory *pagedir = new PageDirectory(*PageDirectory::GetKernelDir());
-		auto pageframe = pagemanager.AllocPageframe();
-		pagedir->MapPage(pageframe, (vaddress_t)0x100000, PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
-		Stack *stack = new Stack((vaddress_t)0x100000, 4096);
-		Thread *usermodeThread = Thread::CreateUserThread(ring3Thread, pagedir, stack);
-		usermodeThread->Start();
-		PageDirectory::GetKernelDir()->Load();*/
+		startupApp->Start();
 
 		// Kernel initialized, let the scheduler take over
 		printf("System boot complete\n");
