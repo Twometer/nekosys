@@ -182,14 +182,14 @@ extern "C"
 		vfs->Mount("/", fs);
 
 		printf("Loading startup app\n");
-		auto entry = vfs->GetFileMeta("/app/hlwrld.app");
+		auto entry = vfs->GetFileMeta("/bin/hlwrld.app");
 		if (!entry.IsValid())
 		{
 			Kernel::Panic("boot", "Startup app not found");
 		}
 
 		auto buf = new uint8_t[entry.size];
-		auto handle = vfs->Open("/app/hlwrld.app");
+		auto handle = vfs->Open("/bin/hlwrld.app");
 		vfs->Read(handle, entry.size, buf);
 		vfs->Close(handle);
 
@@ -200,6 +200,8 @@ extern "C"
 		}
 
 		auto startupApp = ElfLoader::LoadElf(image);
+
+		delete buf;
 
 		printf("Free kernel heap: %dKB/1024KB\n", get_free_heap() / 1024);
 

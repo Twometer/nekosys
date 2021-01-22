@@ -1,2 +1,2 @@
 #!/bin/bash
-neko-gcc main.cpp -o ../../sysroot/app/hlwrld.app
+neko-gcc main.cpp -o ../../sysroot/bin/hlwrld.app

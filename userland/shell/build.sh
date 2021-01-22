@@ -1,2 +1,2 @@
 #!/bin/bash
-neko-gcc main.cpp -o ../../sysroot/app/shell.app
+neko-gcc main.cpp -o ../../sysroot/bin/shell.app

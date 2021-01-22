@@ -1,4 +1,5 @@
 #include <kernel/syscallhandler.h>
+#include <kernel/syscalls.h>
 #include <kernel/memory/stack.h>
 #include <kernel/tasks/thread.h>
 #include <kernel/tty.h>
@@ -8,34 +9,6 @@ using namespace Memory;
 namespace Kernel
 {
     DEFINE_SINGLETON(SyscallHandler)
-
-    uint32_t sys$$texit(void *param)
-    {
-        uint32_t exit_code = *(uint32_t *)(param);
-        printf("UserThread %d exited with exit code %d\n", Thread::Current()->GetId(), exit_code);
-        Thread::Current()->Kill();
-        return 0;
-    }
-
-    uint32_t sys$$print(void *param)
-    {
-        printf("%s", param);
-        return 0;
-    }
-
-    uint32_t sys$$exit(void *param)
-    {
-        printf("User process exited\n");
-        sys$$texit(param);
-        return 0;
-    }
-
-    uint32_t sys$$putchar(void *param) 
-    {
-        char c = *(char*)param;
-        Kernel::TTY::Write(&c, sizeof(c));
-        return 0;
-    }
 
     SyscallHandler::SyscallHandler()
     {
@@ -48,6 +21,7 @@ namespace Kernel
         AddSyscall(SYS_PRINT, sys$$print);
         AddSyscall(SYS_EXIT, sys$$exit);
         AddSyscall(SYS_PUTCHAR, sys$$putchar);
+
         Interrupts::AddHandler(0x80, this);
     }
 
@@ -68,9 +42,9 @@ namespace Kernel
         uint32_t syscall_num = stack.Pop();                 // Syscall number
         void *param_ptr = (void *)stack.Pop();              // Pointer to the param struct
         uint32_t *retval = (uint32_t *)stack.GetStackPtr(); // Stack now points at the retval ptr
-        auto syscall_ptr = syscalls->At(syscall_num);
-
-        if (syscall_ptr == nullptr)
+        
+        auto syscallHandler = syscalls->At(syscall_num);
+        if (syscallHandler == nullptr)
         {
             *retval = -1;
             printf("warn: Thread %d attempted invalid syscall %x\n", Thread::Current()->GetId(), syscall_num);
@@ -78,7 +52,7 @@ namespace Kernel
         }
         else
         {
-            *retval = syscall_ptr(param_ptr);
+            *retval = syscallHandler(param_ptr);
         }
     }
 
