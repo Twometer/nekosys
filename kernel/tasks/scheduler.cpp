@@ -4,6 +4,7 @@
 #include <kernel/timemanager.h>
 #include <kernel/tasks/process.h>
 #include <kernel/tasks/scheduler.h>
+#include <kernel/gdt.h>
 
 #define SCHEDULER_DBG 0
 
@@ -87,15 +88,27 @@ namespace Kernel
 #if SCHEDULER_DBG
         auto &newregs = newThread->GetRegisters();
         printf("scheduler: %d -> %d after %dms\n", oldThread->GetId(), newThread->GetId(), oldThread->GetRuntime());
-        printf("  old: %x, %x\n", regs->esp, regs->ds);
-        printf("  new: %x, %x\n", newregs.esp, newregs.ds);
+        printf("  old: %x, %x, %x\n", regs->esp, regs->ds, GDT::GetInstance()->GetTssEntry().esp0);
+        printf("  new: %x, %x, %x\n", newregs.esp, newregs.ds, newThread->GetKernelStack());
 #endif
+
+        // Load new kernel stack pointer for that thread.
+        GDT::GetInstance()->GetTssEntry().esp0 = newThread->GetKernelStack();
 
         // Save current regs to old thread
         regs->CopyTo(&oldThread->GetRegisters());
 
         // Load regs for next thread
         newThread->GetRegisters().CopyTo(regs);
+
+        // Destroy dead threads
+        if (oldThread->GetState() == ThreadState::Dead)
+        {
+#if SCHEDULER_DBG
+            printf("scheduler: Annihilating dead thread %d\n", oldThread->GetId());
+            delete oldThread;
+#endif
+        }
 
         // Load pages for new thread
         if (!newThread->GetPageDir()->IsCurrent())

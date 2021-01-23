@@ -55,8 +55,6 @@ uint8_t *ReadFile(const char *path, size_t *size)
 
 extern "C"
 {
-	extern void setTss(uint32_t selector);
-
 	/* nekosys Kernel entry point */
 	void nkmain()
 	{
@@ -139,16 +137,18 @@ extern "C"
 		heap_init((void *)KERNEL_HEAP_ADDR, KERNEL_HEAP_SIZE);
 		printf("Created %x byte kernel heap at %x\n", KERNEL_HEAP_SIZE, KERNEL_HEAP_ADDR);
 
-		// Load GDT
-		GDT gdt(6);
-		gdt.Set(SEG_NULL, 0x00, 0x00, GDTEntryType::Null, Ring::Ring0);
-		gdt.Set(SEG_KRNL_CODE, 0x00, 0xffffffff, GDTEntryType::Code, Ring::Ring0);
-		gdt.Set(SEG_KRNL_DATA, 0x00, 0xffffffff, GDTEntryType::Data, Ring::Ring0);
-		gdt.Set(SEG_USER_CODE, 0x00, 0xffffffff, GDTEntryType::Code, Ring::Ring3);
-		gdt.Set(SEG_USER_DATA, 0x00, 0xffffffff, GDTEntryType::Data, Ring::Ring3);
-		gdt.SetTssEntry(SEG_TSS);
-		gdt.Load();
-		setTss(SEG_TSS);
+		// Create GDT
+		auto gdt = GDT::GetInstance();
+		
+		gdt->Create(6);
+		gdt->Set(SEG_NULL, 0x00, 0x00, GDTEntryType::Null, Ring::Ring0);
+		gdt->Set(SEG_KRNL_CODE, 0x00, 0xffffffff, GDTEntryType::Code, Ring::Ring0);
+		gdt->Set(SEG_KRNL_DATA, 0x00, 0xffffffff, GDTEntryType::Data, Ring::Ring0);
+		gdt->Set(SEG_USER_CODE, 0x00, 0xffffffff, GDTEntryType::Code, Ring::Ring3);
+		gdt->Set(SEG_USER_DATA, 0x00, 0xffffffff, GDTEntryType::Data, Ring::Ring3);
+		gdt->CreateTss(SEG_TSS);
+		gdt->FlushGdt();
+		gdt->FlushTss();
 
 		printf("Setting up interrupts\n");
 		Interrupts::SetupIdt();

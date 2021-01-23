@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <kernel/ring.h>
+#include <nk/singleton.h>
 
 namespace Kernel
 {
@@ -66,22 +67,28 @@ namespace Kernel
 
     class GDT
     {
+        DECLARE_SINGLETON(GDT);
+
     private:
         TSSEntry tssEntry;
         GDTEntry *entries;
         size_t numEntries;
-        static GDT* current;
+        static GDT *current;
+
+        uint32_t tssSelector = 0;
 
     public:
-        GDT(size_t numEntries);
+        void Create(size_t numEntries);
 
         void Set(uint32_t selector, uint32_t base, uint32_t limit, GDTEntryType type, Ring ring);
 
-        void SetTssEntry(uint32_t selector);
+        void CreateTss(uint32_t selector);
 
         TSSEntry &GetTssEntry() { return tssEntry; }
 
-        void Load();
+        void FlushGdt();
+
+        void FlushTss();
 
     private:
         void EncodeEntry(uint8_t *target, GDTEntry entry);

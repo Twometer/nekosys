@@ -34,6 +34,13 @@ namespace Kernel
 
     Thread::~Thread()
     {
+        delete[] stack->GetStackBottom();
+        delete stack;
+
+        if (ring == Ring::Ring3) {
+            auto kernelStackBottom = (uint8_t*)(kernelStack - THREAD_STACK_SIZE);
+            delete[] kernelStackBottom;
+        }
         // TODO
     }
 
@@ -63,6 +70,7 @@ namespace Kernel
         stack->Push((uint32_t)entryPoint);           // IP = entry point
 
         auto thread = new Thread(pagedir, stack, Ring::Ring3);
+        thread->kernelStack = (uint32_t)(new uint8_t[THREAD_STACK_SIZE]) + THREAD_STACK_SIZE;
 
         auto &regs = thread->GetRegisters();
         regs.ds = SEG_USER_DATA;

@@ -38,4 +38,9 @@ namespace Memory
         return stack_ptr;
     }
 
+    void *Stack::GetStackBottom()
+    {
+        return stack_bottom;
+    }
+
 }; // namespace Memory

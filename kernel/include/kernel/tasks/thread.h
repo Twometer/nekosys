@@ -41,6 +41,8 @@ namespace Kernel
         uint32_t currentSliceStart = 0;
         uint32_t unblockTime = 0;
 
+        uint32_t kernelStack = 0;
+
     private:
         Thread(Memory::PageDirectory *pagedir, Memory::Stack *stack, Ring ring);
 
@@ -71,6 +73,8 @@ namespace Kernel
 
         Process *GetProcess() { return process; };
         void SetProcess(Process *process) { this->process = process; }
+
+        uint32_t GetKernelStack() { return kernelStack; }
 
         uint32_t GetRuntime();
 

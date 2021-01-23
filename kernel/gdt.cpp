@@ -12,9 +12,16 @@ GDT *GDT::current = nullptr;
 extern "C"
 {
     extern void setGdt(void *, uint32_t);
+    extern void setTss(uint32_t selector);
 }
 
-GDT::GDT(size_t numEntries)
+DEFINE_SINGLETON(GDT)
+
+GDT::GDT()
+{
+}
+
+void GDT::Create(size_t numEntries)
 {
     this->numEntries = numEntries;
     this->entries = new GDTEntry[numEntries];
@@ -70,7 +77,7 @@ void GDT::Set(uint32_t selector, uint32_t base, uint32_t limit, GDTEntryType typ
     }
 }
 
-void GDT::SetTssEntry(uint32_t selector)
+void GDT::CreateTss(uint32_t selector)
 {
     uint32_t base = (uint32_t)&tssEntry;
     uint32_t limit = sizeof(tssEntry);
@@ -95,10 +102,17 @@ void GDT::SetTssEntry(uint32_t selector)
     memset(&tssEntry, 0, sizeof(tssEntry));
     tssEntry.ss0 = SEG_KRNL_DATA;
     tssEntry.esp0 = (uint32_t)(new uint8_t[4096] + 4096); // todo wtf should i put here
+
+    tssSelector = selector;
 }
 
-void GDT::Load()
+void GDT::FlushGdt()
 {
     setGdt(entries, numEntries * sizeof(GDTEntry));
     current = this;
+}
+
+void GDT::FlushTss()
+{
+    setTss(tssSelector);
 }
