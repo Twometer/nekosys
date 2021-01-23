@@ -81,6 +81,7 @@ namespace Kernel
         newThread->MakeCurrent();
         newThread->SetState(ThreadState::Running);
         newThread->BeginSlice();
+        newThread->Unblock();
 
         Process::SetCurrent(newThread->GetProcess());
 

@@ -122,6 +122,7 @@ namespace Kernel
 
     void Thread::Unblock()
     {
+        delete blocker;
         blocker = nullptr;
     }
 
