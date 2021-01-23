@@ -35,20 +35,22 @@ void idleThreadEP()
 	}
 }
 
-void testThreadEP()
+uint8_t *ReadFile(const char *path, size_t *size)
 {
-	for (;;)
+	auto vfs = VirtualFileSystem::GetInstance();
+	auto entry = vfs->GetFileMeta(path);
+	if (!entry.IsValid())
 	{
-		//printf("Hello from thread #2 %d\n", TimeManager::GetInstance()->GetUptime());
-		Thread::Current()->Sleep(1000);
+		Kernel::Panic("boot", "%s not found", path);
 	}
-}
 
-void testExitingThread()
-{
-	//printf("This is an exiting thread\n");
-	Thread::Current()->Sleep(2000);
-	//printf("goodbye\n");
+	auto buf = new uint8_t[entry.size];
+	auto handle = vfs->Open(path);
+	vfs->Read(handle, 0, entry.size, buf);
+	vfs->Close(handle);
+
+	*size = entry.size;
+	return buf;
 }
 
 extern "C"
@@ -182,26 +184,17 @@ extern "C"
 		vfs->Mount("/", fs);
 
 		printf("Loading startup app\n");
-		auto entry = vfs->GetFileMeta("/bin/shell.app");
-		if (!entry.IsValid())
-		{
-			Kernel::Panic("boot", "Startup app not found");
-		}
+		size_t appSize = 0;
+		auto appBuf = ReadFile("/bin/shell.app", &appSize);
 
-		auto buf = new uint8_t[entry.size];
-		auto handle = vfs->Open("/bin/shell.app");
-		vfs->Read(handle, 0, entry.size, buf);
-		vfs->Close(handle);
-
-		ELF::Image image(buf, entry.size);
+		ELF::Image image(appBuf, appSize);
 		if (!image.IsValid())
 		{
 			Kernel::Panic("boot", "Startup app not valid ELF");
 		}
-		
-		auto startupApp = ElfLoader::LoadElf(image);
 
-		delete[] buf;
+		auto startupApp = ElfLoader::LoadElf(image);
+		delete[] appBuf;
 
 		printf("Free kernel heap: %dKB/1024KB\n", get_free_heap() / 1024);
 
@@ -215,15 +208,6 @@ extern "C"
 		printf("Starting idle thread\n");
 		Thread *idleThread = Thread::CreateKernelThread(idleThreadEP);
 		idleThread->Start();
-
-		// Test threads
-		printf("Starting test thread\n");
-		Thread *testThread = Thread::CreateKernelThread(testThreadEP);
-		testThread->Start();
-
-		printf("Starting exiting thread\n");
-		Thread *exitingThread = Thread::CreateKernelThread(testExitingThread);
-		exitingThread->Start();
 
 		printf("Starting thread loaded from ELF\n");
 		startupApp->Start();
