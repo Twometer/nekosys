@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <unistd.h>
 
 int main(int argc, char **argv)
 {
@@ -21,5 +22,10 @@ int main(int argc, char **argv)
 
 	fclose(file);
 	delete[] data;
+
+	printf("sleeping for 5 secs...\n");
+	sleep(5);
+	printf("yay, we're back\n");
+
 	return 0;
 }

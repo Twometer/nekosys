@@ -101,16 +101,24 @@ namespace Kernel
             return;
 
         threadState = ThreadState::Yielded;
+
+        if (Interrupts::IsInIrq())
+        {
+            printf("thread: can't yield while in irq\n");
+            return;
+        }
+
         Interrupts::WaitForInt();
     }
 
     void Thread::Kill()
     {
+        // just set our state to dead and wait for the scheduler to annihilate us
+        threadState = ThreadState::Dead;
+
         if (!IsCurrent())
             return;
 
-        // just set our state to dead and wait for the scheduler to annihilate us
-        threadState = ThreadState::Dead;
         Interrupts::WaitForInt();
     }
 

@@ -14,7 +14,8 @@
 
 using namespace Kernel;
 
-nk::Vector<InterruptHandlerEntry> Interrupts::entries;
+nk::Vector<InterruptHandlerEntry> *Interrupts::entries;
+volatile bool Interrupts::isInInterrupt = false;
 
 static const char *exception_descriptors[] = {
 	"Division by Zero",
@@ -267,6 +268,8 @@ void Interrupts::SetupIdt()
 
 	// load idt
 	load_idt(idt_ptr);
+
+	entries = new nk::Vector<InterruptHandlerEntry>();
 }
 
 void Interrupts::WaitForInt()
@@ -302,17 +305,19 @@ void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *fr
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
 {
+	isInInterrupt = true;
 	RegisterStates *states = &register_states;
-	for (size_t i = 0; i < entries.Size(); i++)
+	for (size_t i = 0; i < entries->Size(); i++)
 	{
-		InterruptHandlerEntry &entry = entries.At(i);
+		InterruptHandlerEntry &entry = entries->At(i);
 		if (entry.interrupt == interrupt)
 			entry.handler->HandleInterrupt(interrupt, states);
 	}
+	isInInterrupt = false;
 }
 
 void Interrupts::AddHandler(unsigned int interrupt, InterruptHandler *handler)
 {
 	InterruptHandlerEntry entry = {interrupt, handler};
-	entries.Add(entry);
+	entries->Add(entry);
 }

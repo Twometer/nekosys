@@ -6,7 +6,7 @@
 #include <kernel/tasks/scheduler.h>
 #include <kernel/gdt.h>
 
-#define SCHEDULER_DBG 0
+#define SCHEDULER_DBG 1
 
 namespace Kernel
 {

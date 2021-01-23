@@ -39,7 +39,9 @@ namespace Kernel
     class Interrupts
     {
     private:
-        static nk::Vector<InterruptHandlerEntry> entries;
+        static nk::Vector<InterruptHandlerEntry> *entries;
+
+        static volatile bool isInInterrupt;
 
     public:
         static void SetupIdt();
@@ -57,6 +59,8 @@ namespace Kernel
         static void HandleInterrupt(unsigned int interrupt);
 
         static void AddHandler(unsigned int interrupt, InterruptHandler *handler);
+
+        static bool IsInIrq() { return isInInterrupt; }
     };
 
 }; // namespace Kernel
