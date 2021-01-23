@@ -106,8 +106,8 @@ namespace Kernel
         {
 #if SCHEDULER_DBG
             printf("scheduler: Annihilating dead thread %d\n", oldThread->GetId());
-            delete oldThread;
 #endif
+            delete oldThread;
         }
 
         // Load pages for new thread
@@ -134,7 +134,7 @@ namespace Kernel
 
     bool Scheduler::CanRun(Thread *thread)
     {
-        return thread != nullptr && thread->GetUnblockTime() <= TimeManager::GetInstance()->GetUptime() && thread->GetState() == ThreadState::Runnable;
+        return thread != nullptr && !thread->IsBlocked() && thread->GetState() == ThreadState::Runnable;
     }
 
 }; // namespace Kernel

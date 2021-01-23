@@ -15,7 +15,7 @@ using namespace Memory;
 namespace Kernel
 {
     Thread *Thread::current = nullptr;
-    int Thread::idCounter = 0;
+    tid_t Thread::idCounter = 0;
 
     static void kernel_thread_exit()
     {
@@ -41,7 +41,6 @@ namespace Kernel
             auto kernelStackBottom = (uint8_t*)(kernelStack - THREAD_STACK_SIZE);
             delete[] kernelStackBottom;
         }
-        // TODO
     }
 
     Thread *Thread::CreateKernelThread(ThreadMain entryPoint)
@@ -93,8 +92,7 @@ namespace Kernel
 
     void Thread::Sleep(int ms)
     {
-        unblockTime = TimeManager::GetInstance()->GetUptime() + ms;
-        Yield();
+        Block(new SleepThreadBlocker(ms));
     }
 
     void Thread::Yield()
@@ -114,6 +112,22 @@ namespace Kernel
         // just set our state to dead and wait for the scheduler to annihilate us
         threadState = ThreadState::Dead;
         Interrupts::WaitForInt();
+    }
+
+    void Thread::Block(IThreadBlocker *blocker)
+    {
+        this->blocker = blocker;
+        Yield();
+    }
+
+    void Thread::Unblock()
+    {
+        blocker = nullptr;
+    }
+
+    bool Thread::IsBlocked()
+    {
+        return blocker != nullptr && blocker->IsBlocked();
     }
 
     uint32_t Thread::GetRuntime()

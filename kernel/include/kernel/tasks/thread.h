@@ -6,11 +6,13 @@
 #include <kernel/memory/stack.h>
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/tasks/process.h>
+#include <kernel/tasks/blockers.h>
 
 #define THREAD_STACK_SIZE 4096
 
 namespace Kernel
 {
+    typedef uint32_t tid_t;
     typedef void (*ThreadMain)(void);
 
     enum class ThreadState
@@ -26,22 +28,21 @@ namespace Kernel
     {
     private:
         static Thread *current;
-        static int idCounter;
+        static tid_t idCounter;
 
-        int id;
+        tid_t id;
         Ring ring;
         RegisterStates registers{};
         ThreadState threadState = ThreadState::Runnable;
 
-        Memory::PageDirectory *pagedir;
-        Memory::Stack *stack = nullptr;
-
         Process *process;
 
-        uint32_t currentSliceStart = 0;
-        uint32_t unblockTime = 0;
-
+        Memory::PageDirectory *pagedir;
+        Memory::Stack *stack = nullptr;
         uint32_t kernelStack = 0;
+
+        IThreadBlocker *blocker = nullptr;
+        uint32_t currentSliceStart = 0;
 
     private:
         Thread(Memory::PageDirectory *pagedir, Memory::Stack *stack, Ring ring);
@@ -63,7 +64,13 @@ namespace Kernel
 
         void Kill();
 
-        int GetId() { return id; }
+        void Block(IThreadBlocker *blocker);
+
+        void Unblock();
+
+        bool IsBlocked();
+
+        tid_t GetId() { return id; }
 
         bool IsCurrent() { return current == this; };
         void MakeCurrent() { current = this; }
@@ -77,8 +84,6 @@ namespace Kernel
         uint32_t GetKernelStack() { return kernelStack; }
 
         uint32_t GetRuntime();
-
-        uint32_t GetUnblockTime() { return unblockTime; }
 
         Memory::PageDirectory *GetPageDir() { return pagedir; }
 
