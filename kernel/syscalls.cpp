@@ -4,12 +4,14 @@
 #include <kernel/tty.h>
 #include <stdio.h>
 
+#define SYS_DEBUG 0
+
 using namespace Kernel;
 
 uint32_t sys$$texit(void *param)
 {
     uint32_t exit_code = *(uint32_t *)(param);
-    printf("UserThread %d exited with exit code %d\n", Thread::Current()->GetId(), exit_code);
+    printf("User thread %d exited with exit code %d\n", Thread::Current()->GetId(), exit_code);
     Thread::Current()->Kill();
     return 0;
 }
@@ -22,8 +24,13 @@ uint32_t sys$$print(void *param)
 
 uint32_t sys$$exit(void *param)
 {
-    printf("User process exited\n");
-    sys$$texit(param);
+    uint32_t exit_code = *(uint32_t *)(param);
+    auto process = Process::Current();
+    if (process == nullptr)
+        return 1;
+
+    printf("User process %d exited with exit code %d\n", process->GetId(), exit_code);
+    process->Kill();
     return 0;
 }
 
@@ -71,6 +78,9 @@ uint32_t sys$$fclose(void *param)
 uint32_t sys$$pagealloc(void *param)
 {
     int num = *(int *)param;
-    auto ptr = (uint32_t)Thread::Current()->MapNewPage(num);
+    auto ptr = (uint32_t)Process::Current()->MapNewPages(num);
+#if SYS_DEBUG
+    printf("sys: Mapped %d pages to %x %x\n", num, ptr, Process::Current()->GetHeapBase());
+#endif
     return ptr;
 }

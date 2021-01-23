@@ -193,7 +193,7 @@ extern "C"
 			Kernel::Panic("boot", "Startup app not valid ELF");
 		}
 
-		auto startupApp = ElfLoader::LoadElf(image);
+		auto startupApp = ElfLoader::CreateProcess(image, 0, nullptr);
 		delete[] appBuf;
 
 		printf("Free kernel heap: %dKB/1024KB\n", get_free_heap() / 1024);
@@ -209,11 +209,11 @@ extern "C"
 		Thread *idleThread = Thread::CreateKernelThread(idleThreadEP);
 		idleThread->Start();
 
-		printf("Starting thread loaded from ELF\n");
+		printf("Startup process starting\n");
 		startupApp->Start();
 
 		// Kernel initialized, let the scheduler take over
-		printf("System boot complete\n");
+		printf("System boot complete\n\n");
 		Interrupts::WaitForInt();
 
 		// If we got back here, something went *seriously* wrong

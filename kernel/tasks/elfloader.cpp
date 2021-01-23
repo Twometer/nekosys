@@ -12,7 +12,7 @@ using namespace Memory;
 namespace Kernel
 {
 
-    Thread *ElfLoader::LoadElf(const ELF::Image &image)
+    Process *ElfLoader::CreateProcess(const ELF::Image &image, int argc, char **argv)
     {
         if (!image.IsValid())
             return nullptr;
@@ -23,6 +23,7 @@ namespace Kernel
         if (elfHeader->e_phnum == 0)
             return nullptr;
 
+        auto pages = new nk::Vector<void *>();
         auto pagedir = new PageDirectory(*PageDirectory::GetKernelDir());
         void *executableEndAddr = 0;
 
@@ -33,7 +34,7 @@ namespace Kernel
                 continue;
 
             auto page = PAGE_ALIGN_DOWN(header.p_vaddr);
-            executableEndAddr = MapNewZeroedPages(pagedir, page, header.p_filesz);
+            pages->Add(executableEndAddr = MapNewZeroedPages(pagedir, page, header.p_filesz));
 
 #if ELFLOADER_DEBUG
             printf("elf_loader: Loading %d bytes from %x to %x (page %x)\n", header.p_filesz, header.p_offset, header.p_vaddr, PAGE_ALIGN_DOWN(header.p_vaddr));
@@ -50,22 +51,29 @@ namespace Kernel
 #if ELFLOADER_DEBUG
         printf("elf_loader: Making a stack at %x\n", executableEndAddr);
 #endif
-        MapNewZeroedPages(pagedir, (vaddress_t)executableEndAddr, 4096);
+        pages->Add(MapNewZeroedPages(pagedir, (vaddress_t)executableEndAddr, 4096));
         auto stack = new Stack(executableEndAddr, 4096);
-        stack->Push(0x00);
-        stack->Push(0x00);
+        stack->Push((uint32_t)argc);
+        stack->Push((uint32_t)argv);
 
         // Set up thread
 #if ELFLOADER_DEBUG
         printf("elf_loader: Creating thread with ip=%x, sp=%x\n", elfHeader->e_entry, stack->GetStackPtr());
 #endif
         auto thread = Thread::CreateUserThread((ThreadMain)elfHeader->e_entry, pagedir, stack);
-        thread->SetFreeMemBase((uint32_t)(executableEndAddr + 4096));
+
+        auto threads = new nk::Vector<Thread *>();
+        threads->Add(thread);
+
+        auto process = new Process(pagedir, threads, pages);
+        process->SetHeapBase(executableEndAddr + 4096);
+
+        thread->SetProcess(process);
 
         // Return to kernel
         PageDirectory::GetKernelDir()->Load();
 
-        return thread;
+        return process;
     }
 
     void *ElfLoader::MapNewZeroedPages(PageDirectory *dir, vaddress_t vaddr, size_t sizeInBytes)
@@ -90,7 +98,6 @@ namespace Kernel
             a += PAGE_SIZE;
         }
 
-        
         memset(vaddr, 0, sizeInBytes);
         return a;
     }

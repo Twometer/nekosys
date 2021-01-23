@@ -5,6 +5,7 @@
 #include <kernel/registers.h>
 #include <kernel/memory/stack.h>
 #include <kernel/memory/pagedirectory.h>
+#include <kernel/tasks/process.h>
 
 #define THREAD_STACK_SIZE 4096
 
@@ -20,6 +21,7 @@ namespace Kernel
         Dead
     };
 
+    class Process;
     class Thread
     {
     private:
@@ -34,9 +36,10 @@ namespace Kernel
         Memory::PageDirectory *pagedir;
         Memory::Stack *stack = nullptr;
 
+        Process *process;
+
         uint32_t currentSliceStart = 0;
         uint32_t unblockTime = 0;
-        uint32_t freeMemBase = 0;
 
     private:
         Thread(Memory::PageDirectory *pagedir, Memory::Stack *stack, Ring ring);
@@ -66,8 +69,8 @@ namespace Kernel
         ThreadState GetState() { return threadState; }
         void SetState(ThreadState state) { threadState = state; }
 
-        uint32_t GetFreeMemBase() { return freeMemBase; }
-        void SetFreeMemBase(uint32_t ptr) { freeMemBase = ptr; }
+        Process *GetProcess() { return process; };
+        void SetProcess(Process *process) { this->process = process; }
 
         uint32_t GetRuntime();
 
@@ -80,8 +83,6 @@ namespace Kernel
         RegisterStates &GetRegisters() { return registers; }
 
         void BeginSlice();
-
-        void *MapNewPage(size_t num);
 
         static Thread *Current() { return current; }
     };

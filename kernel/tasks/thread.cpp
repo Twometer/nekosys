@@ -108,18 +108,6 @@ namespace Kernel
         Interrupts::WaitForInt();
     }
 
-    void *Thread::MapNewPage(size_t num)
-    {
-        auto base = (void *)freeMemBase;
-        for (size_t i = 0; i < num; i++)
-        {
-            auto pageframe = PageManager::GetInstance()->AllocPageframe();
-            pagedir->MapPage(pageframe, (vaddress_t)freeMemBase, PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
-            freeMemBase += PAGE_SIZE;
-        }
-        return base;
-    }
-
     uint32_t Thread::GetRuntime()
     {
         return TimeManager::GetInstance()->GetUptime() - currentSliceStart;

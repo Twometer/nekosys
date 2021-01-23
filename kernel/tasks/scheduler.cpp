@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <kernel/panic.h>
 #include <kernel/timemanager.h>
+#include <kernel/tasks/process.h>
 #include <kernel/tasks/scheduler.h>
 
 #define SCHEDULER_DBG 0
@@ -79,6 +80,8 @@ namespace Kernel
         newThread->MakeCurrent();
         newThread->SetState(ThreadState::Running);
         newThread->BeginSlice();
+
+        Process::SetCurrent(newThread->GetProcess());
 
 // context switch:
 #if SCHEDULER_DBG
