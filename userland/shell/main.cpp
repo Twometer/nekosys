@@ -9,6 +9,7 @@ int main(int argc, char **argv)
 
 	fseek(file, 0, SEEK_END);
 	size_t filesize = ftell(file);
+	fseek(file, 0, SEEK_SET);
 	printf("Test file has size %d.\n", filesize);
 
 	uint8_t *data = new uint8_t[filesize + 1];

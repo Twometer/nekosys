@@ -116,7 +116,10 @@ namespace Disk
 
         IO::Out8(DRIVE_PORT_CMD, DRIVE_COMMAND_READ);
 
-        WaitForInterrupt();
+        // FIXME: Busy waiting and polling is a big nono
+        while (!(IO::In8(DRIVE_PORT_STATUS) & DRQ) || (IO::In8(DRIVE_PORT_STATUS) & BSY))
+            ;
+
         for (size_t i = 0; i < block_num; i++)
         {
             ReadRaw((uint16_t *)(data + 256 * i), 256);
