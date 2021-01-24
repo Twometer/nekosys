@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <kernel/memory/pagemanager.h>
 #include <kernel/panic.h>
+#include <kernel/kdebug.h>
 
 extern "C"
 {
@@ -15,7 +16,7 @@ namespace Memory
 
     void PageManager::Initialize(void *memory_base, uint32_t memory_size)
     {
-        printf("Setting up paging\n");
+        Kernel::kdbg("Setting up paging\n");
 
         if (instance != nullptr)
             Kernel::Panic("page_manager", "Page manager initialized twice");
@@ -27,10 +28,10 @@ namespace Memory
         this->frame_map = this->memory_base;
         this->num_pages = memory_size / PAGE_SIZE;
 
-        printf("  Number of possible memory pages: %d\n", num_pages);
+        Kernel::kdbg("  Number of possible memory pages: %d\n", num_pages);
 
         this->pageframes_base = PAGE_ALIGN_UP(this->frame_map + this->num_pages);
-        printf("  Pageframe base: %x\n", this->pageframes_base);
+        Kernel::kdbg("  Pageframe base: %x\n", this->pageframes_base);
     }
 
     void PageManager::LoadPageDirectory(uint32_t *page_directory)
