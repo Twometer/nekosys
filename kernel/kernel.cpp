@@ -26,12 +26,14 @@ using namespace Memory;
 using namespace Disk;
 using namespace FS;
 
-void idleThreadEP()
+void idleThread()
 {
+	printf("Hello from idle thread\n");
 	for (;;)
 	{
-		// the idle thread should never block the scheduler for its 25ms timeframe so yield
-		Thread::Current()->Yield();
+		// Idle? Just wait for something to happen, and don't block...
+		Thread::Current()->SetState(ThreadState::Yielded);
+		Interrupts::WaitForInt();
 	}
 }
 
@@ -98,7 +100,6 @@ extern "C"
 		PageDirectory pageDir;
 
 		// Identity map the first megabyte
-		// IMPORTANT FIXME: The first MB is only mapped into userspace here, because the test-ring3 func is in there, and it obviously needs to be able to access itself.
 		for (uint32_t i = 0; i < MBYTE; i += PAGE_SIZE)
 			pageDir.MapPage((paddress_t)i, (vaddress_t)i, PAGE_BIT_READ_WRITE);
 
@@ -139,7 +140,7 @@ extern "C"
 
 		// Create GDT
 		auto gdt = GDT::GetInstance();
-		
+
 		gdt->Create(6);
 		gdt->Set(SEG_NULL, 0x00, 0x00, GDTEntryType::Null, Ring::Ring0);
 		gdt->Set(SEG_KRNL_CODE, 0x00, 0xffffffff, GDTEntryType::Code, Ring::Ring0);
@@ -206,8 +207,7 @@ extern "C"
 		scheduler->Initialize();
 
 		printf("Starting idle thread\n");
-		Thread *idleThread = Thread::CreateKernelThread(idleThreadEP);
-		idleThread->Start();
+		Thread::CreateKernelThread(idleThread)->Start();
 
 		printf("Startup process starting\n");
 		startupApp->Start();
@@ -215,7 +215,7 @@ extern "C"
 		// Kernel initialized, let the scheduler take over
 		printf("System boot complete\n\n");
 		Interrupts::WaitForInt();
-
+		
 		// If we got back here, something went *seriously* wrong
 		Kernel::Panic("kernel_main", "Kernel has exited, this should not happen.");
 	}

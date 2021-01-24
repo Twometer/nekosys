@@ -13,16 +13,35 @@ global irq%1
 extern irq%1_handler
 
 irq%1:
-  ; save reg states
+  ; save regs
   save_all_regs
-  save_segments
+  push dword eax
+  push dword ebx
+  push dword ecx
+  push dword edx
+  push dword esi
+  push dword edi
+  push dword ebp
+  ; save data segment
+  push word ds
   
   ; call the interrupt handler
   call irq%1_handler
 
-  ; load reg states back
-  load_all_regs
-  load_segments
+  ; load data segment(s)
+  pop word ds
+  mov ax, ds
+  mov es, ax 
+  mov fs, ax 
+  mov gs, ax
+  ; restore regs
+  pop dword ebp
+  pop dword edi
+  pop dword esi
+  pop dword edx
+  pop dword ecx
+  pop dword ebx
+  pop dword eax
   iret
 %endmacro
 

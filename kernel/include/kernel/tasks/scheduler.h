@@ -33,6 +33,21 @@ namespace Kernel
         Thread *FindNextThread();
 
         bool CanRun(Thread *thread);
+
+        __attribute__((always_inline)) static inline uint32_t GetEsp()
+        {
+            uint32_t esp = 0;
+            asm volatile("mov %%esp, %0"
+                         : "=r"(esp));
+            return esp;
+        }
+
+        __attribute__((always_inline)) static inline void SetEsp(uint32_t esp)
+        {
+            asm volatile("mov %0, %%esp"
+                         :
+                         : "r"(esp));
+        }
     };
 
 }; // namespace Kernel

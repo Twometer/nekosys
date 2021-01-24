@@ -119,4 +119,4 @@ image:
 run:
     % default
     % image
-    qemu-system-i386 -m 512M -drive format=raw,file=build/neko.img -usb -vga std -d cpu_reset -no-reboot
+    qemu-system-i386 -m 512M -drive format=raw,file=build/neko.img -usb -vga std -d cpu_reset -no-reboot -serial stdio

@@ -64,8 +64,8 @@ extern "C"
 	// Handlers
 	void irq0_handler(void)
 	{
-		Interrupts::HandleInterrupt(0);
 		master_eoi();
+		Interrupts::HandleInterrupt(0);
 	}
 
 	void irq1_handler(void)

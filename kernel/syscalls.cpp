@@ -89,7 +89,5 @@ uint32_t sys$$sleep(void *param)
 {
     uint32_t timeout = *(uint32_t *)(param);   
     auto thread = Thread::Current();
-    printf("sys: Thread %d sleeping for %d seconds\n", thread->GetId(), timeout);
     thread->Sleep(timeout * 1000);
-    printf("sys: helo\n");
 }

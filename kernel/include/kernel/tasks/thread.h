@@ -48,6 +48,8 @@ namespace Kernel
         Thread(Memory::PageDirectory *pagedir, Memory::Stack *stack, Ring ring);
 
     public:
+        uint32_t esp = 0;
+
         ~Thread();
 
         static Thread *CreateKernelThread(ThreadMain entryPoint);
