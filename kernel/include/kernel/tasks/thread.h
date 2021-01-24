@@ -32,7 +32,6 @@ namespace Kernel
 
         tid_t id;
         Ring ring;
-        RegisterStates registers{};
         ThreadState threadState = ThreadState::Runnable;
 
         Process *process;
@@ -90,8 +89,6 @@ namespace Kernel
         Memory::PageDirectory *GetPageDir() { return pagedir; }
 
         Ring GetRing() { return ring; }
-
-        RegisterStates &GetRegisters() { return registers; }
 
         void BeginSlice();
 

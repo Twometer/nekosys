@@ -8,10 +8,6 @@
 
 using namespace Memory;
 
-// FIXME: All blocking methods should not wait for the
-//        timer interrupt but pass control to the scheduler
-//        instantly
-
 namespace Kernel
 {
     Thread *Thread::current = nullptr;
@@ -23,8 +19,7 @@ namespace Kernel
         thread->SetState(ThreadState::Dead);
         printf("Kernel thread %x died\n", thread->GetId());
 
-        // wait for the scheduler to get us out of here
-        Interrupts::WaitForInt();
+        Scheduler::GetInstance()->Yield();
     }
 
     Thread::Thread(PageDirectory *pagedir, Stack *stack, Ring ring)
@@ -46,12 +41,6 @@ namespace Kernel
 
     extern "C" void threadTrampoline();
 
-    extern "C" void testTramp()
-    {
-        printf("REACHED TEST TRAMPOLINE\n");
-        for(;;);
-    }
-
     Thread *Thread::CreateKernelThread(ThreadMain entryPoint)
     {
         auto stack = new Stack(new uint8_t[THREAD_STACK_SIZE], THREAD_STACK_SIZE);
@@ -59,37 +48,26 @@ namespace Kernel
         stack->Push(0x202);                        // Flags: Interrupts enabled
         stack->Push(SEG_KRNL_CODE);                // Code segment
         stack->Push((uint32_t)entryPoint);         // IP = entry point
-        //stack->Push((uint32_t)SEG_KRNL_DATA);
         stack->Push((uint32_t)threadTrampoline);
 
         auto thread = new Thread(PageDirectory::GetKernelDir(), stack, Ring::Ring0);
-
-        auto &regs = thread->GetRegisters();
-        regs.ds = SEG_KRNL_DATA;
-        regs.esp = (uint32_t)stack->GetStackPtr();
-        thread->esp = regs.esp;
+        thread->esp = (uint32_t)stack->GetStackPtr();
 
         return thread;
     }
 
     Thread *Thread::CreateUserThread(ThreadMain entryPoint, Memory::PageDirectory *pagedir, Stack *stack)
     {
-        //stack = new Stack(new uint8_t[THREAD_STACK_SIZE], THREAD_STACK_SIZE);
         stack->Push(SEG_USER_DATA | 0b11);           // Stack segment
         stack->Push((uint32_t)stack->GetStackPtr()); // Stack pointer
         stack->Push(0x202);                          // Flags: Interrupts enabled
         stack->Push(SEG_USER_CODE | 0b11);           // Code segment
         stack->Push((uint32_t)entryPoint);           // IP = entry point
-        //stack->Push((uint32_t)SEG_USER_DATA);
         stack->Push((uint32_t)threadTrampoline);
 
         auto thread = new Thread(pagedir, stack, Ring::Ring3);
         thread->kernelStack = (uint32_t)(new uint8_t[THREAD_STACK_SIZE]) + THREAD_STACK_SIZE;
-
-        auto &regs = thread->GetRegisters();
-        regs.ds = SEG_USER_DATA;
-        regs.esp = (uint32_t)stack->GetStackPtr();
-        thread->esp = regs.esp;
+        thread->esp = (uint32_t)stack->GetStackPtr();
 
         return thread;
     }
@@ -117,19 +95,18 @@ namespace Kernel
             return;
 
         threadState = ThreadState::Yielded;
-        Scheduler::GetInstance()->HandleInterrupt(0, nullptr);
-        //Interrupts::WaitForInt();
+        Scheduler::GetInstance()->Yield();
     }
 
     void Thread::Kill()
     {
-        // just set our state to dead and wait for the scheduler to annihilate us
+        // just set our state to dead and yield away
         threadState = ThreadState::Dead;
 
         if (!IsCurrent())
             return;
 
-        Interrupts::WaitForInt();
+        Scheduler::GetInstance()->Yield();
     }
 
     void Thread::Block(IThreadBlocker *blocker)

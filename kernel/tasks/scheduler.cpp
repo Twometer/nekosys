@@ -33,6 +33,12 @@ namespace Kernel
         threads.Add(thread);
     }
 
+    void Scheduler::Yield()
+    {
+        // to yield, just simulate the timer interrupt
+        HandleInterrupt(0, nullptr);
+    }
+
     void Scheduler::HandleInterrupt(unsigned int, RegisterStates *regs)
     {
         auto *currentThread = Thread::Current();
@@ -55,23 +61,23 @@ namespace Kernel
                     }
                 }
             }
-            PreemptCurrent(regs);
+            PreemptCurrent();
         }
     }
 
-    void Scheduler::PreemptCurrent(RegisterStates *regs)
+    void Scheduler::PreemptCurrent()
     {
         if (threads.Size() == 0)
             Kernel::Panic("scheduler", "Who the fuck killed the idle process?");
 
         auto oldThread = Thread::Current();
         auto newThread = FindNextThread();
-        ContextSwitch(oldThread, newThread, regs);
+        ContextSwitch(oldThread, newThread);
     }
 
     extern "C" void changeStack(uint32_t *oldEsp, uint32_t newEsp);
 
-    void Scheduler::ContextSwitch(Thread *oldThread, Thread *newThread, RegisterStates *regs)
+    void Scheduler::ContextSwitch(Thread *oldThread, Thread *newThread)
     {
         if (newThread == oldThread || newThread->GetId() == oldThread->GetId())
         {
@@ -89,7 +95,6 @@ namespace Kernel
 
 // context switch:
 #if SCHEDULER_DBG
-        auto &newregs = newThread->GetRegisters();
         printf("scheduler: %d -> %d after %dms\n", oldThread->GetId(), newThread->GetId(), oldThread->GetRuntime());
         printf("  old: %x\n", GetEsp());
         printf("  new: %x\n", newThread->esp);

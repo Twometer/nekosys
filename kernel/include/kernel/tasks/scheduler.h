@@ -25,10 +25,12 @@ namespace Kernel
 
         void HandleInterrupt(unsigned int interrupt, RegisterStates *regs) override;
 
-        void PreemptCurrent(RegisterStates *regs);
+        void Yield();
 
     private:
-        void ContextSwitch(Thread *oldThread, Thread *newThread, RegisterStates *regs);
+        void PreemptCurrent();
+
+        void ContextSwitch(Thread *oldThread, Thread *newThread);
 
         Thread *FindNextThread();
 
