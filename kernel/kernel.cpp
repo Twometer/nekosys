@@ -18,6 +18,7 @@
 #include <kernel/fs/fat16.h>
 #include <kernel/kdebug.h>
 #include <sys/syscall.h>
+#include <nk/inifile.h>
 #include <elf/elf.h>
 #include <stdio.h>
 
@@ -47,11 +48,11 @@ uint8_t *ReadFile(const char *path, size_t *size)
 		Kernel::Panic("boot", "%s not found", path);
 	}
 
-	auto buf = new uint8_t[entry.size];
+	auto buf = new uint8_t[entry.size + 1];
 	auto handle = vfs->Open(path);
 	vfs->Read(handle, 0, entry.size, buf);
 	vfs->Close(handle);
-
+	buf[entry.size] = 0x00;
 	*size = entry.size;
 	return buf;
 }
@@ -72,7 +73,7 @@ extern "C"
 
 		// Init
 		printf("Welcome :3\n");
-		
+
 		TTY::SetColor(0x08);
 		printf("Booting...\n");
 		kdbg("Loading memory map...\n");
@@ -186,9 +187,28 @@ extern "C"
 		auto vfs = VirtualFileSystem::GetInstance();
 		vfs->Mount("/", fs);
 
+		kdbg("Reading startup config\n");
+		size_t startupConfSize = 0;
+		auto startupConfBuf = ReadFile("/etc/startup.ini", &startupConfSize);
+
+		nk::IniFile config((char *)startupConfBuf);
+		auto section = config.GetSection("Startup");
+		if (section == nullptr)
+		{
+			Kernel::Panic("boot", "Startup config missing main section.");
+		}
+		auto startupAppPath = section->GetProperty("app");
+		if (startupAppPath.Length() == 0)
+		{
+			Kernel::Panic("boot", "Startup app path cannot be empty.");
+		}
+
+		printf("Startup app: %s\n", startupAppPath.CStr());
+		delete[] startupConfBuf;
+
 		kdbg("Loading startup app\n");
 		size_t appSize = 0;
-		auto appBuf = ReadFile("/bin/shell.app", &appSize);
+		auto appBuf = ReadFile(startupAppPath.CStr(), &appSize);
 
 		ELF::Image image(appBuf, appSize);
 		if (!image.IsValid())
@@ -220,7 +240,7 @@ extern "C"
 
 		kdbg("Waiting for the first interrupt that exits nkmain\n");
 		Interrupts::WaitForInt();
-		
+
 		// If we got back here, something went *seriously* wrong
 		Kernel::Panic("kernel_main", "Kernel has exited, this should not happen.");
 	}

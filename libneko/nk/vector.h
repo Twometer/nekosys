@@ -49,6 +49,11 @@ namespace nk
             return data[index];
         }
 
+        T &operator[](size_t index) const
+        {
+            return data[index];
+        }
+
         size_t Size() const
         {
             return size;
