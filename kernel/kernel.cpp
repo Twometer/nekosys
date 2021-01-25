@@ -162,7 +162,7 @@ extern "C"
 		DeviceManager::Initialize();
 
 		kdbg("Reconfiguring timer\n");
-		PIT::Configure(0, Device::PIT::AccessMode::LowAndHigh, Device::PIT::OperatingMode::RateGenerator, false);
+		PIT::Configure(0, Device::PIT::AccessMode::LowAndHigh, Device::PIT::OperatingMode::SquareWaveGenerator, true);
 		PIT::SetSpeed(0, 1000); // 1 kHz timer frequency (interrupt every 1ms)
 
 		auto time = TimeManager::GetInstance()->GetSystemTime();

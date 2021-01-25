@@ -15,7 +15,6 @@
 using namespace Kernel;
 
 nk::Vector<InterruptHandlerEntry> *Interrupts::entries;
-volatile bool Interrupts::isInInterrupt = false;
 
 static const char *exception_descriptors[] = {
 	"Division by Zero",
@@ -305,7 +304,6 @@ void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *fr
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)
 {
-	isInInterrupt = true;
 	RegisterStates *states = &register_states;
 	for (size_t i = 0; i < entries->Size(); i++)
 	{
@@ -313,7 +311,6 @@ void Interrupts::HandleInterrupt(unsigned int interrupt)
 		if (entry.interrupt == interrupt)
 			entry.handler->HandleInterrupt(interrupt, states);
 	}
-	isInInterrupt = false;
 }
 
 void Interrupts::AddHandler(unsigned int interrupt, InterruptHandler *handler)
