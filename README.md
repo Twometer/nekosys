@@ -18,8 +18,9 @@ A map for nekosys' memory layout can be found at [memory.md](memory.md)
 ## Features
 - x86 (32-bit) kernel
 - pre-emptive multithreading
-- fat-16 file system (vfs)
-- ...
+- FAT-16 file system (vfs)
+- protected userspace
+- sometimes posix compliant
 
 ## Libraries
 - `libc`: Basic C functionality such as print, malloc etc.

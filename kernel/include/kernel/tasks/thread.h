@@ -6,7 +6,7 @@
 #include <kernel/memory/stack.h>
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/tasks/process.h>
-#include <kernel/tasks/blockers.h>
+#include <kernel/tasks/blocker.h>
 
 #define THREAD_STACK_SIZE 4096
 

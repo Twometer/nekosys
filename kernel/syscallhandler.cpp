@@ -2,6 +2,7 @@
 #include <kernel/syscalls.h>
 #include <kernel/memory/stack.h>
 #include <kernel/tasks/thread.h>
+#include <kernel/kdebug.h>
 #include <kernel/tty.h>
 
 using namespace Memory;
@@ -27,6 +28,8 @@ namespace Kernel
         AddSyscall(SYS_FCLOSE, sys$$fclose);
         AddSyscall(SYS_PAGEALLOC, sys$$pagealloc);
         AddSyscall(SYS_SLEEP, sys$$sleep);
+        AddSyscall(SYS_SPAWNP, sys$$spawnp);
+        AddSyscall(SYS_WAITP, sys$$waitp);
         Interrupts::AddHandler(0x80, this);
     }
 
@@ -52,7 +55,7 @@ namespace Kernel
         if (syscallHandler == nullptr)
         {
             *retval = -1;
-            printf("warn: Thread %d attempted invalid syscall %x\n", Thread::Current()->GetId(), syscall_num);
+            kdbg("warn: Thread %d attempted invalid syscall %x\n", Thread::Current()->GetId(), syscall_num);
             return;
         }
         else

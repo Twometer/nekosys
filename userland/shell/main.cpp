@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <nekosys.h>
 
 int main(int argc, char **argv)
 {
@@ -24,8 +25,24 @@ int main(int argc, char **argv)
 	delete[] data;
 
 	printf("sleeping for 5 secs...\n");
-	sleep(5);
+	//sleep(5);
 	printf("yay, we're back\n");
 
+	printf("Testing spawning\n");
+	pid_t p = 0;
+	int result = spawnp(&p, "/bin/hlwrld.app", nullptr, nullptr);
+	if (result)
+	{
+		printf("spawn failed\n");
+	}
+	else
+	{
+		printf("spawned process as %d\n", p);
+
+		if (waitp(p))
+			printf("wait failed\n");
+	}
+
+	printf("bye :3\n");
 	return 0;
 }

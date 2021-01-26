@@ -31,6 +31,8 @@ namespace Memory
 
         bool IsCurrent() { return current == this; };
 
+        static PageDirectory *Current() { return current; }
+
         static PageDirectory *GetKernelDir() { return kernelDir; }
 
         static void SetKernelDir(PageDirectory *dir) { kernelDir = dir; }

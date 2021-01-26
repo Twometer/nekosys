@@ -2,6 +2,11 @@
 #include <kernel/panic.h>
 #include <kernel/memory/pagemanager.h>
 #include <kernel/memory/pagedirectory.h>
+#include <kernel/kdebug.h>
+
+#define PAGE_DBG 0
+
+using namespace Kernel;
 
 namespace Memory
 {
@@ -40,7 +45,7 @@ namespace Memory
         // Now, we copy the old directory
         uint32_t *tempDirPtr = (uint32_t *)PAGE_DIR_TEMP_LOC;
         for (int i = 0; i < 1024; i++)
-            tempDirPtr[i] = other.virt_directory_ptr[i];
+            tempDirPtr[i] = virt_directory_ptr[i];
 
         // IMPORTANT: Now we have to overwrite the last entry to map to the new dir IN THE NEW TABLE
         tempDirPtr[1023] = (uint32_t)phys_directory_ptr | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE;
@@ -67,8 +72,8 @@ namespace Memory
         uint32_t tableEntry = (uint32_t)physicalAddr | (permissions & 0xFFF);
 
 #if PAGE_DBG
-        printf("%x: %x[%x]=%x\n", absolutePage, directoryIdx, pageIdx, tableEntry);
-        printf("  %x -> %x\n", physicalAddr, virtualAddr);
+        kdbg("%x: %x[%x]=%x\n", absolutePage, directoryIdx, pageIdx, tableEntry);
+        kdbg("  %x -> %x\n", physicalAddr, virtualAddr);
 #endif
 
         GetPageTable(directoryIdx)[pageIdx] = tableEntry;
@@ -89,6 +94,9 @@ namespace Memory
     void PageDirectory::Load()
     {
         virt_directory_ptr = (uint32_t *)PAGEDIR_VIRTUAL_LOC;
+#if PAGE_DBG
+        kdbg("Loading page directory: %x\n", phys_directory_ptr);
+#endif
         PageManager::GetInstance()->LoadPageDirectory(phys_directory_ptr);
         current = this;
     }
@@ -102,7 +110,9 @@ namespace Memory
                 auto table = (uint32_t)NewPage();
                 virt_directory_ptr[idx] = table | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER;
                 FlushPage(table); // Flush TLB for that page, so that we for sure have that
-                // Load();
+#if PAGE_DBG
+                kdbg("Creating new page table idx %d at %x\n", idx, table);
+#endif
             }
 
             return ((uint32_t *)PAGETABLES_VIRTUAL_LOC) + (0x400 * idx);
@@ -123,6 +133,10 @@ namespace Memory
     {
         if (!IS_PAGE_ALIGNED(addr))
             Kernel::Panic("page_directory", "Can't flush non-page-aligned memory.");
+
+#if PAGE_DBG
+        kdbg("Flushing page at %x\n", addr);
+#endif
 
         asm volatile("invlpg (%0)" ::"r"(addr)
                      : "memory");

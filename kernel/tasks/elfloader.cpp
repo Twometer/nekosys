@@ -2,6 +2,8 @@
 #include <kernel/memory/memdefs.h>
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/memory/pagemanager.h>
+#include <kernel/kdebug.h>
+#include <kernel/fs/vfs.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -11,6 +13,23 @@ using namespace Memory;
 
 namespace Kernel
 {
+
+    Process *ElfLoader::CreateProcess(const char *path, int argc, char **argv)
+    {
+        auto vfs = FS::VirtualFileSystem::GetInstance();
+        auto meta = vfs->GetFileMeta(path);
+        auto buf = new uint8_t[meta.size];
+        
+        auto fd = vfs->Open(path);
+        vfs->Read(fd, 0, meta.size, buf);
+        vfs->Close(fd);
+
+        ELF::Image image(buf, meta.size);
+        auto proc = CreateProcess(image, argc, argv);
+
+        delete[] buf;
+        return proc;
+    }
 
     Process *ElfLoader::CreateProcess(const ELF::Image &image, int argc, char **argv)
     {
@@ -24,7 +43,12 @@ namespace Kernel
             return nullptr;
 
         auto pages = new nk::Vector<void *>();
-        auto pagedir = new PageDirectory(*PageDirectory::GetKernelDir());
+        auto oldPageDir = PageDirectory::Current();
+
+        auto kernelDir = PageDirectory::GetKernelDir();
+
+        kernelDir->Load();
+        auto pagedir = new PageDirectory(*kernelDir);
         void *executableEndAddr = 0;
 
         for (size_t i = 0; i < elfHeader->e_phnum; i++)
@@ -37,7 +61,7 @@ namespace Kernel
             pages->Add(executableEndAddr = MapNewZeroedPages(pagedir, page, header.p_filesz));
 
 #if ELFLOADER_DEBUG
-            printf("elf_loader: Loading %d bytes from %x to %x (page %x)\n", header.p_filesz, header.p_offset, header.p_vaddr, PAGE_ALIGN_DOWN(header.p_vaddr));
+            kdbg("elf_loader: Loading %d bytes from %x to %x (page %x)\n", header.p_filesz, header.p_offset, header.p_vaddr, PAGE_ALIGN_DOWN(header.p_vaddr));
 #endif
             memcpy((void *)header.p_vaddr, (void *)(image.GetData() + header.p_offset), header.p_filesz);
         }
@@ -49,7 +73,7 @@ namespace Kernel
         }
 
 #if ELFLOADER_DEBUG
-        printf("elf_loader: Making a stack at %x\n", executableEndAddr);
+        kdbg("elf_loader: Making a stack at %x\n", executableEndAddr);
 #endif
         pages->Add(MapNewZeroedPages(pagedir, (vaddress_t)executableEndAddr, 4096));
         auto stack = new Stack(executableEndAddr, 4096);
@@ -58,7 +82,7 @@ namespace Kernel
 
         // Set up thread
 #if ELFLOADER_DEBUG
-        printf("elf_loader: Creating thread with ip=%x, sp=%x\n", elfHeader->e_entry, stack->GetStackPtr());
+        kdbg("elf_loader: Creating thread with ip=%x, sp=%x\n", elfHeader->e_entry, stack->GetStackPtr());
 #endif
         auto thread = Thread::CreateUserThread((ThreadMain)elfHeader->e_entry, pagedir, stack);
 
@@ -70,8 +94,8 @@ namespace Kernel
 
         thread->SetProcess(process);
 
-        // Return to kernel
-        PageDirectory::GetKernelDir()->Load();
+        // Return to previous memory space
+        oldPageDir->Load();
 
         return process;
     }
@@ -87,7 +111,7 @@ namespace Kernel
         auto numPages = (int)PAGE_ALIGN_UP(sizeInBytes) / PAGE_SIZE;
 
 #if ELFLOADER_DEBUG
-        printf("elf_loader: Making %d new zeroed pages at virtual %x\n", numPages, vaddr);
+        kdbg("elf_loader: Making %d new zeroed pages at virtual %x\n", numPages, vaddr);
 #endif
 
         vaddress_t a = vaddr;

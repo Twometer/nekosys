@@ -3,6 +3,7 @@
 #include <kernel/timemanager.h>
 #include <kernel/tasks/thread.h>
 #include <kernel/tasks/scheduler.h>
+#include <kernel/tasks/blockers.h>
 #include <kernel/memory/pagemanager.h>
 #include <sys/syscall.h>
 

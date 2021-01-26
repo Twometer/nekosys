@@ -1,5 +1,10 @@
 #include <kernel/syscalls.h>
 #include <kernel/tasks/thread.h>
+#include <kernel/tasks/processdir.h>
+#include <kernel/tasks/blockers.h>
+#include <kernel/tasks/elfloader.h>
+#include <kernel/memory/pagedirectory.h>
+#include <kernel/kdebug.h>
 #include <kernel/fs/vfs.h>
 #include <kernel/tty.h>
 #include <stdio.h>
@@ -11,7 +16,7 @@ using namespace Kernel;
 uint32_t sys$$texit(void *param)
 {
     uint32_t exit_code = *(uint32_t *)(param);
-    printf("User thread %d exited with exit code %d\n", Thread::Current()->GetId(), exit_code);
+    kdbg("User thread %d exited with exit code %d\n", Thread::Current()->GetId(), exit_code);
     Thread::Current()->Kill();
     return 0;
 }
@@ -29,7 +34,7 @@ uint32_t sys$$exit(void *param)
     if (process == nullptr)
         return 1;
 
-    printf("User process %d exited with exit code %d\n", process->GetId(), exit_code);
+    kdbg("User process %d exited with exit code %d\n", process->GetId(), exit_code);
     process->Kill();
     return 0;
 }
@@ -87,7 +92,29 @@ uint32_t sys$$pagealloc(void *param)
 
 uint32_t sys$$sleep(void *param)
 {
-    uint32_t timeout = *(uint32_t *)(param);   
+    uint32_t timeout = *(uint32_t *)(param);
     auto thread = Thread::Current();
     thread->Sleep(timeout * 1000);
+}
+
+uint32_t sys$$spawnp(void *param)
+{
+    auto params = (sys$$spawnp_param *)param;
+
+    auto proc = ElfLoader::CreateProcess(params->path, 0, params->argv);
+    if (proc == nullptr)
+        return 1;
+    *params->pid = proc->GetId();
+    proc->Start();
+    return 0;
+}
+
+uint32_t sys$$waitp(void *param)
+{
+    pid_t pid = PARAM_VALUE(param, pid_t);
+    auto proc = ProcessDir::GetInstance()->GetProcess(pid);
+    if (proc == nullptr)
+        return 1;
+    Thread::Current()->Block(new ProcessWaitBlocker(proc));
+    return 0;
 }

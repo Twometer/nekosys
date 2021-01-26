@@ -14,4 +14,14 @@ namespace Kernel
         return TimeManager::GetInstance()->GetUptime() < unblockTime;
     }
 
+    ProcessWaitBlocker::ProcessWaitBlocker(Process *proc)
+    {
+        this->proc = proc;
+    }
+
+    bool ProcessWaitBlocker::IsBlocked()
+    {
+        return proc->IsRunning();
+    }
+
 }; // namespace Kernel

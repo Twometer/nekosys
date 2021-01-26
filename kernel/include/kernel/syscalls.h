@@ -1,6 +1,7 @@
 #ifndef _SYSCALLS_H
 #define _SYSCALLS_H
 
+#include <sys/types.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -15,6 +16,10 @@
 #define SYS_FCLOSE 8
 #define SYS_PAGEALLOC 9
 #define SYS_SLEEP 10
+#define SYS_SPAWNP 11
+#define SYS_WAITP 12
+
+#define PARAM_VALUE(param, type) (*(type *)(param))
 
 #ifdef __cplusplus
 extern "C"
@@ -47,6 +52,14 @@ extern "C"
         int fd;
     } sys$$fclose_param;
 
+    typedef struct
+    {
+        pid_t *pid;
+        const char *path;
+        char **argv;
+        char **env;
+    } sys$$spawnp_param;
+
 #ifdef __cplusplus
 }
 #endif
@@ -61,5 +74,7 @@ uint32_t sys$$fwrite(void *param);
 uint32_t sys$$fclose(void *param);
 uint32_t sys$$pagealloc(void *param);
 uint32_t sys$$sleep(void *param);
+uint32_t sys$$spawnp(void *param);
+uint32_t sys$$waitp(void *param);
 
 #endif

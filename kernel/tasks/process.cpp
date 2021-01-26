@@ -1,5 +1,6 @@
 #include <kernel/tasks/process.h>
 #include <kernel/memory/pagemanager.h>
+#include <kernel/tasks/processdir.h>
 
 using namespace Memory;
 
@@ -15,11 +16,11 @@ namespace Kernel
 
     Process::~Process()
     {
-
     }
 
     void Process::Start()
     {
+        ProcessDir::GetInstance()->OnProcessStarted(this);
         threads->At(0)->Start();
     }
 
@@ -31,8 +32,17 @@ namespace Kernel
 
     void Process::Kill()
     {
+        ProcessDir::GetInstance()->OnProcessDied(this);
         for (size_t i = 0; i < threads->Size(); i++)
             threads->At(i)->Kill();
+    }
+
+    bool Process::IsRunning()
+    {
+        for (size_t i = 0; i < threads->Size(); i++)
+            if (threads->At(i)->GetState() != ThreadState::Dead)
+                return true;
+        return false;
     }
 
     void *Process::MapNewPages(size_t num)

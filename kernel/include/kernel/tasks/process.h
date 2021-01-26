@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include <nk/vector.h>
 #include <kernel/tasks/thread.h>
-
-typedef uint32_t pid_t;
+#include <sys/types.h>
 
 namespace Kernel
 {
@@ -38,6 +37,8 @@ namespace Kernel
         void *MapNewPages(size_t num);
 
         pid_t GetId() { return pid; }
+
+        bool IsRunning();
 
         void SetHeapBase(void *heapBase) { this->heapBase = (uint8_t *)heapBase; }
         uint8_t *GetHeapBase() { return heapBase; }
