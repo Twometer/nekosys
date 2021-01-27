@@ -18,7 +18,7 @@ void Keyboard::Initialize()
     NewScancode(5, '4');
     NewScancode(6, '5');
     NewScancode(7, '6');
-    NewScancode(8, '7');
+    NewScancode(8, '/');
     NewScancode(9, '8');
     NewScancode(10, '9');
     NewScancode(11, '0');
@@ -92,15 +92,15 @@ size_t Keyboard::ReadUntil(char *dst, size_t maxSize, char delim)
     if (idx < 0)
         return 0;
 
-    idx++; // include the delim itself
-    
-    auto bufSize = buf.Size();
-    auto size = bufSize > maxSize ? maxSize : bufSize;
+    auto size = idx > maxSize ? maxSize : idx;
 
     for (size_t i = 0; i < size; i++)
         dst[i] = buf[i];
 
     buf.RemoveBlock(0, size);
+
+    if (buf.Size() > 0 && buf[0] == '\n')
+        buf.Remove(0);
     return size;
 }
 

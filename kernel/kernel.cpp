@@ -67,7 +67,7 @@ extern "C"
 		// Banner
 		TTY::Clear();
 		TTY::SetColor(0x9f);
-		printf("nekosys 0.04\n");
+		printf("nekosys 0.05\n");
 		kdbg("Booting koneko kernel...\n");
 		TTY::SetColor(0x07);
 
