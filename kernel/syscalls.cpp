@@ -4,6 +4,7 @@
 #include <kernel/tasks/blockers.h>
 #include <kernel/tasks/elfloader.h>
 #include <kernel/memory/pagedirectory.h>
+#include <kernel/device/devicemanager.h>
 #include <kernel/kdebug.h>
 #include <kernel/fs/vfs.h>
 #include <kernel/tty.h>
@@ -117,4 +118,11 @@ uint32_t sys$$waitp(void *param)
         return 1;
     Thread::Current()->Block(new ProcessWaitBlocker(proc));
     return 0;
+}
+
+uint32_t sys$$readln(void *param)
+{
+    auto params = (sys$$readln_param *)param;
+    Thread::Current()->Block(new KeyboardBlocker('\n'));    
+    return Device::DeviceManager::keyboard->ReadUntil(params->dst, params->maxSize, '\n');
 }

@@ -78,7 +78,30 @@ void Keyboard::HandleInterrupt(unsigned int, RegisterStates *)
     if (chr != 0)
     {
         putchar(chr);
+
+        if (chr == '\b' && buf.Size() > 0)
+            buf.Remove(buf.Size() - 1);
+        else
+            buf.Add(chr);
     }
+}
+
+size_t Keyboard::ReadUntil(char *dst, size_t maxSize, char delim)
+{
+    size_t idx = buf.IndexOf(delim);
+    if (idx < 0)
+        return 0;
+
+    idx++; // include the delim itself
+    
+    auto bufSize = buf.Size();
+    auto size = bufSize > maxSize ? maxSize : bufSize;
+
+    for (size_t i = 0; i < size; i++)
+        dst[i] = buf[i];
+
+    buf.RemoveBlock(0, size);
+    return size;
 }
 
 void Keyboard::NewScancode(unsigned int scancode, char c)

@@ -18,6 +18,7 @@
 #define SYS_SLEEP 10
 #define SYS_SPAWNP 11
 #define SYS_WAITP 12
+#define SYS_READLN 13
 
 #define PARAM_VALUE(param, type) (*(type *)(param))
 
@@ -60,6 +61,13 @@ extern "C"
         char **env;
     } sys$$spawnp_param;
 
+    typedef struct
+    {
+        char *dst;
+        size_t maxSize;
+    } sys$$readln_param;
+    
+
 #ifdef __cplusplus
 }
 #endif
@@ -76,5 +84,6 @@ uint32_t sys$$pagealloc(void *param);
 uint32_t sys$$sleep(void *param);
 uint32_t sys$$spawnp(void *param);
 uint32_t sys$$waitp(void *param);
+uint32_t sys$$readln(void *param);
 
 #endif

@@ -1,5 +1,6 @@
 #include <kernel/tasks/blockers.h>
 #include <kernel/timemanager.h>
+#include <kernel/device/devicemanager.h>
 
 namespace Kernel
 {
@@ -22,6 +23,16 @@ namespace Kernel
     bool ProcessWaitBlocker::IsBlocked()
     {
         return proc->IsRunning();
+    }
+
+    KeyboardBlocker::KeyboardBlocker(char delim)
+        : delim(delim)
+    {
+    }
+
+    bool KeyboardBlocker::IsBlocked()
+    {
+        return !Device::DeviceManager::keyboard->GetBuffer().Contains(delim);
     }
 
 }; // namespace Kernel

@@ -43,6 +43,9 @@ int main(int argc, char **argv)
 			printf("wait failed\n");
 	}
 
-	printf("bye :3\n");
+	printf("reading from console...\n");
+	char *buf = new char[256];
+	readln(buf, 256);
+	printf("read: %s\n", buf);
 	return 0;
 }

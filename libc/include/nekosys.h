@@ -17,6 +17,8 @@ extern "C"
 int spawnp(pid_t *pid, const char *path, char *const argv[], char *const env[]);
 int waitp(pid_t pid);
 
+int readln(char *dst, size_t maxSize);
+
 #ifdef __cplusplus
 }
 #endif

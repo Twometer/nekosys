@@ -30,6 +30,17 @@ namespace Kernel
         bool IsBlocked() override;
     };
 
+    class KeyboardBlocker : public IThreadBlocker
+    {
+    private:
+        char delim;
+
+    public:
+        KeyboardBlocker(char delim);
+
+        bool IsBlocked() override;
+    };
+
 }; // namespace Kernel
 
 #endif

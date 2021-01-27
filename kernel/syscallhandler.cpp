@@ -30,6 +30,7 @@ namespace Kernel
         AddSyscall(SYS_SLEEP, sys$$sleep);
         AddSyscall(SYS_SPAWNP, sys$$spawnp);
         AddSyscall(SYS_WAITP, sys$$waitp);
+        AddSyscall(SYS_READLN, sys$$readln);
         Interrupts::AddHandler(0x80, this);
     }
 

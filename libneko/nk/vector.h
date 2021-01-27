@@ -34,6 +34,12 @@ namespace nk
             size--;
         }
 
+        void RemoveBlock(size_t idx, size_t size)
+        {
+            memcpy(&data[idx], &data[idx + size], (this->size - (idx + size)) * sizeof(T));
+            this->size -= size;
+        }
+
         void Clear()
         {
             size = 0;
@@ -62,6 +68,19 @@ namespace nk
         size_t Capacity() const
         {
             return capacity;
+        }
+
+        size_t IndexOf(const T &value) const
+        {
+            for (size_t i = 0; i < size; i++)
+                if (data[i] == value)
+                    return i;
+            return -1;
+        }
+
+        bool Contains(const T &value) const
+        {
+            return IndexOf(value) != -1;
         }
 
         ~Vector()
