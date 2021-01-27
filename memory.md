@@ -3,9 +3,9 @@ This file describes how the memory is generally laid out when nekosys is running
 
 ### The first megabyte
 ```
+[0x0500-0x7BFF]: Kernel handover data
 [0x7C00 + 200h]: Boot sector / Stage 1 Bootloader
 [0x7E00 + 400h]: Stage 2 bootloader
-[0x8000 + 200h]: Stores the kernel handover data after Stage 2 bootloader is gone
 [0x8200 + 400h]: Placeholder for some FAT sectors
 [0x0900:0x1000]: Real mode stack
 [0xA000 + ...h]: Stores the kernel. Maximum length is 0x75FFF (471K, up to the end of low memory)

@@ -1,24 +1,27 @@
 #include <stdint.h>
 #include <kernel/memory/memorymap.h>
 #include <kernel/panic.h>
+#include <stdio.h>
+
+using namespace Kernel;
 
 namespace Memory
 {
 
-    void MemoryMap::Parse(uint8_t *basePtr)
+    void MemoryMap::Parse(KernelHandover *handover)
     {
-        header = (MemoryMapHeader *)basePtr;
-        entries = (MemoryMapEntry *)(basePtr + sizeof(MemoryMapHeader));
+        entries = (MemoryMapEntry *)handover->mmapPtr;
+        length = handover->mmapLength;
 
-        if (header->result == 1 && header->length == 0)
+        if (handover->mmapState == 1 && length == 0)
         {
             Kernel::Panic("memory_map", "Empty memory map");
         }
-        else if (header->result == 2)
+        else if (handover->mmapState == 2)
         {
             Kernel::Panic("memory_map", "Bad BIOS signature");
         }
-        else if (header->result == 3)
+        else if (handover->mmapState == 3)
         {
             Kernel::Panic("memory_map", "BIOS not available");
         }
@@ -31,7 +34,7 @@ namespace Memory
 
     uint32_t MemoryMap::GetLength()
     {
-        return header->length;
+        return length;
     }
 
     MemoryMapEntry *MemoryMap::GetLargestChunk()

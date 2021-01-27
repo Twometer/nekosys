@@ -7,8 +7,6 @@
 
 namespace FS
 {
-    // FIXME: Fat16 FS currently only knows the root directory
-
     Fat16::Fat16(Disk::IBlockDevice *blockDevice, Partition *partition) : FileSystem(blockDevice, partition)
     {
         auto baseSector = new uint8_t[512];

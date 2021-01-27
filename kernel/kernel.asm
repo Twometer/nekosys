@@ -2,17 +2,31 @@ section .boot
 bits 16
 global boot
 
-mmap_state_location: equ 0x8000
-mmap_list_location: equ 0x8008
+; Kernel Handover header struct definition (short krnlh)
+krnlh_mmap_state: equ 0x0500
+krnlh_mmap_length: equ 0x0504
+krnlh_mmap_ptr: equ 0x0508
 
+krnlh_vesa_length: equ 0x050C
+krnlh_vesa_state: equ 0x0510
+krnlh_vesa_ptr: equ 0x0514
+
+; Memory map list base
+mmap_content_base: equ 0x0600
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ENTRY POINT FROM BOOTLOADER ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 boot:
-    ; ** MEMORY MAP LOADER **
-    mov dword [mmap_state_location], 0
+    ; MMAP LOADER
+    mov dword [krnlh_mmap_state], 0
+    mov dword [krnlh_mmap_length], 0
+    mov dword [krnlh_mmap_ptr], mmap_content_base
 
     ; Set ES:DI target location for memory map
     mov ax, 0            ; segment zero
     mov es, ax
-    mov di, 0x8008
+    mov di, mmap_content_base
 
     ; Call BIOS
     xor ebx, ebx            ; clear ebx
@@ -31,26 +45,24 @@ boot:
     je mmap_err_list_end
 
     ; if it didn't fail, goto next entry
-    inc dword [mmap_state_location]
+    inc dword [krnlh_mmap_length]
     add di, 24 ; increment di by 24
     jmp next_entry  
     
     ; ** MMAP ERROR HANDLERS **
     mmap_err_list_end:
-        mov dword [mmap_state_location + 4], 0x01
-        jmp continue_boot
+        mov dword [krnlh_mmap_state], 0x01
+        jmp mmap_done
 
     mmap_err_bad_sig:
-        mov dword [mmap_state_location + 4], 0x02
-        jmp continue_boot
+        mov dword [krnlh_mmap_state], 0x02
+        jmp mmap_done
 
     mmap_err_carry:
-        mov dword [mmap_state_location + 4], 0x03
-        jmp continue_boot
+        mov dword [krnlh_mmap_state], 0x03
+        jmp mmap_done
 
-
-    ; ** ENTER 32-BIT BOOT **
-continue_boot:
+    mmap_done:
 
     ; Remove 1MB limit
     mov ax, 0x2401

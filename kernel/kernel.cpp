@@ -13,6 +13,7 @@
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/tasks/scheduler.h>
 #include <kernel/tasks/elfloader.h>
+#include <kernel/handover.h>
 #include <kernel/fs/mbr.h>
 #include <kernel/fs/vfs.h>
 #include <kernel/fs/fat16.h>
@@ -76,9 +77,11 @@ extern "C"
 
 		TTY::SetColor(0x08);
 		printf("Booting...\n");
+		KernelHandover *handover = (KernelHandover *)KERNEL_HANDOVER_STRUCT_LOC;
+
 		kdbg("Loading memory map...\n");
 		MemoryMap memoryMap;
-		memoryMap.Parse((uint8_t *)KERNEL_HANDOVER_STRUCT_LOC);
+		memoryMap.Parse(handover);
 
 		for (size_t i = 0; i < memoryMap.GetLength(); i++)
 		{

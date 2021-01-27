@@ -25,9 +25,6 @@ typedef uint8_t *paddress_t;
 #define PAGE_USED 0x01
 #define PAGE_FREE 0x00
 
-// Memory map
-#define KERNEL_HANDOVER_STRUCT_LOC 0x8000
-
 // Kernel Heap
 #define KERNEL_HEAP_ADDR 0xC0000000
 #define KERNEL_HEAP_SIZE 1 * MBYTE

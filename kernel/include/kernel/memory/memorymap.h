@@ -1,17 +1,11 @@
 #ifndef _MEMORY_MAP_H
 #define _MEMORY_MAP_H
 
+#include <kernel/handover.h>
 #include <stdint.h>
 
 namespace Memory
 {
-
-    struct MemoryMapHeader
-    {
-        uint32_t length;
-        uint32_t result;
-    };
-
     struct MemoryMapEntry
     {
         uint32_t baseLow;
@@ -25,11 +19,12 @@ namespace Memory
     class MemoryMap
     {
     private:
-        MemoryMapHeader *header = nullptr;
         MemoryMapEntry *entries = nullptr;
 
+        int length;
+
     public:
-        void Parse(uint8_t *basePtr);
+        void Parse(Kernel::KernelHandover *handover);
 
         MemoryMapEntry *GetEntry(int idx);
 
