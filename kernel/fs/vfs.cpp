@@ -1,6 +1,9 @@
 #include <kernel/fs/vfs.h>
+#include <kernel/kdebug.h>
 
 #define VFS_DEBUG 0
+
+using namespace Kernel;
 
 namespace FS
 {
@@ -42,7 +45,7 @@ namespace FS
         auto mountPoint = FindMountPoint(path);
         if (mountPoint == nullptr)
         {
-            printf("vfs: Mount point not found for %s\n", path.CStr());
+            kdbg("vfs: Mount point not found for %s\n", path.CStr());
             return DirEntry::Invalid;
         }
 #if VFS_DEBUG
@@ -56,7 +59,7 @@ namespace FS
         auto mountPoint = FindMountPoint(path);
         if (mountPoint == nullptr)
         {
-            printf("vfs: Mount point not found for %s\n", path.CStr());
+            kdbg("vfs: Mount point not found for %s\n", path.CStr());
             return 0;
         }
 
@@ -109,7 +112,7 @@ namespace FS
         auto mountPoint = FindMountPoint(path);
         if (mountPoint == nullptr)
         {
-            printf("vfs: Mount point not found for %s\n", path.CStr());
+            kdbg("vfs: Mount point not found for %s\n", path.CStr());
             return;
         }
 #if VFS_DEBUG

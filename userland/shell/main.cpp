@@ -4,26 +4,34 @@
 #include <string.h>
 #include <nekosys.h>
 
+#include <nk/string.h>
+
+#include "CommandParser.h"
+
 int main(int argc, char **argv)
 {
+	nk::String cwd = "/";
 	char *buf = new char[512];
 
 	for (;;)
 	{
-		printf("neko:/ $ "); // Prompt
+		printf("neko:%s $ ", cwd.CStr()); // Prompt
 
-		size_t read = readln(buf, 512); // Command
+		size_t read = readln(buf, 512); // Read
 		buf[read] = 0x00;
 
-		if (streq(buf, "exit") == 0)
+		nk::String command(buf); // Parse
+		if (command == "exit")
 		{
 			break;
 		}
 
-		pid_t pid = 0;
-		if (spawnp(&pid, buf, nullptr, nullptr))
+		auto parsedCommand = CommandParser::parse(command);	
+
+		pid_t pid = 0; 
+		if (spawnp(&pid, parsedCommand.file.CStr(), nullptr, nullptr)) // Execute
 		{
-			printf("nsh: error: Cannot spawn\n");
+			printf("nsh: error: File not found\n");
 		}
 		waitp(pid);
 	}

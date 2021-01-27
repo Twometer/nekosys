@@ -62,6 +62,11 @@ namespace nk
             return true;
         }
 
+        bool Empty() const
+        {
+            return length == 0;
+        }
+
         char operator[](size_t index) const
         {
             if (index >= length) // FIXME: Should not fail silently
@@ -83,6 +88,16 @@ namespace nk
                 return false;
 
             return EqualsImpl(other);
+        }
+
+        String operator+(const char other) const
+        {
+            return Append(other);
+        }
+
+        String operator+(const String &other) const
+        {
+            return Append(other);
         }
 
         String Append(const char other) const
@@ -112,6 +127,15 @@ namespace nk
             return String(&cstring[offset], length - offset);
         }
 
+        String &operator +=(char chr){
+            *this = *this + chr;
+        }
+
+        String &operator+=(const String &other)
+        {
+            *this = *this + other;
+        }
+
         String &operator=(const String &other)
         {
             if (this != &other)
@@ -129,6 +153,26 @@ namespace nk
         size_t Length() const
         {
             return length;
+        }
+
+        char front() const
+        {
+            return cstring[0];
+        }
+
+        char back() const
+        {
+            return cstring[length - 1];
+        }
+
+        const char *begin() const
+        {
+            return &cstring[0];
+        }
+
+        const char *end() const
+        {
+            return &cstring[length];
         }
 
     private:

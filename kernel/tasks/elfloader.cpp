@@ -18,6 +18,9 @@ namespace Kernel
     {
         auto vfs = FS::VirtualFileSystem::GetInstance();
         auto meta = vfs->GetFileMeta(path);
+        if (!meta.IsValid())
+            return nullptr;
+
         auto buf = new uint8_t[meta.size];
         
         auto fd = vfs->Open(path);
