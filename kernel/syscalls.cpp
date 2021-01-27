@@ -10,8 +10,6 @@
 #include <kernel/tty.h>
 #include <stdio.h>
 
-#define SYS_DEBUG 0
-
 using namespace Kernel;
 
 uint32_t sys$$texit(void *param)
@@ -86,7 +84,7 @@ uint32_t sys$$pagealloc(void *param)
     int num = *(int *)param;
     auto ptr = (uint32_t)Process::Current()->MapNewPages(num);
 #if SYS_DEBUG
-    printf("sys: Mapped %d pages to %x %x\n", num, ptr, Process::Current()->GetHeapBase());
+    kdbg("sys: Mapped %d pages to %x %x\n", num, ptr, Process::Current()->GetHeapBase());
 #endif
     return ptr;
 }

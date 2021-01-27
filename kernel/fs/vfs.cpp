@@ -1,10 +1,6 @@
 #include <kernel/fs/vfs.h>
 #include <kernel/kdebug.h>
 
-#define VFS_DEBUG 0
-
-using namespace Kernel;
-
 namespace FS
 {
 
@@ -49,7 +45,7 @@ namespace FS
             return DirEntry::Invalid;
         }
 #if VFS_DEBUG
-        printf("vfs: get_file_meta %s\n", mountPoint->path.CStr());
+        kdbg("vfs: get_file_meta %s\n", mountPoint->path.CStr());
 #endif
         return mountPoint->fs->GetFileMeta(GetRelativePath(mountPoint, path));
     }
@@ -116,7 +112,7 @@ namespace FS
             return;
         }
 #if VFS_DEBUG
-        printf("vfs: list_dir %s\n", mountPoint->path.CStr());
+        kdbg("vfs: list_dir %s\n", mountPoint->path.CStr());
 #endif
         mountPoint->fs->ListDirectory(GetRelativePath(mountPoint, path));
     }

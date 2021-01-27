@@ -1,9 +1,8 @@
 #include <kernel/io.h>
 #include <kernel/disk/atadisk.h>
+#include <kernel/kdebug.h>
 
 using namespace Kernel;
-
-#define DISK_DEBUG 0
 
 #define DRIVE_IRQ_BASE 14
 
@@ -102,7 +101,7 @@ namespace Disk
             block_num = 0;
 
 #if DISK_DEBUG
-        printf("disk: reading %d blocks from %d\n", (int)block_num, (int)block_idx);
+        kdbg("disk: reading %d blocks from %d\n", (int)block_num, (int)block_idx);
 #endif
 
         IO::Out8(DRIVE_PORT_SELECT, 0xE0 | ((block_idx >> 24) & 0x0F));
@@ -135,14 +134,14 @@ namespace Disk
     {
         interrupted = true;
 #if DISK_DEBUG
-        printf("disk: interrupted\n");
+        kdbg("disk: interrupted\n");
 #endif
     }
 
     void ATADisk::WaitForInterrupt()
     {
 #if DISK_DEBUG
-        printf("disk: waiting for interrupt\n");
+        kdbg("disk: waiting for interrupt\n");
 #endif
         interrupted = false;
         Interrupts::Enable();

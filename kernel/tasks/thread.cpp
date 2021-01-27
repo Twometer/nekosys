@@ -5,6 +5,7 @@
 #include <kernel/tasks/scheduler.h>
 #include <kernel/tasks/blockers.h>
 #include <kernel/memory/pagemanager.h>
+#include <kernel/kdebug.h>
 #include <sys/syscall.h>
 
 using namespace Memory;
@@ -18,7 +19,7 @@ namespace Kernel
     {
         auto thread = Thread::Current();
         thread->SetState(ThreadState::Dead);
-        printf("Kernel thread %x died\n", thread->GetId());
+        kdbg("Kernel thread %x died\n", thread->GetId());
 
         Scheduler::GetInstance()->Yield();
     }

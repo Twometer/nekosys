@@ -4,9 +4,8 @@
 #include <kernel/timemanager.h>
 #include <kernel/tasks/process.h>
 #include <kernel/tasks/scheduler.h>
+#include <kernel/kdebug.h>
 #include <kernel/gdt.h>
-
-#define SCHEDULER_DBG 0
 
 namespace Kernel
 {
@@ -94,10 +93,10 @@ namespace Kernel
         Process::SetCurrent(newThread->GetProcess());
 
 // context switch:
-#if SCHEDULER_DBG
-        printf("scheduler: %d -> %d after %dms\n", oldThread->GetId(), newThread->GetId(), oldThread->GetRuntime());
-        printf("  old: %x\n", GetEsp());
-        printf("  new: %x\n", newThread->esp);
+#if SCHEDULER_DEBUG
+        kdbg("scheduler: %d -> %d after %dms\n", oldThread->GetId(), newThread->GetId(), oldThread->GetRuntime());
+        kdbg("  old: %x\n", GetEsp());
+        kdbg("  new: %x\n", newThread->esp);
 #endif
 
         // Load new kernel stack pointer for that thread.
@@ -106,8 +105,8 @@ namespace Kernel
         // Destroy dead threads
         if (oldThread->GetState() == ThreadState::Dead)
         {
-#if SCHEDULER_DBG
-            printf("scheduler: Annihilating dead thread %d\n", oldThread->GetId());
+#if SCHEDULER_DEBUG
+            kdbg("scheduler: Annihilating dead thread %d\n", oldThread->GetId());
 #endif
             delete oldThread;
         }
@@ -116,8 +115,8 @@ namespace Kernel
         if (!newThread->GetPageDir()->IsCurrent())
         {
             newThread->GetPageDir()->Load();
-#if SCHEDULER_DBG
-            printf("scheduler: loaded new page table\n");
+#if SCHEDULER_DEBUG
+            kdbg("scheduler: loaded new page table\n");
 #endif
         }
 

@@ -84,7 +84,7 @@ extern "C"
 		{
 			auto *entry = memoryMap.GetEntry(i);
 			if (entry->type == 0x01)
-				Kernel::kdbg("  base=%x len=%d KB\n", entry->baseLow, (entry->lengthLow / 1024));
+				kdbg("  base=%x len=%d KB\n", entry->baseLow, (entry->lengthLow / 1024));
 		}
 
 		MemoryMapEntry *usableRam = memoryMap.GetLargestChunk();

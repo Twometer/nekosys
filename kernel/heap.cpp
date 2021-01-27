@@ -1,6 +1,7 @@
 #include <kernel/panic.h>
 #include <kernel/device/devicemanager.h>
 #include <kernel/heap.h>
+#include <kernel/kdebug.h>
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -8,14 +9,13 @@
 
 extern "C"
 {
-    /*
+/*
  * Simple heap implementation for getting the kernel started.
  * Should probably be replaced with something more efficient in
  * the future.
  * For now, we create a 1MB heap, and divide that into 128 byte
  * chunks, which we mark as used or unused in a bitmap.
  */
-#define HEAP_DEBUG 0
 
 #define HEAP_SEG_SIZE 128 // 128 byte allocation units
 
@@ -111,7 +111,7 @@ extern "C"
         size_t num_alloc_units = calc_num_alloc_units(total_size);
 
 #if HEAP_DEBUG
-        printf("kernel_heap: Allocating %d bytes (%d -> %d)\n", size, total_size, num_alloc_units);
+        kdbg("kernel_heap: Allocating %d bytes (%d -> %d)\n", size, total_size, num_alloc_units);
 #endif
 
         int alloc_result = find_free_allocation_units(num_alloc_units);
@@ -134,7 +134,7 @@ extern "C"
         memcpy(slot, &entry, sizeof(entry));
 
 #if HEAP_DEBUG
-        printf("kernel_heap: Allocated at %d\n", alloc_unit);
+        kdbg("kernel_heap: Allocated at %d\n", alloc_unit);
 #endif
 
         return data;
@@ -149,7 +149,7 @@ extern "C"
         heap_entry *description = (heap_entry *)(byte_ptr - sizeof(heap_entry));
 
 #if HEAP_DEBUG
-        printf("kernel_heap: Freeing %d units from %d\n", description->size, description->idx);
+        kdbg("kernel_heap: Freeing %d units from %d\n", description->size, description->idx);
 #endif
 
         for (size_t i = 0; i < description->size; i++)

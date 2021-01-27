@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <kernel/fs/fat16.h>
+#include <kernel/kdebug.h>
 #include <nk/buffer.h>
-
-#define FAT16_DEBUG 0
 
 #define DIRENT_SIZE 32
 
@@ -37,12 +36,12 @@ namespace FS
         current_cluster = new uint8_t[blocks_per_alloc * bytes_per_block];
 
 #if FAT16_DEBUG
-        printf("fat_16: Root dir at %d with %d entries\n", (int)root_dir_sector, (int)root_dir_entries);
+        kdbg("fat_16: Root dir at %d with %d entries\n", (int)root_dir_sector, (int)root_dir_entries);
 #endif
 
         auto fat_base = partition->startSector + reserved_blocks;
 #if FAT16_DEBUG
-        printf("fat_16: reading fat table (%d blocks) from %d...\n", (int)blocks_per_fat, (int)fat_base);
+        kdbg("fat_16: reading fat table (%d blocks) from %d...\n", (int)blocks_per_fat, (int)fat_base);
 #endif
         fat_cache = new uint8_t[blocks_per_fat * bytes_per_block];
         for (int i = 0; i < blocks_per_fat; i++)
@@ -50,7 +49,7 @@ namespace FS
 
         cluster_start = root_dir_sector + (root_dir_entries * DIRENT_SIZE) / bytes_per_block;
 #if FAT16_DEBUG
-        printf("fat_16: data region start: %d\n", (int)cluster_start);
+        kdbg("fat_16: data region start: %d\n", (int)cluster_start);
 #endif
     }
 
@@ -98,7 +97,7 @@ namespace FS
         auto remaining = size;
 
 #if FAT16_DEBUG
-        printf("fat_16: reading file at c=%d with start=%d\n", (int)entry.location, (int)clusterStart);
+        kdbg("fat_16: reading file at c=%d with start=%d\n", (int)entry.location, (int)clusterStart);
 #endif
 
         do
@@ -112,7 +111,7 @@ namespace FS
 
             auto writeOffset = size - remaining;
 #if FAT16_DEBUG
-            printf("fat_16: Reading %d bytes from c=%d o=%d to %d\n", (remaining > clusterSize ? clusterSize : remaining), cluster, (int)readOffset, writeOffset);
+            kdbg("fat_16: Reading %d bytes from c=%d o=%d to %d\n", (remaining > clusterSize ? clusterSize : remaining), cluster, (int)readOffset, writeOffset);
 #endif
 
             if (remaining < clusterSize)
@@ -227,8 +226,8 @@ namespace FS
     void Fat16::LoadCluster(uint32_t cluster)
     {
 #if FAT16_DEBUG
-        printf("fat_16: cluster_size = %d\n", blocks_per_alloc);
-        printf("fat_16: loading cluster %d\n", (long)cluster);
+        kdbg("fat_16: cluster_size = %d\n", blocks_per_alloc);
+        kdbg("fat_16: loading cluster %d\n", (long)cluster);
 #endif
 
         auto hw_cluster = cluster - 2;
@@ -236,7 +235,7 @@ namespace FS
         for (int i = 0; i < blocks_per_alloc; i++)
         {
 #if FAT16_DEBUG
-            printf("fat_16: loading %d to %x\n", (long)(start_sector + i), (long)(current_cluster + i * 512));
+            kdbg("fat_16: loading %d to %x\n", (long)(start_sector + i), (long)(current_cluster + i * 512));
 #endif
 
             blockDevice->ReadBlock(start_sector + i, 1, current_cluster + i * 512);

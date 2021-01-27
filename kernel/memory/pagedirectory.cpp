@@ -4,8 +4,6 @@
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/kdebug.h>
 
-#define PAGE_DBG 0
-
 using namespace Kernel;
 
 namespace Memory
@@ -71,7 +69,7 @@ namespace Memory
         permissions |= PAGE_BIT_PRESENT;
         uint32_t tableEntry = (uint32_t)physicalAddr | (permissions & 0xFFF);
 
-#if PAGE_DBG
+#if PAGE_DEBUG
         kdbg("%x: %x[%x]=%x\n", absolutePage, directoryIdx, pageIdx, tableEntry);
         kdbg("  %x -> %x\n", physicalAddr, virtualAddr);
 #endif
@@ -94,7 +92,7 @@ namespace Memory
     void PageDirectory::Load()
     {
         virt_directory_ptr = (uint32_t *)PAGEDIR_VIRTUAL_LOC;
-#if PAGE_DBG
+#if PAGE_DEBUG
         kdbg("Loading page directory: %x\n", phys_directory_ptr);
 #endif
         PageManager::GetInstance()->LoadPageDirectory(phys_directory_ptr);
@@ -110,7 +108,7 @@ namespace Memory
                 auto table = (uint32_t)NewPage();
                 virt_directory_ptr[idx] = table | PAGE_BIT_PRESENT | PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER;
                 FlushPage(table); // Flush TLB for that page, so that we for sure have that
-#if PAGE_DBG
+#if PAGE_DEBUG
                 kdbg("Creating new page table idx %d at %x\n", idx, table);
 #endif
             }
@@ -134,7 +132,7 @@ namespace Memory
         if (!IS_PAGE_ALIGNED(addr))
             Kernel::Panic("page_directory", "Can't flush non-page-aligned memory.");
 
-#if PAGE_DBG
+#if PAGE_DEBUG
         kdbg("Flushing page at %x\n", addr);
 #endif
 

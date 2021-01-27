@@ -7,8 +7,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#define ELFLOADER_DEBUG 0
-
 using namespace Memory;
 
 namespace Kernel
@@ -71,7 +69,7 @@ namespace Kernel
 
         if (executableEndAddr == 0)
         {
-            printf("elf_loader: error: No address loaded\n");
+            kdbg("elf_loader: error: No address loaded\n");
             return nullptr;
         }
 
@@ -107,7 +105,7 @@ namespace Kernel
     {
         if (!IS_PAGE_ALIGNED(vaddr))
         {
-            printf("elf_loader: error: Can't make zeroed page at non-aligned address %x\n", vaddr);
+            kdbg("elf_loader: error: Can't make zeroed page at non-aligned address %x\n", vaddr);
             return nullptr;
         }
 
