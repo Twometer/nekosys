@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <string.h>
+#include <stdio.h>
 
 // FIXME: This is esentially just the libc's printf with a different putchar method.
 //        Thats bad.
@@ -10,10 +11,15 @@
 namespace Kernel
 {
 
-#define KERNEL_DEBUG 1
+#define KDBG_MODE_NONE 0
+#define KDBG_MODE_SERIAL 1
+#define KDBG_MODE_SCREEN 2
+
+#define KDBG_MODE KDBG_MODE_SERIAL
+
 #define COM1 0x3F8
 
-const char *hextable = "0123456789ABCDEF";
+    const char *hextable = "0123456789ABCDEF";
 
     void kputchar(char c)
     {
@@ -40,13 +46,17 @@ const char *hextable = "0123456789ABCDEF";
     {
         const unsigned char *bytes = (const unsigned char *)data;
         for (size_t i = 0; i < length; i++)
+#if KDBG_MODE == KDBG_MODE_SERIAL
             kputchar(bytes[i]);
+#else
+            putchar(bytes[i]);
+#endif
         return true;
     }
 
     void kdbg(const char *format, ...)
     {
-#if KERNEL_DEBUG
+#if KDBG_MODE != KDBG_MODE_NONE
         va_list parameters;
         va_start(parameters, format);
 
