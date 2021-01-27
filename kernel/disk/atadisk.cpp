@@ -42,25 +42,40 @@ namespace Disk
         if (status == 0x00)
             return;
 
-        // wait for BSY flag to clear
-        while ((status = IO::In8(DRIVE_PORT_STATUS)) & BSY)
+// wait for BSY flag to clear
+#if DISK_DEBUG
+        kdbg("disk: waiting for disk to get ready\n");
+#endif
+        while ((status = IO::In8(DRIVE_PORT_STATUS)) & BSY && status != 0xff)
             ;
 
-        if (IO::In8(DRIVE_PORT_LBAMID) != 0 || IO::In8(DRIVE_PORT_LBAHI) != 0)
+        if (status == 0xff)
         {
-            printf("Disk at %d is not ATA.\n");
+            printf("Disk %d not present\n", disk_num);
             return;
         }
 
+        if (IO::In8(DRIVE_PORT_LBAMID) != 0 || IO::In8(DRIVE_PORT_LBAHI) != 0)
+        {
+            printf("Disk at %d is not ATA.\n", disk_num);
+            return;
+        }
+
+#if DISK_DEBUG
+        kdbg("disk: waiting for disk to get ready\n");
+#endif
         while (!((status = IO::In8(DRIVE_PORT_STATUS)) & DRQ) && !(status & ERR))
             ;
 
         if (status & ERR)
         {
-            printf("Disk %d returned an error\n");
+            printf("Disk %d returned an error\n", disk_num);
             return;
         }
 
+#if DISK_DEBUG
+        kdbg("disk: reading identify data\n");
+#endif
         uint16_t *identifyData = new uint16_t[256];
         ReadRaw(identifyData, 256);
 

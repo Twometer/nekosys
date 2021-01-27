@@ -10,12 +10,6 @@
 
 using namespace Kernel;
 
-#define KDBG_MODE_NONE 0
-#define KDBG_MODE_SERIAL 1
-#define KDBG_MODE_SCREEN 2
-
-#define KDBG_MODE KDBG_MODE_SERIAL
-
 #define COM1 0x3F8
 
 static const char *hextable = "0123456789ABCDEF";

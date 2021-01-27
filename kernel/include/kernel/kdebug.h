@@ -11,6 +11,14 @@
 #define ELFLOADER_DEBUG 0
 #define SCHEDULER_DEBUG 0
 
+/* debug output modes */
+#define KDBG_MODE_NONE 0
+#define KDBG_MODE_SERIAL 1
+#define KDBG_MODE_SCREEN 2
+
+/* current debug out mode */
+#define KDBG_MODE KDBG_MODE_SERIAL
+
 #ifdef __cplusplus
 extern "C"
 {
