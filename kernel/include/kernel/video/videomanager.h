@@ -1,0 +1,36 @@
+#ifndef _VIDEO_MANAGER_H
+#define _VIDEO_MANAGER_H
+
+#include <nk/singleton.h>
+
+#include <kernel/video/vesa.h>
+#include <kernel/handover.h>
+
+namespace Video
+{
+
+#define VIRTUAL_FRAMEBUFFER_LOC 0xD0000000
+#define SECONDARY_FRAMEBUFFER_LOC 0xD4000000
+
+    class VideoManager
+    {
+        DECLARE_SINGLETON(VideoManager)
+
+    private:
+        ModeInfoBlock currentMode{};
+        uint8_t *framebuffer;
+        uint8_t *secondaryBuffer;
+        size_t fbSize;
+
+    public:
+        void Initialize(Kernel::KernelHandover *handover);
+
+        void FlushBuffer();
+
+    private:
+        void LoadInformation(Kernel::KernelHandover *handover);
+    };
+
+}; // namespace Video
+
+#endif

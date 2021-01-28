@@ -11,7 +11,7 @@ namespace Video
         uint16_t VbeVersion;      // == 0x0300 for VBE 3.0
         uint32_t OemStringPtr;    // vbeFarPtr
         uint32_t Capabilities;    // bitfield
-        uint16_t VideoModesOff;    // vbeFarPtr
+        uint16_t VideoModesOff;   // vbeFarPtr
         uint16_t VideoModesSeg;
         uint16_t VideoMemory;     // as # of 64KB blocks
     } __attribute__((packed));

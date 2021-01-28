@@ -25,6 +25,8 @@ namespace Memory
 
         void Load();
 
+        bool MapRange(paddress_t physicalAddr, vaddress_t virtualAddr, size_t bytes, uint16_t permissions);
+
         bool MapPage(paddress_t physicalAddr, vaddress_t virtualAddr, uint16_t permissions);
 
         void *GetPhysicalAddress() { return phys_directory_ptr; }

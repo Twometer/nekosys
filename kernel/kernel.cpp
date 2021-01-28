@@ -13,6 +13,7 @@
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/tasks/scheduler.h>
 #include <kernel/tasks/elfloader.h>
+#include <kernel/video/videomanager.h>
 #include <kernel/video/vesa.h>
 #include <kernel/handover.h>
 #include <kernel/fs/mbr.h>
@@ -68,58 +69,9 @@ extern "C"
 		Interrupts::Disable();
 
 		// Banner
-		TTY::Clear();
-		TTY::SetColor(0x9f);
-		printf("nekosys 0.05\n");
-		kdbg("Booting koneko kernel...\n");
-		TTY::SetColor(0x07);
+		kdbg("Starting koneko kernel 0.05...\n");
 
-		// Init
-		printf("Welcome :3\n");
-
-		TTY::SetColor(0x08);
-		printf("Booting...\n");
 		KernelHandover *handover = (KernelHandover *)KERNEL_HANDOVER_STRUCT_LOC;
-
-		// Video
-		kdbg("Loading video info...\n");
-		kdbg("VESA Result: %x\n", handover->vesaState);
-		auto info = (VbeInfoBlock *)handover->vesaInfoBlock;
-		kdbg(" == VESA INFO ==\n");
-		kdbg("  VbeSignature: %s\n", &info->VbeSignature);
-		kdbg("  VbeVersion: %x\n", info->VbeVersion);
-		kdbg("  OemStringPtr: %x\n", info->OemStringPtr);
-		kdbg("  Capabilities: %x\n", info->Capabilities);
-		kdbg("  VidModeArrSeg: %x\n", (uint32_t)&info->VideoModesSeg);
-		kdbg("  VidModeArrOff: %x\n", (uint32_t)&info->VideoModesOff);
-		kdbg("  VideoMemory: %d MB\n", (uint32_t)(info->VideoMemory * 64) / 1024);
-		kdbg("  NumModes: %d\n", handover->vesaLength);
-
-		kdbg(" == CURRENT MODE ==\n");
-		auto array = (ModeInfoBlock *)handover->vesaModeArray;
-		ModeInfoBlock modeInfo;
-		uint8_t *fbuf = nullptr;
-		for (size_t i = 0; i < handover->vesaLength; i++)
-		{
-			auto &mode = array[i];
-			if (mode.modeid == handover->vesaCurrentMode)
-			{
-				kdbg("  Resolution: %d x %d\n", mode.Xres, mode.Yres);
-				kdbg("  Bit Depth: %d\n", mode.bpp);
-				kdbg("  LFB Addr: %x\n", mode.physbase);
-				kdbg("  Pitch: %d\n", mode.pitch);
-				fbuf = (uint8_t *)mode.physbase;
-				modeInfo = mode;
-			}	
-		}
-
-		for (int i = 00; i < 50; i++)
-		{
-			for (int j = 00; j < 50 * 4; j++)
-			{
-				fbuf[i * modeInfo.pitch + j] = 0xFF;
-			}
-		}
 
 		// Memory
 		kdbg("Loading memory map...\n");
@@ -203,6 +155,9 @@ extern "C"
 		kdbg("Setting up interrupts\n");
 		Interrupts::SetupIdt();
 		SyscallHandler::GetInstance()->Register();
+
+		kdbg("Setting up video\n");
+		VideoManager::GetInstance()->Initialize(handover);
 
 		kdbg("Setting up devices\n");
 		DeviceManager::Initialize();

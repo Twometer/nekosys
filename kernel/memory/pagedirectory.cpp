@@ -57,6 +57,19 @@ namespace Memory
         return (uint32_t *)PageManager::GetInstance()->AllocPageframe();
     }
 
+    bool PageDirectory::MapRange(paddress_t physicalAddr, vaddress_t virtualAddr, size_t bytes, uint16_t permissions)
+    {
+        if (!IS_PAGE_ALIGNED(physicalAddr) || !IS_PAGE_ALIGNED(virtualAddr))
+            return false;
+
+        for (size_t i = 0; i < bytes; i += PAGE_SIZE)
+        {
+            if (!MapPage(physicalAddr + i, virtualAddr + i, permissions))
+                return false;
+        }
+        return true;
+    }
+
     bool PageDirectory::MapPage(paddress_t physicalAddr, vaddress_t virtualAddr, uint16_t permissions)
     {
         if (!IS_PAGE_ALIGNED(physicalAddr) || !IS_PAGE_ALIGNED(virtualAddr))
