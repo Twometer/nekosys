@@ -15,7 +15,7 @@ krnlh_vesa_mode_ptr: equ 0x0518
 ; Array contents
 mmap_content_base: equ 0x600
 vesa_info_block: equ 0x1000
-vesa_mode_array: equ 0x1400
+vesa_mode_array: equ 0x2000
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ENTRY POINT FROM BOOTLOADER ;;
@@ -82,7 +82,31 @@ boot:
     cmp ax, 0x004F
     jne vesa_err_readinfo
 
-    jmp vesa_done
+    ; Segment: vesa_info_block[0x10]
+    ; Offset:  vesa_info_block[0x0E]
+
+    mov bx, [vesa_info_block + 0x0E]
+    mov di, vesa_mode_array
+    vesa_next_entry:
+    mov ds, [vesa_info_block + 0x10] ; Load video mode entry
+    mov cx, [bx]
+    xor ax, ax ; Reset data segment
+    mov ds, ax
+
+    cmp cx, 0xFFFF ; Reached the end?
+    je vesa_done
+
+    ; Load info about that mode
+    mov ax, 0x4F01
+    int 0x10
+    cmp ax, 0x004F
+    jne vesa_err_readmode
+
+    ; Go to next entry
+    inc dword [krnlh_vesa_length]
+    add di, 50
+    add bx, 2
+    jmp vesa_next_entry
 
     vesa_err_readinfo:
         mov dword [krnlh_vesa_state], 0x01
