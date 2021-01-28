@@ -9,20 +9,28 @@ krnlh_mmap_ptr: equ 0x0508
 
 krnlh_vesa_length: equ 0x050C
 krnlh_vesa_state: equ 0x0510
-krnlh_vesa_ptr: equ 0x0514
+krnlh_vesa_info_ptr: equ 0x0514
+krnlh_vesa_mode_ptr: equ 0x0518
 
-; Memory map list base
-mmap_content_base: equ 0x0600
+; Array contents
+mmap_content_base: equ 0x600
+vesa_info_block: equ 0x1000
+vesa_mode_array: equ 0x1400
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ENTRY POINT FROM BOOTLOADER ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 boot:
-    ; MMAP LOADER
+; INIT HANDOVER STRUCT
     mov dword [krnlh_mmap_state], 0
     mov dword [krnlh_mmap_length], 0
     mov dword [krnlh_mmap_ptr], mmap_content_base
+    mov dword [krnlh_vesa_state], 0
+    mov dword [krnlh_vesa_length], 0
+    mov dword [krnlh_vesa_info_ptr], vesa_info_block
+    mov dword [krnlh_vesa_mode_ptr], vesa_mode_array
 
+; MMAP LOADER
     ; Set ES:DI target location for memory map
     mov ax, 0            ; segment zero
     mov es, ax
@@ -31,7 +39,7 @@ boot:
     ; Call BIOS
     xor ebx, ebx            ; clear ebx
     mov edx, 0x0534D4150    ; magic number (SMAP)
-    next_entry:
+    mmap_next_entry:
     mov eax, 0xe820         ; set command E820
     mov ecx, 24             ; length maybe?
     int 0x15
@@ -47,7 +55,7 @@ boot:
     ; if it didn't fail, goto next entry
     inc dword [krnlh_mmap_length]
     add di, 24 ; increment di by 24
-    jmp next_entry  
+    jmp mmap_next_entry  
     
     ; ** MMAP ERROR HANDLERS **
     mmap_err_list_end:
@@ -63,6 +71,27 @@ boot:
         jmp mmap_done
 
     mmap_done:
+
+; VESA LOADER
+    xor ax, ax ; Zero ES
+    mov es, ax
+
+    mov di, vesa_info_block ; Read info block
+    mov ax, 0x4F00
+    int 0x10
+    cmp ax, 0x004F
+    jne vesa_err_readinfo
+
+    jmp vesa_done
+
+    vesa_err_readinfo:
+        mov dword [krnlh_vesa_state], 0x01
+        jmp vesa_done
+    vesa_err_readmode:
+        mov dword [krnlh_vesa_state], 0x02
+        jmp vesa_done
+
+    vesa_done:
 
     ; Remove 1MB limit
     mov ax, 0x2401

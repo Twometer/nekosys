@@ -13,6 +13,7 @@
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/tasks/scheduler.h>
 #include <kernel/tasks/elfloader.h>
+#include <kernel/video/vesa.h>
 #include <kernel/handover.h>
 #include <kernel/fs/mbr.h>
 #include <kernel/fs/vfs.h>
@@ -26,6 +27,7 @@
 using namespace Kernel;
 using namespace Device;
 using namespace Memory;
+using namespace Video;
 using namespace Disk;
 using namespace FS;
 
@@ -36,7 +38,7 @@ void idleThread()
 	{
 		// Idle? Just wait for something to happen, and don't block...
 		Thread::Current()->SetState(ThreadState::Yielded);
-		Interrupts::WaitForInt();
+		asm("hlt");
 	}
 }
 
@@ -79,6 +81,43 @@ extern "C"
 		printf("Booting...\n");
 		KernelHandover *handover = (KernelHandover *)KERNEL_HANDOVER_STRUCT_LOC;
 
+		// Video
+		kdbg("Loading video info...\n");
+		kdbg("VESA Result: %d\n", handover->vesaState);
+		auto info = (VbeInfoBlock *)handover->vesaInfoBlock;
+		kdbg(" == VESA INFO ==\n");
+		kdbg("  VbeSignature: %s\n", &info->VbeSignature);
+		kdbg("  VbeVersion: %x\n", info->VbeVersion);
+		kdbg("  OemStringPtr: %x\n", info->OemStringPtr);
+		kdbg("  Capabilities: %x\n", info->Capabilities);
+		kdbg("  VidModeArrSeg: %x\n", (uint32_t)info->VideoModesSeg);
+		kdbg("  VidModeArrOff: %x\n", (uint32_t)info->VideoModesOff);
+		kdbg("  VideoMemory: %d MB\n", (uint32_t)(info->VideoMemory * 64) / 1024);
+
+		uint16_t *t = (uint16_t *)((info->VideoModesSeg << 4) + info->VideoModesOff);
+		int num = 0;
+		while (*t != 0xffff)
+		{
+			kdbg("Found mode %x\n", (int)*t);
+			num++;
+			t++;
+		}
+		kdbg("Found %d modes\n", num);
+
+		/*uint16_t *videoListPtr = (uint16_t *)(info->VideoModeSegment << 4) + info->VideoModeOffset;
+		int len = 0;
+		while (*videoListPtr != 0xffff)
+		{
+			len++;
+			videoListPtr++;
+		}
+		kdbg("Actual number of video modes %d\n", len);
+
+		auto mode = (ModeInfoBlock *)handover->vesaModeArray;
+		kdbg("Detected VESA mode %x (%d x %d)\n", mode->attributes, mode->Xres, mode->Yres);
+		*/
+
+		// Memory
 		kdbg("Loading memory map...\n");
 		MemoryMap memoryMap;
 		memoryMap.Parse(handover);

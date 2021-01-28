@@ -14,7 +14,8 @@ namespace Kernel
 
         uint32_t vesaLength;
         uint32_t vesaState;
-        void *vesaPtr;
+        void *vesaInfoBlock;
+        void *vesaModeArray;
     };
 
 }; // namespace Kernel
