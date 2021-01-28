@@ -83,7 +83,7 @@ extern "C"
 
 		// Video
 		kdbg("Loading video info...\n");
-		kdbg("VESA Result: %d\n", handover->vesaState);
+		kdbg("VESA Result: %x\n", handover->vesaState);
 		auto info = (VbeInfoBlock *)handover->vesaInfoBlock;
 		kdbg(" == VESA INFO ==\n");
 		kdbg("  VbeSignature: %s\n", &info->VbeSignature);
@@ -95,30 +95,29 @@ extern "C"
 		kdbg("  VideoMemory: %d MB\n", (uint32_t)(info->VideoMemory * 64) / 1024);
 		kdbg("  NumModes: %d\n", handover->vesaLength);
 
+		kdbg(" == CURRENT MODE ==\n");
 		auto array = (ModeInfoBlock *)handover->vesaModeArray;
+		ModeInfoBlock modeInfo;
 		uint8_t *fbuf = nullptr;
 		for (size_t i = 0; i < handover->vesaLength; i++)
 		{
 			auto &mode = array[i];
-			if (mode.attributes & (1 << 7))
-				kdbg("%x: %d x %d\n", mode.modeid, mode.Xres, mode.Yres);
-
-			if (mode.Xres == 1366)
-				printf("Found a resolution: %d x %d\n", mode.Xres, mode.Yres);
-
-			if (mode.modeid == 0x116)
+			if (mode.modeid == handover->vesaCurrentMode)
 			{
+				kdbg("  Resolution: %d x %d\n", mode.Xres, mode.Yres);
+				kdbg("  Bit Depth: %d\n", mode.bpp);
+				kdbg("  LFB Addr: %x\n", mode.physbase);
+				kdbg("  Pitch: %d\n", mode.pitch);
 				fbuf = (uint8_t *)mode.physbase;
-				
-				kdbg("Framebuffer is at %x\n", mode.physbase);
-			}
+				modeInfo = mode;
+			}	
 		}
 
-		for (int i = 10; i < 50; i++)
+		for (int i = 00; i < 50; i++)
 		{
-			for (int j = 10; j < 50; j++)
+			for (int j = 00; j < 50 * 4; j++)
 			{
-				fbuf[i * 1024 + j] = 0xFF;
+				fbuf[i * modeInfo.pitch + j] = 0xFF;
 			}
 		}
 

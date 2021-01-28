@@ -11,11 +11,23 @@ krnlh_vesa_length: equ 0x050C
 krnlh_vesa_state: equ 0x0510
 krnlh_vesa_info_ptr: equ 0x0514
 krnlh_vesa_mode_ptr: equ 0x0518
+krnlh_vesa_current_mode: equ 0x51C
 
 ; Array contents
 mmap_content_base: equ 0x600
 vesa_info_block: equ 0x1000
 vesa_mode_array: equ 0x2000
+
+; Video mode config
+;  This is currently hardcoded, as
+;  I don't want to implement VM86
+;  to change it dynamically. Maybe
+;  at some point in the future
+%define requested_x_resolution 1024
+%define requested_y_resolution 768
+
+; Other definitions
+%define mode_info_struct_size 50
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ENTRY POINT FROM BOOTLOADER ;;
@@ -40,22 +52,22 @@ boot:
     xor ebx, ebx            ; clear ebx
     mov edx, 0x0534D4150    ; magic number (SMAP)
     mmap_next_entry:
-    mov eax, 0xe820         ; set command E820
-    mov ecx, 24             ; length maybe?
-    int 0x15
-    jc mmap_err_carry       ; if carry is set, then it failed
+        mov eax, 0xe820         ; set command E820
+        mov ecx, 24             ; length maybe?
+        int 0x15
+        jc mmap_err_carry       ; if carry is set, then it failed
 
-    mov edx, 0x0534D4150
-    cmp eax, edx
-    jne mmap_err_bad_sig    ; if eax is not the magic num then error
+        mov edx, 0x0534D4150
+        cmp eax, edx
+        jne mmap_err_bad_sig    ; if eax is not the magic num then error
 
-    cmp ebx, 0              ; if ebx == 0, it ended
-    je mmap_err_list_end
+        cmp ebx, 0              ; if ebx == 0, it ended
+        je mmap_err_list_end
 
-    ; if it didn't fail, goto next entry
-    inc dword [krnlh_mmap_length]
-    add di, 24 ; increment di by 24
-    jmp mmap_next_entry  
+        ; if it didn't fail, goto next entry
+        inc dword [krnlh_mmap_length]
+        add di, 24 ; increment di by 24
+        jmp mmap_next_entry  
     
     ; ** MMAP ERROR HANDLERS **
     mmap_err_list_end:
@@ -88,51 +100,98 @@ boot:
     mov bx, [vesa_info_block + 0x0E]
     mov di, vesa_mode_array
     vesa_next_entry:
-    mov ds, [vesa_info_block + 0x10] ; Load video mode entry
-    mov cx, [bx]
-    xor ax, ax ; Reset data segment
-    mov ds, ax
+        mov ds, [vesa_info_block + 0x10] ; Load video mode entry
+        mov cx, [bx]
+        xor ax, ax ; Reset data segment
+        mov ds, ax
 
-    cmp cx, 0xFFFF ; Reached the end?
-    je vesa_done
+        cmp cx, 0xFFFF ; Reached the end?
+        je vesa_list_finished
 
-    ; Save the current mode id in the mode struct
-    mov [di], cx
-    add di, 2
+        ; Save the current mode id in the mode struct
+        mov [di], cx
+        add di, 2
 
-    ; Load more info about that mode from VESA bios
-    mov ax, 0x4F01
-    int 0x10
-    cmp ax, 0x004F
-    jne vesa_err_readmode
+        ; Load more info about that mode from VESA bios
+        mov ax, 0x4F01
+        int 0x10
+        cmp ax, 0x004F
+        jne vesa_err_readmode
 
-    ; Go to next entry
-    inc dword [krnlh_vesa_length]
-    add di, 50
-    add bx, 2
-    jmp vesa_next_entry
+        ; Go to next entry
+        inc dword [krnlh_vesa_length]
+        add di, mode_info_struct_size
+        add bx, 2
+        jmp vesa_next_entry
+
+; VIDEO MODE SELECTOR
+    vesa_list_finished:
+        ; Scan the list for a resolution and bpp we want
+        mov di, 0
+        mov si, vesa_mode_array
+
+        mov cx, 0 ; CX stores the currently highest bit depth
+        mov bx, 0 ; BX stores the currently selected vid mode
+
+    vesa_next_res:
+        mov ax, [si + 0x02] ; Has linear framebuffer?
+        test ax, 128
+        jz vesa_loop_continue ; If no linear FB, we don't want the mode
+
+        mov ax, [si + 0x14] ; Check current X resolution
+        cmp ax, requested_x_resolution
+        mov [krnlh_vesa_state], ax
+        jne vesa_loop_continue
+
+        mov ax, [si + 0x16] ; Check current Y resolution
+        cmp ax, requested_y_resolution
+        jne vesa_loop_continue
+
+        cmp cx, [si + 0x1b] ; Check current bpp
+        jg vesa_loop_continue ; If it's more than current max - continue
+        mov bx, [si] ; Else, save
+        mov cx, [si + 25]
+
+        vesa_loop_continue:
+        inc di ; If we reach the end, we stop
+        cmp di, [krnlh_vesa_length]
+        jge vesa_loop_ended
+
+        ; If we didn't reach the end, goto next mode info block
+        add si, 52
+        jmp vesa_next_res
+
+    vesa_loop_ended:
+        cmp bx, 0 ; If BX is still zero, didn't find our resolution :(
+        jne vesa_found_resolution
+        mov bx, 0x112 ; Set a default mode (640x480x24)
+
+    vesa_found_resolution:
+        ; Call BIOS to change into selected video mode
+        mov ax, 0x4F02
+        mov [krnlh_vesa_current_mode], bx
+        int 0x10
+        cmp ax, 0x004F ; Check for errors
+        jne vesa_err_chmode
+        jmp vesa_done
 
     vesa_err_readinfo:
         mov dword [krnlh_vesa_state], 0x01
         jmp vesa_done
+
     vesa_err_readmode:
         mov dword [krnlh_vesa_state], 0x02
         jmp vesa_done
 
-    vesa_done:
+    vesa_err_chmode:
+        mov dword [krnlh_vesa_state], 0x03
+        jmp vesa_done
 
+
+    vesa_done:
     ; Remove 1MB limit
     mov ax, 0x2401
     int 0x15 ; enable A20 bit
-
-    ; Set VGA Text Mode
-    mov ax, 0x2
-    int 0x10
-
-    ; LO AND BEHOLD WE ENTER THE WORLD OF GRAPHICS
-    mov ax, 0x4F02
-    mov bx, 0x116 ; Yes, hardcoded. I don't wanna implement VM86
-    int 0x10
 
     ; Load temporary Global Descriptor Table to get into kernel and enter protected mode
     cli
