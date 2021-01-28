@@ -94,13 +94,32 @@ extern "C"
 		kdbg("  VidModeArrOff: %x\n", (uint32_t)&info->VideoModesOff);
 		kdbg("  VideoMemory: %d MB\n", (uint32_t)(info->VideoMemory * 64) / 1024);
 		kdbg("  NumModes: %d\n", handover->vesaLength);
-		//kdbg("%d\n", sizeof(ModeInfoBlock));
-		
+
 		auto array = (ModeInfoBlock *)handover->vesaModeArray;
+		uint8_t *fbuf = nullptr;
 		for (size_t i = 0; i < handover->vesaLength; i++)
 		{
 			auto &mode = array[i];
-			kdbg(" %d x %d\n", mode.Xres, mode.Yres);
+			if (mode.attributes & (1 << 7))
+				kdbg("%x: %d x %d\n", mode.modeid, mode.Xres, mode.Yres);
+
+			if (mode.Xres == 1366)
+				printf("Found a resolution: %d x %d\n", mode.Xres, mode.Yres);
+
+			if (mode.modeid == 0x116)
+			{
+				fbuf = (uint8_t *)mode.physbase;
+				
+				kdbg("Framebuffer is at %x\n", mode.physbase);
+			}
+		}
+
+		for (int i = 10; i < 50; i++)
+		{
+			for (int j = 10; j < 50; j++)
+			{
+				fbuf[i * 1024 + j] = 0xFF;
+			}
 		}
 
 		// Memory

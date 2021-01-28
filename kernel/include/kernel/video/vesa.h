@@ -18,6 +18,7 @@ namespace Video
 
     struct ModeInfoBlock
     {
+        uint16_t modeid;
         uint16_t attributes;
         uint8_t winA, winB;
         uint16_t granularity;

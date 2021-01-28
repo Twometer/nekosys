@@ -96,7 +96,11 @@ boot:
     cmp cx, 0xFFFF ; Reached the end?
     je vesa_done
 
-    ; Load info about that mode
+    ; Save the current mode id in the mode struct
+    mov [di], cx
+    add di, 2
+
+    ; Load more info about that mode from VESA bios
     mov ax, 0x4F01
     int 0x10
     cmp ax, 0x004F
@@ -123,6 +127,11 @@ boot:
 
     ; Set VGA Text Mode
     mov ax, 0x2
+    int 0x10
+
+    ; LO AND BEHOLD WE ENTER THE WORLD OF GRAPHICS
+    mov ax, 0x4F02
+    mov bx, 0x116 ; Yes, hardcoded. I don't wanna implement VM86
     int 0x10
 
     ; Load temporary Global Descriptor Table to get into kernel and enter protected mode
