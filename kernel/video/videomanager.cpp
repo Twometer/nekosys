@@ -40,13 +40,13 @@ namespace Video
         // Clear secondary buffer
         memset(secondaryBuffer, 0, fbSize);
 
-        for (int i = 00; i < currentMode.Yres; i++)
+        for (int i = 0; i < currentMode.Yres; i++)
         {
-            for (int j = 00; j < currentMode.Xres; j++)
+            for (int j = 0; j < currentMode.Xres; j++)
             {
                 secondaryBuffer[i * currentMode.pitch + j * 4] = i;
                 secondaryBuffer[i * currentMode.pitch + j * 4 + 1] = j;
-                secondaryBuffer[i * currentMode.pitch + j * 4 + 2] = i+j;
+                secondaryBuffer[i * currentMode.pitch + j * 4 + 2] = i + j;
                 secondaryBuffer[i * currentMode.pitch + j * 4 + 3] = 0x00;
             }
         }
@@ -55,8 +55,18 @@ namespace Video
 
     void VideoManager::FlushBuffer()
     {
-        // FIXME: This can be faster
-        memcpy(framebuffer, secondaryBuffer, fbSize);
+        size_t num_qwords = fbSize / sizeof(uint64_t);
+        size_t num_bytes = fbSize % sizeof(uint64_t);
+
+        uint64_t *dst = (uint64_t *)framebuffer;
+        uint64_t *src = (uint64_t *)secondaryBuffer;
+        for (size_t i = 0; i < num_qwords; i++)
+            dst[i] = src[i];
+
+        uint8_t *bdst = (uint8_t *)(dst + num_qwords);
+        uint8_t *bsrc = (uint8_t *)(src + num_qwords);
+        for (size_t i = 0; i < num_bytes; i++)
+            bdst[i] = bsrc[i];
     }
 
     void VideoManager::LoadInformation(KernelHandover *handover)
