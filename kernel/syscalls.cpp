@@ -5,12 +5,16 @@
 #include <kernel/tasks/elfloader.h>
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/device/devicemanager.h>
+#include <kernel/video/videomanager.h>
 #include <kernel/kdebug.h>
 #include <kernel/fs/vfs.h>
 #include <kernel/tty.h>
+#include <nekosys.h>
 #include <stdio.h>
 
 using namespace Kernel;
+using namespace Memory;
+using namespace Video;
 
 uint32_t sys$$texit(void *param)
 {
@@ -121,6 +125,53 @@ uint32_t sys$$waitp(void *param)
 uint32_t sys$$readln(void *param)
 {
     auto params = (sys$$readln_param *)param;
-    Thread::Current()->Block(new KeyboardBlocker('\n'));    
+    Thread::Current()->Block(new KeyboardBlocker('\n'));
     return Device::DeviceManager::keyboard->ReadUntil(params->dst, params->maxSize, '\n');
+}
+
+uint32_t sys$$fb_acquire(void *param)
+{
+    auto *buf = (FRAMEBUF *)param;
+    auto vm = VideoManager::GetInstance();
+    if (!vm->KernelControlsFramebuffer())
+    {
+        // User processes cannot steal the fbuf from each other
+        return 1;
+    }
+    vm->AcquireFramebuffer(Process::Current()->GetId());
+    PageDirectory::Current()->MapRange(vm->GetFramebufferPhysical(), (vaddress_t)SECONDARY_FRAMEBUFFER_LOC, vm->GetFramebufferSize(), PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
+    buf->buffer = (void *)SECONDARY_FRAMEBUFFER_LOC;
+    buf->width = vm->GetCurrentMode()->Xres;
+    buf->height = vm->GetCurrentMode()->Yres;
+    buf->pitch = vm->GetCurrentMode()->pitch;
+    buf->pixelStride = vm->GetPixelStride();
+    return 0;
+}
+
+uint32_t sys$$fb_flush(void *param)
+{
+    auto params = (sys$$fb_flush_param *)param;
+
+    auto vm = VideoManager::GetInstance();
+    if (vm->GetFramebufferController() != Process::Current()->GetId())
+        return 1;
+
+    if (params->full)
+        vm->FlushBuffer();
+    else
+        vm->FlushBlock(params->x, params->y, params->w, params->h);
+
+    return 0;
+}
+
+uint32_t sys$$fb_release(void *param)
+{
+    auto vm = VideoManager::GetInstance();
+    if (vm->GetFramebufferController() != Process::Current()->GetId())
+        return 1;
+
+    // TODO: Unmap the fbuf
+
+    vm->AcquireFramebuffer(0);
+    return 0;
 }

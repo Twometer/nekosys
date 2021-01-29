@@ -6,6 +6,9 @@
 #include <kernel/video/vesa.h>
 #include <kernel/handover.h>
 
+#include <kernel/memory/memdefs.h>
+#include <sys/types.h>
+
 namespace Video
 {
 
@@ -20,8 +23,11 @@ namespace Video
         ModeInfoBlock currentMode{};
         uint8_t *framebuffer;
         uint8_t *secondaryBuffer;
+        paddress_t secondaryPhysical = nullptr;
         size_t fbSize;
         size_t pixelStride;
+
+        pid_t framebufferControllerProc = 0;
 
     public:
         void Initialize(Kernel::KernelHandover *handover);
@@ -33,6 +39,20 @@ namespace Video
         void SetPixel(int x, int y, uint32_t px);
 
         uint32_t GetPixel(int x, int y);
+
+        void AcquireFramebuffer(pid_t pid) { framebufferControllerProc = pid; };
+
+        pid_t GetFramebufferController() { return framebufferControllerProc; };
+
+        bool KernelControlsFramebuffer() { return framebufferControllerProc == 0; };
+
+        ModeInfoBlock *GetCurrentMode() { return &currentMode; };
+
+        size_t GetPixelStride() { return pixelStride; }
+
+        size_t GetFramebufferSize() { return fbSize; }
+
+        paddress_t GetFramebufferPhysical() { return secondaryPhysical; }
 
     private:
         void LoadInformation(Kernel::KernelHandover *handover);

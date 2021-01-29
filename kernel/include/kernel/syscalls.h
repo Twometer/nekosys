@@ -19,6 +19,9 @@
 #define SYS_SPAWNP 11
 #define SYS_WAITP 12
 #define SYS_READLN 13
+#define SYS_FBACQUIRE 14
+#define SYS_FBFLUSH 15
+#define SYS_FBRELEASE 16
 
 #define PARAM_VALUE(param, type) (*(type *)(param))
 
@@ -66,7 +69,15 @@ extern "C"
         char *dst;
         size_t maxSize;
     } sys$$readln_param;
-    
+
+    typedef struct
+    {
+        int full;
+        int x;
+        int y;
+        int w;
+        int h;
+    } sys$$fb_flush_param;
 
 #ifdef __cplusplus
 }
@@ -85,5 +96,8 @@ uint32_t sys$$sleep(void *param);
 uint32_t sys$$spawnp(void *param);
 uint32_t sys$$waitp(void *param);
 uint32_t sys$$readln(void *param);
+uint32_t sys$$fb_acquire(void *param);
+uint32_t sys$$fb_flush(void *param);
+uint32_t sys$$fb_release(void *param);
 
 #endif

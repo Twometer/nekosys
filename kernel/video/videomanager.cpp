@@ -33,6 +33,8 @@ namespace Video
             // FIXME: On real hardware, this prevents showing anything on screen ...?
             //        (Works with single-buffering)
             auto physical = PageManager::GetInstance()->AllocPageframe();
+            if (secondaryPhysical == nullptr)
+                secondaryPhysical = physical;
             PageDirectory::Current()->MapPage(physical, (vaddress_t)SECONDARY_FRAMEBUFFER_LOC + i, PAGE_BIT_READ_WRITE);
         }
 

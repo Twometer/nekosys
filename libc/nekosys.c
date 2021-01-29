@@ -23,3 +23,31 @@ int readln(char *dst, size_t maxSize)
     param.maxSize = maxSize;
     return syscall(SYS_READLN, &param);
 }
+
+int framebuf_acquire(FRAMEBUF *framebuf)
+{
+    return syscall(SYS_FBACQUIRE, framebuf);
+}
+
+int framebuf_flush(int x, int y, int w, int h)
+{
+    sys$$fb_flush_param param;
+    param.full = 0;
+    param.x = x;
+    param.y = y;
+    param.w = w;
+    param.h = h;
+    return syscall(SYS_FBFLUSH, &param);
+}
+
+int framebuf_flush_all()
+{
+    sys$$fb_flush_param param;
+    param.full = 1;
+    return syscall(SYS_FBFLUSH, &param);
+}
+
+int framebuf_release()
+{
+    return syscall(SYS_FBRELEASE, 0);
+}
