@@ -21,6 +21,7 @@ A map for nekosys' memory layout can be found at [memory.md](memory.md)
 - FAT-16 file system (vfs)
 - protected userspace
 - sometimes posix compliant
+- VESA drivers for graphical UI+
 
 ## Libraries
 - `libc`: Basic C functionality such as print, malloc etc.
