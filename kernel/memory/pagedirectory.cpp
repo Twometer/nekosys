@@ -66,6 +66,8 @@ namespace Memory
         {
             if (!MapPage(physicalAddr + i, virtualAddr + i, permissions))
                 return false;
+            else 
+                PageManager::GetInstance()->MarkPageframeAsUsed(physicalAddr + i);
         }
         return true;
     }

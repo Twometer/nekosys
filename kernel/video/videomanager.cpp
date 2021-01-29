@@ -22,13 +22,15 @@ namespace Video
         LoadInformation(handover);
 
         // Remap the framebuffer into paged memory
-        auto bytePerPixel = (currentMode.bpp + 1) / 8;
-        fbSize = currentMode.pitch * currentMode.Yres * bytePerPixel;
+        pixelStride = (currentMode.bpp + 1) / 8;
+        fbSize = currentMode.pitch * currentMode.Yres * pixelStride;
         PageDirectory::Current()->MapRange(framebuffer, (vaddress_t)VIRTUAL_FRAMEBUFFER_LOC, fbSize, PAGE_BIT_READ_WRITE);
 
         // Create double buffer
         for (size_t i = 0; i < fbSize; i += 4096)
         {
+            // FIXME: On real hardware, this prevents showing anything on screen ...?
+            //        (Works with single-buffering)
             auto physical = PageManager::GetInstance()->AllocPageframe();
             PageDirectory::Current()->MapPage(physical, (vaddress_t)SECONDARY_FRAMEBUFFER_LOC + i, PAGE_BIT_READ_WRITE);
         }
@@ -39,18 +41,22 @@ namespace Video
 
         // Clear secondary buffer
         memset(secondaryBuffer, 0, fbSize);
-
-        for (int i = 0; i < currentMode.Yres; i++)
-        {
-            for (int j = 0; j < currentMode.Xres; j++)
-            {
-                secondaryBuffer[i * currentMode.pitch + j * 4] = i;
-                secondaryBuffer[i * currentMode.pitch + j * 4 + 1] = j;
-                secondaryBuffer[i * currentMode.pitch + j * 4 + 2] = i + j;
-                secondaryBuffer[i * currentMode.pitch + j * 4 + 3] = 0x00;
-            }
-        }
         FlushBuffer();
+    }
+
+    void VideoManager::FlushBlock(int x, int y, int w, int h)
+    {
+        x *= pixelStride;
+        w *= pixelStride;
+        size_t offset = y * currentMode.pitch + x;
+        for (size_t row = y; row < y + h; row++)
+        {
+            for (size_t i = 0; i < w; i++)
+            {
+                framebuffer[offset + i] = secondaryBuffer[offset + i];
+            }
+            offset += currentMode.pitch;
+        }
     }
 
     void VideoManager::FlushBuffer()

@@ -61,6 +61,14 @@ namespace Memory
         return nullptr;
     }
 
+    void PageManager::MarkPageframeAsUsed(pageframe_t frame)
+    {
+        auto idx = (uint32_t)(frame - pageframes_base) / PAGE_SIZE;
+        if (idx > num_pages)
+            return;
+        frame_map[idx] = PAGE_USED;
+    }
+
     void PageManager::FreePageframe(pageframe_t pageframe)
     {
         auto idx = (uint32_t)(pageframe - pageframes_base) / PAGE_SIZE;

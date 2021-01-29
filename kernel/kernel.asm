@@ -22,7 +22,7 @@ vesa_mode_array: equ 0x2000
 ;  This is currently hardcoded, as
 ;  I don't want to implement VM86
 ;  to change it dynamically. Maybe
-;  at some point in the future
+;  at some point in the future...
 %define requested_x_resolution 1024
 %define requested_y_resolution 768
 

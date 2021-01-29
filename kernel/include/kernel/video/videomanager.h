@@ -21,9 +21,12 @@ namespace Video
         uint8_t *framebuffer;
         uint8_t *secondaryBuffer;
         size_t fbSize;
+        size_t pixelStride;
 
     public:
         void Initialize(Kernel::KernelHandover *handover);
+
+        void FlushBlock(int x, int y, int width, int height);
 
         void FlushBuffer();
 

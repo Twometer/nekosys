@@ -30,6 +30,8 @@ namespace Memory
         void EnablePaging();
 
         pageframe_t AllocPageframe();
+        
+        void MarkPageframeAsUsed(pageframe_t frame);
 
         void FreePageframe(pageframe_t frame);
 
