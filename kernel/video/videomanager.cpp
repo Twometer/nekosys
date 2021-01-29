@@ -48,17 +48,17 @@ namespace Video
         FlushBuffer();
     }
 
-    void VideoManager::SetPixel(int x, int y, uint32_t px)
+    void VideoManager::SetPixel(size_t x, size_t y, uint32_t px)
     {
         *(uint32_t *)(secondaryBuffer + y * currentMode.pitch + x * pixelStride) = px;
     }
 
-    uint32_t VideoManager::GetPixel(int x, int y)
+    uint32_t VideoManager::GetPixel(size_t x, size_t y)
     {
         return *(uint32_t *)(secondaryBuffer + y * currentMode.pitch + x * pixelStride);
     }
 
-    void VideoManager::FlushBlock(int x, int y, int w, int h)
+    void VideoManager::FlushBlock(size_t x, size_t y, size_t w, size_t h)
     {
         x *= pixelStride;
         w *= pixelStride;

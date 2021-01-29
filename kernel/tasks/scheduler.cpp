@@ -38,7 +38,7 @@ namespace Kernel
         HandleInterrupt(0, nullptr);
     }
 
-    void Scheduler::HandleInterrupt(unsigned int, RegisterStates *regs)
+    void Scheduler::HandleInterrupt(unsigned int, RegisterStates *)
     {
         auto *currentThread = Thread::Current();
         if (currentThread->GetState() != ThreadState::Running || currentThread->GetRuntime() > 25)

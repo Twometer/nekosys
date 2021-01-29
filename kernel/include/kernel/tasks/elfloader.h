@@ -15,7 +15,7 @@ namespace Kernel
         static Process *CreateProcess(const ELF::Image &image, int argc, char **argv);
 
     private:
-        static void *MapNewZeroedPages(Memory::PageDirectory *dir, vaddress_t vaddr, size_t sizeInBytes);
+        static vaddress_t MapNewZeroedPages(Memory::PageDirectory *dir, vaddress_t vaddr, size_t sizeInBytes);
     };
 
 } // namespace Kernel

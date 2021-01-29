@@ -25,7 +25,7 @@ namespace Kernel
     }
 
     Thread::Thread(PageDirectory *pagedir, Stack *stack, Ring ring)
-        : id(idCounter++), pagedir(pagedir), stack(stack), ring(ring)
+        : id(idCounter++), ring(ring), pagedir(pagedir), stack(stack)
     {
     }
 

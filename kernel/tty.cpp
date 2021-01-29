@@ -55,7 +55,7 @@ void TTY::PutChar(char c)
         return;
     }
 
-    uint16_t *data = KFNT[c];
+    uint16_t *data = KFNT[(int)c];
     for (size_t r = 0; r < 16; r++)
     {
         uint16_t row = data[r];

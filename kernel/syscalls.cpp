@@ -98,6 +98,7 @@ uint32_t sys$$sleep(void *param)
     uint32_t timeout = *(uint32_t *)(param);
     auto thread = Thread::Current();
     thread->Sleep(timeout * 1000);
+    return 0;
 }
 
 uint32_t sys$$spawnp(void *param)
@@ -164,7 +165,7 @@ uint32_t sys$$fb_flush(void *param)
     return 0;
 }
 
-uint32_t sys$$fb_release(void *param)
+uint32_t sys$$fb_release(void *)
 {
     auto vm = VideoManager::GetInstance();
     if (vm->GetFramebufferController() != Process::Current()->GetId())

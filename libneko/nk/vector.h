@@ -70,7 +70,7 @@ namespace nk
             return capacity;
         }
 
-        size_t IndexOf(const T &value) const
+        int IndexOf(const T &value) const
         {
             for (size_t i = 0; i < size; i++)
                 if (data[i] == value)

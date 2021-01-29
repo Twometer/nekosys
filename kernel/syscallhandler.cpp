@@ -34,7 +34,7 @@ namespace Kernel
         Interrupts::AddHandler(0x80, this);
     }
 
-    void SyscallHandler::HandleInterrupt(unsigned int i, RegisterStates *regs)
+    void SyscallHandler::HandleInterrupt(unsigned int, RegisterStates *regs)
     {
         // When the interrupt is called, ESP is saved to the regs state.
         // At that point however, it is already the kernel's ESP0. The

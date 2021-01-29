@@ -33,12 +33,12 @@ namespace Memory
         return *ptr;
     }
 
-    void *Stack::GetStackPtr()
+    uint8_t *Stack::GetStackPtr()
     {
         return stack_ptr;
     }
 
-    void *Stack::GetStackBottom()
+    uint8_t *Stack::GetStackBottom()
     {
         return stack_bottom;
     }

@@ -23,9 +23,9 @@ namespace Memory
 
         uint32_t Pop();
 
-        void *GetStackPtr();
+        uint8_t *GetStackPtr();
 
-        void *GetStackBottom();
+        uint8_t *GetStackBottom();
     };
 
 }; // namespace Memory

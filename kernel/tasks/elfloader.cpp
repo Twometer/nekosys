@@ -50,7 +50,7 @@ namespace Kernel
 
         kernelDir->Load();
         auto pagedir = new PageDirectory(*kernelDir);
-        void *executableEndAddr = 0;
+        vaddress_t executableEndAddr = 0;
 
         for (size_t i = 0; i < elfHeader->e_phnum; i++)
         {
@@ -101,7 +101,7 @@ namespace Kernel
         return process;
     }
 
-    void *ElfLoader::MapNewZeroedPages(PageDirectory *dir, vaddress_t vaddr, size_t sizeInBytes)
+    vaddress_t ElfLoader::MapNewZeroedPages(PageDirectory *dir, vaddress_t vaddr, size_t sizeInBytes)
     {
         if (!IS_PAGE_ALIGNED(vaddr))
         {
@@ -109,7 +109,7 @@ namespace Kernel
             return nullptr;
         }
 
-        auto numPages = (int)PAGE_ALIGN_UP(sizeInBytes) / PAGE_SIZE;
+        size_t numPages = (size_t)PAGE_ALIGN_UP(sizeInBytes) / PAGE_SIZE;
 
 #if ELFLOADER_DEBUG
         kdbg("elf_loader: Making %d new zeroed pages at virtual %x\n", numPages, vaddr);

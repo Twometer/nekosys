@@ -78,7 +78,7 @@ namespace FS
     // FIXME: This needs a better kind of error handling than just returning
     void Fat16::Read(const DirEntry &entry, size_t offset, size_t size, uint8_t *dst)
     {
-        auto clusterSize = blocks_per_alloc * bytes_per_block;
+        size_t clusterSize = blocks_per_alloc * bytes_per_block;
 
         if (dst == nullptr)
             return;

@@ -88,11 +88,11 @@ void Keyboard::HandleInterrupt(unsigned int, RegisterStates *)
 
 size_t Keyboard::ReadUntil(char *dst, size_t maxSize, char delim)
 {
-    size_t idx = buf.IndexOf(delim);
+    int idx = buf.IndexOf(delim);
     if (idx < 0)
         return 0;
 
-    auto size = idx > maxSize ? maxSize : idx;
+    auto size = (size_t)idx > maxSize ? maxSize : idx;
 
     for (size_t i = 0; i < size; i++)
         dst[i] = buf[i];

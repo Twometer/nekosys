@@ -32,13 +32,13 @@ namespace Video
     public:
         void Initialize(Kernel::KernelHandover *handover);
 
-        void FlushBlock(int x, int y, int width, int height);
+        void FlushBlock(size_t x, size_t y, size_t width, size_t height);
 
         void FlushBuffer();
 
-        void SetPixel(int x, int y, uint32_t px);
+        void SetPixel(size_t x, size_t y, uint32_t px);
 
-        uint32_t GetPixel(int x, int y);
+        uint32_t GetPixel(size_t x, size_t y);
 
         void AcquireFramebuffer(pid_t pid) { framebufferControllerProc = pid; };
 

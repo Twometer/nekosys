@@ -9,6 +9,8 @@ namespace Kernel
     class IThreadBlocker
     {
     public:
+        virtual ~IThreadBlocker() = default;
+
         virtual bool IsBlocked() = 0;
     };
 
