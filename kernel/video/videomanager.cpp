@@ -4,6 +4,7 @@
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/memory/pagemanager.h>
 #include <kernel/video/videomanager.h>
+#include <kernel/video/kernelfont.h>
 
 using namespace Kernel;
 using namespace Memory;
@@ -41,7 +42,18 @@ namespace Video
 
         // Clear secondary buffer
         memset(secondaryBuffer, 0, fbSize);
+
         FlushBuffer();
+    }
+
+    void VideoManager::SetPixel(int x, int y, uint32_t px)
+    {
+        *(uint32_t *)(secondaryBuffer + y * currentMode.pitch + x * pixelStride) = px;
+    }
+
+    uint32_t VideoManager::GetPixel(int x, int y)
+    {
+        return *(uint32_t *)(secondaryBuffer + y * currentMode.pitch + x * pixelStride);
     }
 
     void VideoManager::FlushBlock(int x, int y, int w, int h)

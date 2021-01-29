@@ -14,10 +14,10 @@ namespace Kernel
         va_start(args, fmt);
         Interrupts::Disable();
 
-        TTY::SetColor(0x0c);
+        TTY::SetColor(0x00FF0000);
         printf("\nNK_Kernel Panic:\n%s: ", module);
 
-        TTY::SetColor(0x07);
+        TTY::SetColor(0x00AAAAAA);
 
         vprintf(fmt, args);
         va_end(args);

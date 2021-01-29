@@ -30,6 +30,10 @@ namespace Video
 
         void FlushBuffer();
 
+        void SetPixel(int x, int y, uint32_t px);
+
+        uint32_t GetPixel(int x, int y);
+
     private:
         void LoadInformation(Kernel::KernelHandover *handover);
     };

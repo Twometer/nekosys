@@ -25,6 +25,8 @@
 #include <elf/elf.h>
 #include <stdio.h>
 
+#define NEKO_VERSION "0.06"
+
 using namespace Kernel;
 using namespace Device;
 using namespace Memory;
@@ -69,7 +71,7 @@ extern "C"
 		Interrupts::Disable();
 
 		// Banner
-		kdbg("Starting koneko kernel 0.05...\n");
+		kdbg("Starting koneko kernel " NEKO_VERSION "...\n");
 
 		KernelHandover *handover = (KernelHandover *)KERNEL_HANDOVER_STRUCT_LOC;
 
@@ -158,6 +160,7 @@ extern "C"
 
 		kdbg("Setting up video\n");
 		VideoManager::GetInstance()->Initialize(handover);
+		printf("\n\nWelcome to nekosys " NEKO_VERSION "\n\n");
 
 		kdbg("Setting up devices\n");
 		DeviceManager::Initialize();
@@ -236,7 +239,7 @@ extern "C"
 		startupApp->Start();
 
 		// Kernel initialized, let the scheduler take over
-		TTY::SetColor(0x07);
+		TTY::SetColor(0x00AAAAAA);
 		printf("System ready.\n\n");
 
 		kdbg("Waiting for the first interrupt that exits nkmain\n");
