@@ -10,25 +10,34 @@
 
 int main(int argc, char **argv)
 {
-	nk::String cwd = "/";
+	char cwd[PATH_MAX];
 	char *buf = new char[512];
 
 	for (;;)
 	{
-		printf("neko:%s $ ", cwd.CStr()); // Prompt
+		getcwd(cwd, PATH_MAX);
+		printf("neko:%s $ ", cwd); // Prompt
 
 		size_t read = readln(buf, 512); // Read
 		buf[read] = 0x00;
 
 		nk::String command(buf); // Parse
+		auto parsedCommand = CommandParser::parse(command);
+
 		if (command == "exit")
 		{
 			break;
 		}
+		else if (parsedCommand.file == "cd")
+		{
+			if (chdir(parsedCommand.params[0].CStr()))
+			{
+				printf("nsh: cd: No such directory\n");
+			}
+			continue;
+		}
 
-		auto parsedCommand = CommandParser::parse(command);	
-
-		pid_t pid = 0; 
+		pid_t pid = 0;
 		if (spawnp(&pid, parsedCommand.file.CStr(), nullptr, nullptr)) // Execute
 		{
 			printf("nsh: error: File not found\n");

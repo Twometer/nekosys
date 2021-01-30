@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <nk/vector.h>
+#include <nk/string.h>
 #include <kernel/tasks/thread.h>
 #include <sys/types.h>
 
@@ -20,6 +21,8 @@ namespace Kernel
         Memory::PageDirectory *pageDir;
         nk::Vector<Kernel::Thread *> *threads;
         nk::Vector<void *> *pages;
+
+        nk::String cwd = "/";
 
         uint8_t *heapBase = 0;
 
@@ -42,6 +45,9 @@ namespace Kernel
 
         void SetHeapBase(void *heapBase) { this->heapBase = (uint8_t *)heapBase; }
         uint8_t *GetHeapBase() { return heapBase; }
+
+        nk::String &GetCwd() { return cwd; };
+        void SetCwd(const nk::String &cwd) { this->cwd = cwd; };
 
         static void SetCurrent(Process *process) { current = process; };
         static Process *Current() { return current; }

@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <kernel/io.h>
 #include <kernel/disk/atadisk.h>
 #include <kernel/kdebug.h>

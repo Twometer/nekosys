@@ -25,7 +25,13 @@ namespace nk
         }
 
     public:
-        String() : cstring(nullptr), length(0) {}
+        String()
+        {
+            auto arr = new char[1];
+            arr[0] = 0;
+            cstring = arr;
+            length = 0;
+        }
 
         String(const char *cstring)
         {
@@ -127,7 +133,8 @@ namespace nk
             return String(&cstring[offset], length - offset);
         }
 
-        String &operator +=(char chr){
+        String &operator+=(char chr)
+        {
             *this = *this + chr;
         }
 
@@ -143,7 +150,7 @@ namespace nk
                 delete cstring;
 
                 length = other.length;
-                auto str = new char[other.length + 1];
+                auto str = new char[length + 1];
                 memcpy(str, other.cstring, length + 1);
                 cstring = str;
             }

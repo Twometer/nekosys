@@ -249,3 +249,4 @@ extern "C"
 		Kernel::Panic("kernel_main", "Kernel has exited, this should not happen.");
 	}
 }
+

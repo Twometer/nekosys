@@ -38,6 +38,11 @@ namespace FS
 
     DirEntry VirtualFileSystem::GetFileMeta(const nk::String &path)
     {
+        if (path == "/")
+        {
+            return {"/", DirEntryType::Folder, 0, 0};
+        }
+
         auto mountPoint = FindMountPoint(path);
         if (mountPoint == nullptr)
         {

@@ -1,8 +1,6 @@
 #ifndef _NK_VECTOR_H
 #define _NK_VECTOR_H
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
 
 namespace nk
@@ -17,6 +15,11 @@ namespace nk
         size_t capacity = 0;
 
     public:
+        ~Vector()
+        {
+            delete[] data;
+        }
+
         void Add(T obj)
         {
             EnsureCapacity(size + 1);
@@ -83,11 +86,6 @@ namespace nk
             return IndexOf(value) != -1;
         }
 
-        ~Vector()
-        {
-            free((void *)data);
-        }
-
         void Reserve(size_t min)
         {
             EnsureCapacity(min);
@@ -101,13 +99,15 @@ namespace nk
             if (min > capacity)
             {
                 size_t newCapacity = min * 2;
-                T *newData = (T *)malloc(sizeof(T) * newCapacity);
+                T *newData = new T[newCapacity];
                 memset(newData, 0, sizeof(T) * newCapacity);
+
                 if (this->data != nullptr)
                 {
                     memcpy(newData, data, sizeof(T) * size);
+                    delete[] this->data;
                 }
-                free((void *)this->data);
+
                 this->data = newData;
                 this->capacity = newCapacity;
             }

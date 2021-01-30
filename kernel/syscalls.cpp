@@ -12,9 +12,19 @@
 #include <nekosys.h>
 #include <stdio.h>
 
+#include <nk/path.h>
+
 using namespace Kernel;
 using namespace Memory;
 using namespace Video;
+
+nk::String resolve_file(const nk::Path path)
+{
+    auto resolved = nk::Path::Resolve(Process::Current()->GetCwd(), path);
+    auto file = resolved->ToString();
+    delete resolved;
+    return file;
+}
 
 uint32_t sys$$texit(void *param)
 {
@@ -53,11 +63,12 @@ uint32_t sys$$fopen(void *param)
 {
     auto params = (sys$$fopen_param *)param;
 
-    auto file = FS::VirtualFileSystem::GetInstance()->GetFileMeta(params->path);
+    auto resolved = resolve_file(params->path);
+    auto file = FS::VirtualFileSystem::GetInstance()->GetFileMeta(resolved);
     if (file.type == FS::DirEntryType::Invalid)
         return 1;
 
-    auto fd = FS::VirtualFileSystem::GetInstance()->Open(params->path);
+    auto fd = FS::VirtualFileSystem::GetInstance()->Open(resolved);
     *params->fsize = file.size;
     *params->fd = fd;
     return 0;
@@ -104,8 +115,8 @@ uint32_t sys$$sleep(void *param)
 uint32_t sys$$spawnp(void *param)
 {
     auto params = (sys$$spawnp_param *)param;
-
-    auto proc = ElfLoader::CreateProcess(params->path, 0, params->argv);
+    auto resolved = resolve_file(params->path);
+    auto proc = ElfLoader::CreateProcess(resolved.CStr(), 0, params->argv);
     if (proc == nullptr)
         return 1;
     *params->pid = proc->GetId();
@@ -174,5 +185,32 @@ uint32_t sys$$fb_release(void *)
     // TODO: Unmap the fbuf
 
     vm->AcquireFramebuffer(0);
+    return 0;
+}
+
+uint32_t sys$$chdir(void *param)
+{
+    char *params = (char *)param;
+    auto newCwd = nk::Path::Resolve(Process::Current()->GetCwd(), params);
+
+    auto dirent = FS::VirtualFileSystem::GetInstance()->GetFileMeta(newCwd->ToString());
+    if (dirent.type != FS::DirEntryType::Folder)
+        return 1;
+
+    Process::Current()->SetCwd(newCwd->ToString());
+    delete newCwd;
+    return 0;
+}
+
+uint32_t sys$$getcwd(void *param)
+{
+    sys$$getcwd_param *params = (sys$$getcwd_param *)param;
+
+    auto cwd = Process::Current()->GetCwd();
+    auto size = params->size;
+    if (size > cwd.Length())
+        size = cwd.Length() + 1;
+
+    memcpy(params->buf, cwd.CStr(), size);
     return 0;
 }

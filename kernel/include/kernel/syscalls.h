@@ -22,6 +22,8 @@
 #define SYS_FBACQUIRE 14
 #define SYS_FBFLUSH 15
 #define SYS_FBRELEASE 16
+#define SYS_CHDIR 17
+#define SYS_GETCWD 18
 
 #define PARAM_VALUE(param, type) (*(type *)(param))
 
@@ -79,6 +81,12 @@ extern "C"
         int h;
     } sys$$fb_flush_param;
 
+    typedef struct
+    {
+        char *buf;
+        size_t size;
+    } sys$$getcwd_param;
+
 #ifdef __cplusplus
 }
 #endif
@@ -99,5 +107,7 @@ uint32_t sys$$readln(void *param);
 uint32_t sys$$fb_acquire(void *param);
 uint32_t sys$$fb_flush(void *param);
 uint32_t sys$$fb_release(void *param);
+uint32_t sys$$chdir(void *param);
+uint32_t sys$$getcwd(void *param);
 
 #endif

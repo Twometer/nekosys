@@ -7,6 +7,8 @@
 #ifndef _NEKOSYS_H
 #define _NEKOSYS_H
 
+#define PATH_MAX 1024
+
 #include <sys/types.h>
 
 #ifdef __cplusplus

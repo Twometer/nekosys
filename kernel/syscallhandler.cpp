@@ -34,6 +34,8 @@ namespace Kernel
         AddSyscall(SYS_FBACQUIRE, sys$$fb_acquire);
         AddSyscall(SYS_FBFLUSH, sys$$fb_flush);
         AddSyscall(SYS_FBRELEASE, sys$$fb_release);
+        AddSyscall(SYS_CHDIR, sys$$chdir);
+        AddSyscall(SYS_GETCWD, sys$$getcwd);
         Interrupts::AddHandler(0x80, this);
     }
 
