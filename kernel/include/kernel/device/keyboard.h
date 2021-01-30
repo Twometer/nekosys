@@ -3,7 +3,7 @@
 
 #include <stddef.h>
 #include <nk/vector.h>
-#include <kernel/interrupts.h>
+#include <kernel/arch/interrupts.h>
 
 namespace Device
 {

@@ -5,7 +5,7 @@
 #include <kernel/tasks/process.h>
 #include <kernel/tasks/scheduler.h>
 #include <kernel/kdebug.h>
-#include <kernel/gdt.h>
+#include <kernel/arch/gdt.h>
 
 namespace Kernel
 {

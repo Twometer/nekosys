@@ -1,5 +1,5 @@
-#include <kernel/tty.h>
-#include <kernel/interrupts.h>
+#include <kernel/video/tty.h>
+#include <kernel/arch/interrupts.h>
 #include <kernel/io.h>
 #include <kernel/device/keyboard.h>
 #include <stdio.h>

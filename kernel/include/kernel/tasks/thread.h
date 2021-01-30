@@ -2,7 +2,7 @@
 #define _THREAD_H
 
 #include <kernel/ring.h>
-#include <kernel/registers.h>
+#include <kernel/arch/registers.h>
 #include <kernel/memory/stack.h>
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/tasks/process.h>

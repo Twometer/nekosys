@@ -1,7 +1,7 @@
 #ifndef _INTERRUPTS_H
 #define _INTERRUPTS_H
 
-#include <kernel/registers.h>
+#include <kernel/arch/registers.h>
 #include <nk/vector.h>
 
 struct IDT_entry

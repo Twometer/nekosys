@@ -3,7 +3,7 @@
 
 #include <nk/datetime.h>
 #include <nk/singleton.h>
-#include <kernel/interrupts.h>
+#include <kernel/arch/interrupts.h>
 #include <stdint.h>
 
 namespace Kernel

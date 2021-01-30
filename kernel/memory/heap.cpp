@@ -1,6 +1,6 @@
 #include <kernel/panic.h>
 #include <kernel/device/devicemanager.h>
-#include <kernel/heap.h>
+#include <kernel/memory/heap.h>
 #include <kernel/kdebug.h>
 #include <string.h>
 #include <stdint.h>

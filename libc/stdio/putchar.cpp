@@ -1,7 +1,7 @@
 #include <stdio.h>
 
 #ifdef __KERNEL
-#include <kernel/tty.h>
+#include <kernel/video/tty.h>
 #else
 #include <sys/syscall.h>
 #endif

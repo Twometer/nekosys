@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <kernel/device/cpu.h>
-#include <kernel/interrupts.h>
+#include <kernel/arch/interrupts.h>
 #include <kernel/panic.h>
-#include <kernel/tty.h>
+#include <kernel/video/tty.h>
 
 namespace Kernel
 {

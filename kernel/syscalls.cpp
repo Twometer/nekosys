@@ -8,7 +8,7 @@
 #include <kernel/video/videomanager.h>
 #include <kernel/kdebug.h>
 #include <kernel/fs/vfs.h>
-#include <kernel/tty.h>
+#include <kernel/video/tty.h>
 #include <nekosys.h>
 #include <stdio.h>
 

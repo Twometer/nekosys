@@ -1,8 +1,8 @@
-#include <kernel/tty.h>
-#include <kernel/heap.h>
-#include <kernel/gdt.h>
+#include <kernel/video/tty.h>
+#include <kernel/memory/heap.h>
+#include <kernel/arch/gdt.h>
 #include <kernel/panic.h>
-#include <kernel/interrupts.h>
+#include <kernel/arch/interrupts.h>
 #include <kernel/timemanager.h>
 #include <kernel/syscallhandler.h>
 #include <kernel/device/devicemanager.h>

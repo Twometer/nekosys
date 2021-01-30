@@ -3,7 +3,7 @@
 #include <kernel/memory/stack.h>
 #include <kernel/tasks/thread.h>
 #include <kernel/kdebug.h>
-#include <kernel/tty.h>
+#include <kernel/video/tty.h>
 
 using namespace Memory;
 

@@ -1,7 +1,7 @@
 #include <kernel/memory/memdefs.h>
-#include <kernel/interrupts.h>
+#include <kernel/arch/interrupts.h>
 #include <kernel/io.h>
-#include <kernel/tty.h>
+#include <kernel/video/tty.h>
 #include <kernel/panic.h>
 #include <kernel/device/keyboard.h>
 #include <kernel/device/cpu.h>

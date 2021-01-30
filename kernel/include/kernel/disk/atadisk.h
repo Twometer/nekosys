@@ -1,7 +1,7 @@
 #ifndef _ATA_DISK_H
 #define _ATA_DISK_H
 
-#include <kernel/interrupts.h>
+#include <kernel/arch/interrupts.h>
 #include <kernel/disk/blockdevice.h>
 
 namespace Disk

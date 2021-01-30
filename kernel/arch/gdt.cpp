@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <kernel/gdt.h>
+#include <kernel/arch/gdt.h>
 #include <kernel/panic.h>
 #include <kernel/memory/memdefs.h>
 
@@ -101,7 +101,7 @@ void GDT::CreateTss(uint32_t selector)
 
     memset(&tssEntry, 0, sizeof(tssEntry));
     tssEntry.ss0 = SEG_KRNL_DATA;
-    tssEntry.esp0 = (uint32_t)(new uint8_t[4096] + 4096); // todo wtf should i put here
+    tssEntry.esp0 = (uint32_t)(new uint8_t[4096] + 4096);
 
     tssSelector = selector;
 }

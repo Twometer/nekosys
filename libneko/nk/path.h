@@ -73,7 +73,7 @@ namespace nk
 
         static Path *Resolve(const Path &base, const Path &path)
         {
-            // FIXME This is not good
+            // FIXME: This is not good
             if (path.parts->Size() == 0)
                 return new Path(base.ToString());
             if (path.isAbsolute)

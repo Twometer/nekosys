@@ -1,11 +1,9 @@
 #include <stdlib.h>
 #ifdef __KERNEL
-#include <kernel/heap.h>
+#include <kernel/memory/heap.h>
 #else
 #include "../liballoc/liballoc.h"
 #endif
-
-// TODO userspace allocator
 
 void *malloc(size_t size)
 {

@@ -4,7 +4,7 @@
 #include <nk/singleton.h>
 #include <nk/vector.h>
 #include <sys/syscall.h>
-#include <kernel/interrupts.h>
+#include <kernel/arch/interrupts.h>
 
 namespace Kernel
 {
