@@ -19,7 +19,7 @@ This file describes how the memory is generally laid out when nekosys is running
 [0x00000000 - 0x00100000]: Identity-mapped: contains kernel and other first-mb stuff.
 [0x00100000 - 0xC0000000]: 3GB Reserved for userspace applications
 [0xC0000000 - 0xD0000000]: 256MB Reserved for the kernel heap
-[0xD0000000 - 0xD4000000]: 64MB Reserved for framebuffers
+[0xD0000000 - 0xD8000000]: 128MB Reserved for framebuffers
 [0xFF000000 - 0xFF100000]: Page frame allocator map
 [0xFF100000 - 0xFF200000]: Temporary space for the page directory during switches.
 [0xFF200000 - 0xFFC00000]: Reserved.
@@ -27,7 +27,7 @@ This file describes how the memory is generally laid out when nekosys is running
 ```
 
 ### Physical memory
-Nekosys only uses the first megabyte of physicaly memory during boot.
+Nekosys only uses the first megabyte of physical memory during boot.
 After that, everything is done virtually and using the page allocator.
 
 The page allocator gets the BIOS memory map, and places its base address
