@@ -1,3 +1,13 @@
+# Outputs
 *.bin
 build/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
+# IDEs
 .vscode/
+.idea/
