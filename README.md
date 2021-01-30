@@ -21,12 +21,13 @@ A map for nekosys' memory layout can be found at [memory.md](memory.md)
 - FAT-16 file system (vfs)
 - protected userspace
 - sometimes posix compliant
-- VESA drivers for graphical UI+
+- vesa hi-res graphics support
+- ...
 
 ## Libraries
 - `libc`: Basic C functionality such as print, malloc etc.
-- `libneko`: Standard C++ library providing useful containers, templates, etc.
-- `libelf`: Parser for ELF binaries
+- `libneko`: Useful C++ tools library with containers, templates, etc.
+- `libelf`: Parser for ELF executables
 - ...
 
 ## Userland
