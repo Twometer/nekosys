@@ -6,6 +6,8 @@ fat_offset: equ 0x8200
 table_offset: equ 0x8400
 kernel_offset: equ 0xA000
 
+%define DEBUG_LOGS 0
+
 init:
     ; get disk parameters
     mov [disk], dl ; save disk no
@@ -124,6 +126,8 @@ init:
 
     ; but if we reach here, the kernel was found :3
     kernel_found:
+
+%if DEBUG_LOGS
     ; log some debug data about the disk
     push word [num_heads]
     call printhex
@@ -145,6 +149,7 @@ init:
 
     push word ax  ; Cluster number where the kernel starts
     call printhex
+%endif
 
     ; We are now loading the kernel...
     push log_ldkernel
@@ -168,10 +173,12 @@ init:
     mov cx, 0
 
     next_sector:
+%if DEBUG_LOGS
     push word ax  ; print the sector we are reading for debugging
     call printhex
     push word bx  ; print the memory target address for debugging
     call printhex
+%endif
 
     push ax             ; load that sector to kernel_offset
     push bx
@@ -191,9 +198,6 @@ init:
     add ax, 0x1000
     mov es, ax
     pop ax
-
-    ;push es
-    ;call printhex
 
     no_segment_end:
     inc ax      ; sector ++
