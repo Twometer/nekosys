@@ -31,6 +31,9 @@ namespace Kernel
         AddSyscall(SYS_SPAWNP, sys$$spawnp);
         AddSyscall(SYS_WAITP, sys$$waitp);
         AddSyscall(SYS_READLN, sys$$readln);
+        AddSyscall(SYS_FBACQUIRE, sys$$fb_acquire);
+        AddSyscall(SYS_FBFLUSH, sys$$fb_flush);
+        AddSyscall(SYS_FBRELEASE, sys$$fb_release);
         Interrupts::AddHandler(0x80, this);
     }
 

@@ -30,6 +30,9 @@ void TTY::SetColor(uint32_t color)
 
 void TTY::PutChar(char c)
 {
+    if (!VideoManager::GetInstance()->KernelControlsFramebuffer())
+        return;
+
     if (c == '\n')
     {
         cursorX = 0;
