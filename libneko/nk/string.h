@@ -15,57 +15,50 @@ namespace nk
         size_t length = 0;
 
     private:
-        String(const char *cstring, size_t len)
+        void LoadFrom(const char *oldBuf, size_t numChars)
         {
-            length = len;
-            auto buf = new char[len + 1];
-            memcpy(buf, cstring, length);
-            buf[len] = 0;
-            this->cstring = buf;
+            delete[] cstring;
+
+            char *newBuf = new char[numChars + 1];
+            if (oldBuf != nullptr)
+            {
+                memcpy(newBuf, oldBuf, numChars);
+            }
+            newBuf[numChars] = 0x00;
+
+            this->cstring = newBuf;
+            this->length = numChars;
         }
 
     public:
         String()
         {
-            auto arr = new char[1];
-            arr[0] = 0;
-            cstring = arr;
-            length = 0;
+            LoadFrom(nullptr, 0);
         }
 
-        String(const char *cstring)
+        String(const char *buf)
         {
-            length = strlen(cstring);
-            auto buf = new char[length + 1];
-            memcpy(buf, cstring, length + 1);
-            this->cstring = buf;
+            LoadFrom(buf, strlen(buf));
+        }
+
+        String(const char *buf, size_t length)
+        {
+            LoadFrom(buf, length);
         }
 
         String(const String &other)
         {
-            *this = other;
+            LoadFrom(other.cstring, other.length);
         }
 
         ~String()
         {
-            delete cstring;
+            delete[] cstring;
         }
 
         const char *CStr() const
         {
             return cstring;
-        }
-
-        bool StartsWith(const String &other) const
-        {
-            if (other.length > length)
-                return false;
-
-            for (size_t i = 0; i < other.length; i++)
-                if (cstring[i] != other.cstring[i])
-                    return false;
-
-            return true;
         }
 
         bool Empty() const
@@ -85,7 +78,7 @@ namespace nk
             if (length != other.length)
                 return false;
 
-            return EqualsImpl(other.CStr());
+            return *this == other.CStr();
         }
 
         bool operator==(const char *other) const
@@ -93,7 +86,11 @@ namespace nk
             if (length != strlen(other))
                 return false;
 
-            return EqualsImpl(other);
+            for (size_t i = 0; i < length; i++)
+                if (cstring[i] != other[i])
+                    return false;
+
+            return true;
         }
 
         String operator+(const char other) const
@@ -108,24 +105,42 @@ namespace nk
 
         String Append(const char other) const
         {
-            auto newlen = length + 2;
-            char tmpbuf[newlen];
+            auto newLength = length + 1;
+            char newBuf[newLength + 1];
+
             if (cstring != nullptr)
-                memcpy(tmpbuf, cstring, length);
-            tmpbuf[newlen - 2] = other;
-            tmpbuf[newlen - 1] = 0;
-            return String(tmpbuf);
+                memcpy(newBuf, cstring, length);
+
+            newBuf[newLength - 1] = other;
+            newBuf[newLength] = 0;
+            return String(newBuf);
         }
 
         String Append(const String &other) const
         {
-            auto newlen = length + other.length + 1;
-            char tmpbuf[newlen];
+            auto newLength = length + other.length;
+            char newBuf[newLength + 1];
+
             if (cstring != nullptr)
-                memcpy(tmpbuf, cstring, length);
-            memcpy(tmpbuf + length, other.cstring, other.length);
-            tmpbuf[newlen - 1] = 0;
-            return String(tmpbuf);
+                memcpy(newBuf, cstring, length);
+
+            if (other.cstring != nullptr)
+                memcpy(newBuf + length, other.cstring, other.length);
+
+            newBuf[newLength] = 0;
+            return String(newBuf);
+        }
+
+        bool StartsWith(const String &other) const
+        {
+            if (other.length > length)
+                return false;
+
+            for (size_t i = 0; i < other.length; i++)
+                if (cstring[i] != other.cstring[i])
+                    return false;
+
+            return true;
         }
 
         String Substring(size_t offset) const
@@ -135,24 +150,19 @@ namespace nk
 
         String &operator+=(char chr)
         {
-            *this = *this + chr;
+            return *this = *this + chr;
         }
 
         String &operator+=(const String &other)
         {
-            *this = *this + other;
+            return *this = *this + other;
         }
 
         String &operator=(const String &other)
         {
             if (this != &other)
             {
-                delete cstring;
-
-                length = other.length;
-                auto str = new char[length + 1];
-                memcpy(str, other.cstring, length + 1);
-                cstring = str;
+                LoadFrom(other.cstring, other.length);
             }
             return *this;
         }
@@ -162,6 +172,7 @@ namespace nk
             return length;
         }
 
+        /* C++ iterator stuff */
         char front() const
         {
             return cstring[0];
@@ -180,17 +191,6 @@ namespace nk
         const char *end() const
         {
             return &cstring[length];
-        }
-
-    private:
-        bool EqualsImpl(const char *other) const
-        {
-            for (size_t i = 0; i < length; i++)
-            {
-                if (cstring[i] != other[i])
-                    return false;
-            }
-            return true;
         }
     };
 

@@ -28,6 +28,7 @@ namespace nk
 
         Path(const String &path)
         {
+            parts->EnsureCapacity(8);
             String temp;
             for (size_t i = 0; i < path.Length(); i++)
             {
@@ -90,10 +91,10 @@ namespace nk
                 auto part = path.parts->At(i);
                 if (part == ".")
                     continue;
-            
+
                 if (part == ".." && result->parts->Size() > 0)
                 {
-                    
+
                     result->parts->Remove(j);
                     j--;
                     continue;

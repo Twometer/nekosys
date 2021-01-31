@@ -2,6 +2,7 @@
 #define _NK_VECTOR_H
 
 #include <string.h>
+#include <kernel/kdebug.h>
 
 namespace nk
 {
@@ -17,6 +18,8 @@ namespace nk
     public:
         ~Vector()
         {
+            for (size_t i = 0; i < size; i++)
+                data[i].~T();
             delete[] data;
         }
 
@@ -93,18 +96,20 @@ namespace nk
                 size = min;
         }
 
-    private:
         void EnsureCapacity(size_t min)
         {
             if (min > capacity)
             {
                 size_t newCapacity = min * 2;
                 T *newData = new T[newCapacity];
-                memset(newData, 0, sizeof(T) * newCapacity);
 
                 if (this->data != nullptr)
                 {
-                    memcpy(newData, data, sizeof(T) * size);
+                    for (size_t i = 0; i < size; i++)
+                    {
+                        newData[i] = data[i];
+                        data[i].~T();
+                    }
                     delete[] this->data;
                 }
 
