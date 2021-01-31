@@ -24,7 +24,15 @@ namespace Video
     {
         LoadInformation(handover);
 
-        // Initialize the TTY
+        if (handover->vesaCurrentMode == 0x00)
+        {
+            // 0x00 means forced VGA Text mode
+            tty = new TextTTY();
+            tty->Initialize(80, 25);
+            framebufferControllerProc = 0xFFFFFFFF; // no one ones the FB
+            return;
+        }
+
         tty = new GraphicsTTY();
         tty->Initialize(currentMode.Xres, currentMode.Yres);
 

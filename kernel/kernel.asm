@@ -25,6 +25,7 @@ vesa_mode_array: equ 0x2000
 ;  at some point in the future...
 %define requested_x_resolution 1024
 %define requested_y_resolution 768
+%define force_text_mode_vga 0
 
 ; Other definitions
 %define mode_info_struct_size 50
@@ -189,6 +190,13 @@ boot:
 
 
     vesa_done:
+
+%if force_text_mode_vga
+    mov dword [krnlh_vesa_current_mode], 0x00
+    mov ax, 0x2
+    int 0x10
+%endif
+
     ; Remove 1MB limit
     mov ax, 0x2401
     int 0x15 ; enable A20 bit
