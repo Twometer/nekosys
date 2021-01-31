@@ -1,7 +1,8 @@
 #include <stdio.h>
 
 #ifdef __KERNEL
-#include <kernel/video/tty.h>
+#include <kernel/video/videomanager.h>
+using namespace Video;
 #else
 #include <sys/syscall.h>
 #endif
@@ -13,7 +14,7 @@ extern "C"
 	{
 		char c = (char)ic;
 #ifdef __KERNEL
-		Kernel::TTY::Write(&c, sizeof(c));
+		VideoManager::GetInstance()->GetTTY()->Write(&c, sizeof(c));
 #else
 		syscall(SYS_PUTCHAR, &c);
 #endif

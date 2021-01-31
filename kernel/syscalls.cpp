@@ -8,7 +8,6 @@
 #include <kernel/video/videomanager.h>
 #include <kernel/kdebug.h>
 #include <kernel/fs/vfs.h>
-#include <kernel/video/tty.h>
 #include <nekosys.h>
 #include <stdio.h>
 
@@ -55,7 +54,7 @@ uint32_t sys$$exit(void *param)
 uint32_t sys$$putchar(void *param)
 {
     char c = *(char *)param;
-    TTY::Write(&c, sizeof(c));
+    VideoManager::GetInstance()->GetTTY()->Write(&c, sizeof(c));
     return 0;
 }
 

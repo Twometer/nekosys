@@ -3,7 +3,9 @@
 #include <kernel/device/cpu.h>
 #include <kernel/arch/interrupts.h>
 #include <kernel/panic.h>
-#include <kernel/video/tty.h>
+#include <kernel/video/videomanager.h>
+
+using namespace Video;
 
 namespace Kernel
 {
@@ -14,11 +16,10 @@ namespace Kernel
         va_start(args, fmt);
         Interrupts::Disable();
 
-        TTY::SetColor(0x00FF0000);
+        VideoManager::GetInstance()->GetTTY()->SetColor(TerminalColor::LightRed);
         printf("\nNK_Kernel Panic:\n%s: ", module);
 
-        TTY::SetColor(0x00AAAAAA);
-
+        VideoManager::GetInstance()->GetTTY()->SetColor(TerminalColor::LightGray);
         vprintf(fmt, args);
         va_end(args);
 

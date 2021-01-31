@@ -3,9 +3,9 @@
 
 #include <nk/singleton.h>
 
+#include <kernel/video/tty.h>
 #include <kernel/video/vesa.h>
 #include <kernel/handover.h>
-
 #include <kernel/memory/memdefs.h>
 #include <sys/types.h>
 
@@ -28,6 +28,8 @@ namespace Video
         size_t pixelStride;
 
         pid_t framebufferControllerProc = 0;
+
+        TTY *tty;
 
     public:
         void Initialize(Kernel::KernelHandover *handover);
@@ -53,6 +55,8 @@ namespace Video
         size_t GetFramebufferSize() { return fbSize; }
 
         paddress_t GetFramebufferPhysical() { return secondaryPhysical; }
+
+        TTY *GetTTY() { return tty; }
 
     private:
         void LoadInformation(Kernel::KernelHandover *handover);

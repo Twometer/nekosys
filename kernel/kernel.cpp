@@ -239,7 +239,7 @@ extern "C"
 		startupApp->Start();
 
 		// Kernel initialized, let the scheduler take over
-		TTY::SetColor(0x00AAAAAA);
+		VideoManager::GetInstance()->GetTTY()->SetColor(TerminalColor::LightGray);
 		printf("System ready.\n\n");
 
 		kdbg("Waiting for the first interrupt that exits nkmain\n");

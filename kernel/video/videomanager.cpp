@@ -5,6 +5,8 @@
 #include <kernel/memory/pagemanager.h>
 #include <kernel/video/videomanager.h>
 #include <kernel/video/kernelfont.h>
+#include <kernel/video/graphicstty.h>
+#include <kernel/video/texttty.h>
 
 using namespace Kernel;
 using namespace Memory;
@@ -21,6 +23,10 @@ namespace Video
     void VideoManager::Initialize(KernelHandover *handover)
     {
         LoadInformation(handover);
+
+        // Initialize the TTY
+        tty = new GraphicsTTY();
+        tty->Initialize(currentMode.Xres, currentMode.Yres);
 
         // Remap the framebuffer into paged memory
         pixelStride = (currentMode.bpp + 1) / 8;
