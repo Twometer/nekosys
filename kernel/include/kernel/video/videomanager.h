@@ -54,6 +54,8 @@ namespace Video
 
         size_t GetFramebufferSize() { return fbSize; }
 
+        vaddress_t GetFramebuffer() { return secondaryBuffer; }
+
         paddress_t GetFramebufferPhysical() { return secondaryPhysical; }
 
         TTY *GetTTY() { return tty; }

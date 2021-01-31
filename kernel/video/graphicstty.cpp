@@ -16,7 +16,7 @@ using namespace Video;
 
 void GraphicsTTY::Initialize(size_t width, size_t height)
 {
-    this->width = width / KFNT_CHAR_WIDTH;
+    this->width = width / KFNT_CHAR_WIDTH - 1;
     this->height = height / KFNT_LINE_HEIGHT;
     SetColor(TerminalColor::LightGray);
 }
@@ -92,7 +92,11 @@ void GraphicsTTY::PutChar(char c)
     if (c == '\n')
     {
         cursorX = 0;
-        cursorY++;
+        if (++cursorY >= height)
+        {
+            cursorY--;
+            Scroll();
+        }
         return;
     }
 
@@ -114,7 +118,7 @@ void GraphicsTTY::PutChar(char c)
         return;
     }
 
-    if (cursorX >= width - 1)
+    if (cursorX >= width)
     {
         PutChar('\n');
     }
@@ -141,8 +145,16 @@ void GraphicsTTY::Write(const char *string, size_t size)
 
 void GraphicsTTY::Clear()
 {
+    auto vm = VideoManager::GetInstance();
+    memset(vm->GetFramebufferPhysical(), 0, vm->GetFramebufferSize());
 }
 
 void GraphicsTTY::Scroll()
 {
+    auto vm = VideoManager::GetInstance();
+    auto mode = vm->GetCurrentMode();
+    auto lineStride = mode->pitch * KFNT_LINE_HEIGHT;
+    memcpy(vm->GetFramebuffer(), vm->GetFramebuffer() + lineStride, vm->GetFramebufferSize() - lineStride);
+    memset(vm->GetFramebuffer() + vm->GetFramebufferSize() - lineStride, 0, lineStride);
+    vm->FlushBuffer();
 }
