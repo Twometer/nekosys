@@ -45,6 +45,33 @@ namespace Memory
         enable_paging();
     }
 
+    pageframe_t PageManager::AllocContinuous(size_t pages)
+    {
+        for (uint32_t i = 0; i < num_pages; i++)
+        {
+
+            bool found = true;
+            for (uint32_t j = 0; j < pages; j++)
+            {
+                if (frame_map[i + j] == PAGE_USED)
+                {
+                    found = false;
+                    break;
+                }
+            }
+
+            if (!found)
+                continue;
+
+            for (uint32_t j = 0; j < pages; j++)
+            {
+                frame_map[i + j] = PAGE_USED;
+            }
+
+            return pageframes_base + i * PAGE_SIZE;
+        }
+    }
+
     pageframe_t PageManager::AllocPageframe()
     {
         // FIXME: This can probably be more efficient
@@ -59,6 +86,14 @@ namespace Memory
         }
         Kernel::Panic("pageframe_alloc", "Out of memory!");
         return nullptr;
+    }
+
+    void PageManager::MarkPageframesAsUsed(pageframe_t frame, size_t frames)
+    {
+        for (size_t i = 0; i < frames; i++)
+        {
+            MarkPageframeAsUsed(frame + i * PAGE_SIZE);
+        }
     }
 
     void PageManager::MarkPageframeAsUsed(pageframe_t frame)

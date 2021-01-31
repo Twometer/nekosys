@@ -29,7 +29,7 @@ namespace Video
             // 0x00 means forced VGA Text mode
             tty = new TextTTY();
             tty->Initialize(80, 25);
-            framebufferControllerProc = 0xFFFFFFFF; // no one ones the FB
+            framebufferControllerProc = 0xFFFFFFFF; // no one owns the FB
             return;
         }
 
@@ -39,25 +39,23 @@ namespace Video
         // Remap the framebuffer into paged memory
         pixelStride = (currentMode.bpp + 1) / 8;
         fbSize = currentMode.pitch * currentMode.Yres * pixelStride;
+        auto numPages = fbSize / PAGE_SIZE;
+
+        PageManager::GetInstance()->MarkPageframesAsUsed(framebuffer, numPages);
         PageDirectory::Current()->MapRange(framebuffer, (vaddress_t)VIRTUAL_FRAMEBUFFER_LOC, fbSize, PAGE_BIT_READ_WRITE);
 
         // Create double buffer
-        for (size_t i = 0; i < fbSize; i += 4096)
-        {
-            // FIXME: On real hardware, this prevents showing anything on screen ...?
-            //        (Works with single-buffering)
-            auto physical = PageManager::GetInstance()->AllocPageframe();
-            if (secondaryPhysical == nullptr)
-                secondaryPhysical = physical;
-            PageDirectory::Current()->MapPage(physical, (vaddress_t)SECONDARY_FRAMEBUFFER_LOC + i, PAGE_BIT_READ_WRITE);
-        }
+        secondaryPhysical = PageManager::GetInstance()->AllocContinuous(numPages);
+        PageDirectory::Current()->MapRange(secondaryPhysical, (vaddress_t)SECONDARY_FRAMEBUFFER_LOC, fbSize, PAGE_BIT_READ_WRITE);
+        kdbg("Mapped secondary buffer (%d pages) from %x to %x\n", numPages, secondaryPhysical, SECONDARY_FRAMEBUFFER_LOC);
+        //PageDirectory::Current()->Load();
 
         // Set positions to virtual
         framebuffer = (uint8_t *)VIRTUAL_FRAMEBUFFER_LOC;
         secondaryBuffer = (uint8_t *)SECONDARY_FRAMEBUFFER_LOC;
 
         // Clear secondary buffer
-        memset(secondaryBuffer, 0, fbSize);
+        memset(secondaryBuffer, 0x00, fbSize);
 
         FlushBuffer();
     }

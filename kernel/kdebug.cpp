@@ -111,6 +111,13 @@ void kdbg(const char *format, ...)
         {
             format++;
             long val = va_arg(parameters, long);
+            bool negative = false;
+            if (val < 0)
+            {
+                val *= -1;
+                negative = true;
+            }
+                
 
             size_t buf_idx = 32;
             char buf[32];
@@ -120,6 +127,8 @@ void kdbg(const char *format, ...)
                 val /= 10;
                 written++;
             } while (val);
+            if (negative)
+                buf[--buf_idx] = '-';
             print(buf + buf_idx, 32 - buf_idx);
         }
         else if (*format == 'x')
