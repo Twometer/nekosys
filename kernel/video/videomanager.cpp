@@ -47,8 +47,6 @@ namespace Video
         // Create double buffer
         secondaryPhysical = PageManager::GetInstance()->AllocContinuous(numPages);
         PageDirectory::Current()->MapRange(secondaryPhysical, (vaddress_t)SECONDARY_FRAMEBUFFER_LOC, fbSize, PAGE_BIT_READ_WRITE);
-        kdbg("Mapped secondary buffer (%d pages) from %x to %x\n", numPages, secondaryPhysical, SECONDARY_FRAMEBUFFER_LOC);
-        //PageDirectory::Current()->Load();
 
         // Set positions to virtual
         framebuffer = (uint8_t *)VIRTUAL_FRAMEBUFFER_LOC;

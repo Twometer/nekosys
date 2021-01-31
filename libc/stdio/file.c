@@ -10,7 +10,8 @@ FILE *fopen(const char *path, const char *mode)
     param.mode = mode;
     param.fd = &file->fd;
     param.fsize = &file->fsize;
-    syscall(SYS_FOPEN, &param);
+    if (syscall(SYS_FOPEN, &param))
+        return NULL;
     return file;
 }
 

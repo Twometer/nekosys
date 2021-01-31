@@ -150,7 +150,6 @@ uint32_t sys$$fb_acquire(void *param)
         return 1;
     }
     vm->AcquireFramebuffer(Process::Current()->GetId());
-    kdbg("mapping %x to %x\n", vm->GetFramebufferPhysical(), SECONDARY_FRAMEBUFFER_LOC );
     PageDirectory::Current()->MapRange(vm->GetFramebufferPhysical(), (vaddress_t)SECONDARY_FRAMEBUFFER_LOC, vm->GetFramebufferSize(), PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
     buf->buffer = (void *)SECONDARY_FRAMEBUFFER_LOC;
     buf->width = vm->GetCurrentMode()->Xres;
