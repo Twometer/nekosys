@@ -26,7 +26,7 @@ boot:
     mov ch, 0x0 ; cyl
     mov cl, 0x2 ; sector
     mov dh, 0x0 ; head
-    mov bx, 0x7E00 ; put it at 0x7E00
+    mov bx, 0x8000 ; put it at 0x8000
     mov dl, [disk] ;diskno
     int 0x13
 
@@ -47,7 +47,7 @@ boot:
     push iogood
     call print
 
-    jmp 0x7E00 ; and transfer execution to the big chungus fat16 loader
+    jmp 0x8000 ; and transfer execution to the big chungus fat16 loader
 
     ; Shouldn't get here...
     cli ; clear interrupts

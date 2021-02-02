@@ -4,11 +4,12 @@ This file describes how the memory is generally laid out when nekosys is running
 ### The first megabyte
 ```
 [0x0500-0x7BFF]: Kernel handover data
-[0x7C00 + 200h]: Boot sector / Stage 1 Bootloader
-[0x7E00 + 400h]: Stage 2 bootloader
-[0x8200 + 400h]: Placeholder for some FAT sectors
-[0x0900:0x1000]: Real mode stack
-[0xA000 + ...h]: Stores the kernel. Maximum length is 0x75FFF (471K, up to the end of low memory)
+[0x4000-0x4200]: Bootloader sector cache
+[0x5000-0x7000]: Bootloader FAT-table cache
+[0x7C00-0x7E00]: Stage 1 bootloader
+[0x8000-0x8400]: Stage 2 bootloader
+[0x0900:0x1000]: Real mode stack top
+[0xA000-......]: Stores the kernel. Maximum length is 0x75FFF (471K, up to the end of low memory)
 ```
 > Note that the kernel is saved as a flat binary instead of an ELF file, so that we
 > save memory (no header) in the first MB, as well as make the bootloader smaller

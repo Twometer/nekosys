@@ -1,311 +1,325 @@
-bits 16     ; still 16 bit
-org 0x7E00  ; loader offset
+bits 16     ; 16-bit 
+org 0x8000  ; Stage 2 Loader offset
 
-boot_sector: equ 0x7C00
-fat_offset: equ 0x8200
-table_offset: equ 0x8400
-kernel_offset: equ 0xA000
+;;;;;;;;;;;;;;;;;;;
+;; Configuration ;;
+;;;;;;;;;;;;;;;;;;;
+%define debug_log     1
 
-%define DEBUG_LOGS 0
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Memory location definitions ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+%define boot_sector   0x7C00
+%define sector_cache  0x4000
+%define fat_table     0x5000
+%define kernel_offset 0xA000
 
+;;;;;;;;;;;;;;;;;
+;; Entry point ;;
+;;;;;;;;;;;;;;;;;
 init:
-    ; get disk parameters
-    mov [disk], dl ; save disk no
+    mov [disk_num], dl  ; Save disk number
 
-    mov ah, 8
-    int 0x13
-    mov [num_heads], dh
-    add dh, 1
-    and cl, 0x3f
-    mov [sectors_per_track], cl
-
-    ; loader main
-    call clearscreen
-
-    push log_header
+    call clear_screen   ; Clear VGA terminal
+    push log_welcome    ; Show welcome message
     call print
 
-    push log_welcome
-    call print
+    mov ax, [boot_sector + 0x1BE + 0x08]    ; Load first partition LBA from MBR
+    mov [partition_lba], ax
 
-    push log_readfat
-    call print
-
-    ; Read the FAT system
-
-    ; 7C00h is where the boot sector is, 1BEh is where the first partition is
-    ; and 0x08 is the offset of the LBA where it starts, deref that and we have the
-    ; sector of the first partition. load that into fat_offset
-    mov ax, [boot_sector + 0x1BE + 0x08]
-    mov [first_partition_offset], ax
-
-    push word [first_partition_offset]
-    push fat_offset
+    push word [partition_lba]               ; Load FAT header from disk
+    push sector_cache
     call read_sector
 
-    ; get number of reserved sectors
-    mov ax, [fat_offset + 0x0e]
+    push log_readfat                        ; Show fat parsing log
+    call print
+
+    mov ax, [sector_cache + 0x0E]           ; Load number of reserved sectors
     mov [reserved_sectors], ax
 
-    ; compute location of data region sector
-    mov ax, [fat_offset + 0x16] ; blocks per fat: 0x16
-    mov bx, [fat_offset + 0x10] ; num of fats: 0x10
-    xor dx, dx ; clear dx register
-    mul bx ; ax *= bx
-    add ax, [fat_offset + 0x0e] ; num_reserved blocks: 0x0e
-    add ax, [first_partition_offset]; add partition offse
-    mov cx, ax ; the root dir begin is now in CX
-    mov [root_dir_beg], cx
+    xor ax, ax                              ; Load number of sectors per cluster
+    mov al, [sector_cache + 0x0D]
+    mov [sectors_per_cluster], ax
 
-    ; compute end of root directory sector
-    mov ax, [fat_offset + 0x11] ; number of root directory entries
-    mov bx, 32 ; 32 bytes per dir entry
-    xor dx, dx; clear dx for mul
-    mul bx ; ax = 32 * num_root_dir_entries
-    mov bx, 512 ; div / 512 (sector size)
-    div bx
-    add ax, cx ; ax += rootdir_start_sector
-    mov [root_dir_end], ax ; store that for later
+    ; Compute start of root directory
+    mov ax, [sector_cache + 0x16]           ; AX = blocksPerFat
+    mov bx, [sector_cache + 0x10]           ; BX = numFats
+    mul bx
+    add ax, [sector_cache + 0x0E]           ; AX += numReservedBlocks
+    add ax, [partition_lba]                 ; AX += partitionLba
+    mov [rootdir_start_lba], ax             ; rootdirStartLBA = AX
 
-    ; compute cluster size
-    mov ax, 0
-    mov al, [fat_offset + 0x0d] ; bl = blocks_per_alloc_unit
-    mov [cluster_size], ax
+    ; Compute end of root directory
+    mov ax, [sector_cache + 0x11]           ; numRootDirEntries
+    mov bx, 32                              ; 32 bytes per dir entry
+    mul bx                                  ; ax *= 32
+    mov bx, 512                             ; 512 bytes per sector
+    div bx                                  ; ax /= 512
+    add ax, [rootdir_start_lba]             ; ax += rootdirStartLba
+    mov [rootdir_end_lba], ax               ; rootdirEndLba = ax
 
-    push cx ; root dir begin sector
-    push fat_offset ; load that again to fat_offset
-    call read_sector
+    ; Load FAT table
+    xor ax, ax                              ; Configure destination for read_sectors
+    mov es, ax                              ; Dest segment
+    mov bx, fat_table                       ; Dest address
 
-    ; read table
-    mov ax, [reserved_sectors]
-    add ax, [first_partition_offset]
-
+    mov ax, [partition_lba]                 ; Calculate FAT table LBA in AX
+    add ax, [reserved_sectors]
     push ax
-    push table_offset
+    push word 16                            ; Read 8K (16 sectors)
+    call read_sectors
+
+    ; Scan root directory for kernel file
+    push word [rootdir_start_lba]
+    push word sector_cache
     call read_sector
 
-    ; read the root directory here:
-    mov bx, fat_offset ; start reading at the beginning
+    mov bx, sector_cache     ; Directory parser pointer
+    next_dirent:
 
-    read_dirent:
-    mov al, [bx+11] ; al now contains the flags
+    cmp byte [bx], 0xE5      ; If the first byte is 0xE5, skip it because it's unused
+    je dirent_continue
 
-    mov ah, al
-    and ah, 0x2 ; and with hidden flag mask
-    cmp ah, 0x00 ; check if the result is != zero (which means it is set)
-    jne next_entry ; if hidden flag is set, dont show entry!
-
-    cmp byte [bx], 0xE5
-    je next_entry ; if first byte of dir entry is 0xe5, that entry is unused
-
-    push bx
+    mov ah, [bx + 11]        ; Load directory flags to AH
+    and ah, 0x02             ; And with 0x02 to check if it's hidden
+    cmp ah, 0  
+    jne dirent_continue      ; If it's hidden, skip it
+    
+    push bx                  ; Did we find the kernel image?
     push kernel_file
     call streq
-    cmp ax, 0 ; if not equal, then AX=0 and we have not found our kernel file, goto next entry
-    jz next_entry
+    cmp ax, 1                ; streq() retruns its result in AX
+    jne dirent_continue
 
-    push bx        ; print the name of the found kernel directory entry
+    push bx                  ; We found the kernel :3
+    call print
+    push newline
     call print
 
-    push log_found ; and a log statement to complete the line
-    call print
-
-    ; jump to kernel found routine
-    mov ax, [bx+26] ; store the cluster number of the file in AX
+    mov ax, [bx + 26]        ; Store the cluster of the file
     jmp kernel_found
 
-    next_entry:
-    add bx, 32 ; move forward by 32 bytes (size of dirent)
+    dirent_continue:
+    add bx, 32               ; Dir entries are 32 bytes in size, go to next one.
     cmp byte [bx], 0
-    jne read_dirent ; if the first byte of dir entry is null, then reading is done
+    jne next_dirent
 
-    ; if we exit this loop, the kernel was not found :c
-    push err_nokrnl
-    call print
-    jmp halt_system
+    ; If we reach here, the kernel was not found.
+    jmp on_not_found
 
-    ; but if we reach here, the kernel was found :3
+    ; But if we get here, we found it.
     kernel_found:
+    push log_success      ; Declare success! :P
+    call print
 
-%if DEBUG_LOGS
-    ; log some debug data about the disk
-    push word [num_heads]
-    call printhex
+    mov bx, kernel_offset ; Set the destination pointer for read_sectors
 
-    push word [sectors_per_track]
-    call printhex
-
-    push word [first_partition_offset]
-    call printhex
-
-    push word [root_dir_beg]
-    call printhex
-
-    push word [root_dir_end]
-    call printhex
-
-    push word [cluster_size]
-    call printhex
-
-    push word ax  ; Cluster number where the kernel starts
+    load_next_cluster:
+%if debug_log
+    push ax               ; Print current cluster
     call printhex
 %endif
 
-    ; We are now loading the kernel...
-    push log_ldkernel
-    call print
-
-    ; Memory dst value
-    mov bx, kernel_offset ; offset
-
-    next_cluster:
-    ; Build index into fat table:
-    ; DI = table_offset + (2 * cluster index)
-    mov di, ax ; idx = cluster_idx
-    add di, di  ; 2 bytes per FAT entry, so multiply by 2
-    add di, table_offset ; offset
-
-    sub ax, 2 ; the cluster is 2-based, so fix that for the rest
-    push ax ; ax stores our cluster
-    call cluster2sector ; now ax stores our sector - simple, right? :P
-
-    ; read_sectors = 0
-    mov cx, 0
-
-    next_sector:
-%if DEBUG_LOGS
-    push word ax  ; print the sector we are reading for debugging
-    call printhex
-    push word bx  ; print the memory target address for debugging
-    call printhex
-%endif
-
-    push ax             ; load that sector to kernel_offset
-    push bx
-    call read_sector
-
-    ; check if we have a next SECTOR in that cluster
-    add bx, 512 ; memory_offset += 512
-    cmp bx, 0   ; did we reach the end of a segment?
-    jne no_segment_end
-
-    ; goto next segment
-    push log_newseg
-    call print
+    call cluster2Sector   ; Converts Cluster(AX) -> Sector(CX)
     
+%if debug_log
+    push bx               ; Print current cluster's base sector
+    call printhex
+%endif
+
+    push cx               ; The sector
+    push word [sectors_per_cluster] ; Number of sectors
+    call read_sectors     ; Loads to ES:BX and increments as needed
+
+    call next_cluster     ; Get next cluster in the chain, operates on AX
+
+    cmp ax, 0xFFFF        ; Check if we reached the end of the chain
+    jne load_next_cluster
+
+    jmp kernel_offset     ; Transfer control to the kernel
+
+    jmp halt_system
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; void next_cluster()               ;;
+;;                                   ;;
+;; Takes a cluster in AX and returns ;;
+;; the next one in AX                ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+next_cluster:
+    push bx
+
+    mov bx, ax
+    add bx, bx
+    add bx, fat_table
+    mov ax, [bx]
+
+    pop bx
+    ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; void cluster2Sector()           ;;
+;;                                 ;;
+;; Takes cluster in AX and returns ;;
+;; sector in CX                    ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+cluster2Sector:
     push ax
-    mov ax, es
-    add ax, 0x1000
-    mov es, ax
+    push bx
+    
+    sub ax, 2                       ; AX -= 2  (FAT16 starts assigning clusters after #2)
+    mov bx, [sectors_per_cluster]   ; AX *= clusterSize
+    mul bx
+
+    add ax, [rootdir_end_lba]       ; AX += endOfRootdir
+    mov cx, ax                      ; Return in CX
+
+    pop bx
     pop ax
+    ret
 
-    no_segment_end:
-    inc ax      ; sector ++
-    inc cx      ; read_sectors ++
-    cmp cx, [cluster_size] ; if (read_sectors != cluster_size)
-    jne next_sector        ;     goto next_sector
-
-    ; check if we have a next CLUSTER
-    mov ax, [di] ; mov FAT entry (next cluster) into ax
-    cmp ax, 0xFFFF ; check 0xffff
-    jne next_cluster ; goto next cluster
-
-    ; We are done
-    push log_done
-    call print
-
-    ; Transfer control to the kernel
-    jmp kernel_offset
-
-    ; If we get here, halt the system
-    ; But we should not get here
-    jmp halt_system
-
-;; DISK PARAMETERS ;;
-disk: db 0x0
-num_heads: dw 0x0000
-sectors_per_track: dw 0x0000
-first_partition_offset: dw 0x0000
-root_dir_end: dw 0x0000
-root_dir_beg: dw 0x0000
-cluster_size: dw 0x0000
-reserved_sectors: dw 0x0000
-
-;; GENERIC JMP TARGETS ;;
-on_disk_error:
-    push err_diskio
-    call print
-    jmp halt_system
-
-halt_system:
-    cli
-    hlt
-    jmp halt_system
-
-;; SUBROUTINES ;;
-
-; word cluster2sector(word cluster)
-cluster2sector:
-    push bp ; stack frame
-    mov bp, sp
-
-    push bx ; save old bx
-
-    mov ax, [bp+4] ; load the cluster argument
-    mov bx, [cluster_size]
-    xor dx, dx ; clear dx
-    mul bx; ax = cluster_idx * cluster_size
-    add ax, [root_dir_end]; ax += root_dir_end
-
-    pop bx ; restore old bx
-
-    mov sp, bp ; restore stack frame
-    pop bp
-    ret 2
-
-; bool streq(word *aPtr, word *bPtr)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; bool streq(word *a, word *b) ;;
+;;                              ;;
+;; Returns 1 or 0 in AX         ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 streq:
-    push bp ; stack frame
+    push bp
     mov bp, sp
-
-    push bx ; save bx and di register on stack
+    push si
     push di
 
-    mov bx, [bp+6] ; address ctr for left side
-    mov di, [bp+4] ; address ctr for right side
+    mov si, [bp + 6] ; Load address for left side
+    mov di, [bp + 4] ; Load address for right side
 
-    compare_char:
-    mov al, [bx] ; load left char to al
-    mov ah, [di] ; load right char to ah
+    streq_next_char:
+    mov al, [si] ; Load left to AL
+    mov ah, [di] ; Load right to AH
 
-    cmp al, 0 ; if we reached a NUL-byte, we are done and equal
-    je done_eq
-    cmp ah, 0
-    je done_eq
+    cmp ax, 0    ; If both are NULs, we're done and equal
+    jz streq_done_eq
 
-    cmp ah, al ; compare the char
-    jne done_noteq ; if not equal, we exit
+    cmp ah, al   ; Check the chars for equality
+    jne streq_done_neq
 
-    inc bx ; if equal, compare next char
+    inc si       ; If they're equal, goto next char
     inc di
-    jmp compare_char
+    jmp streq_next_char 
 
-    done_noteq:
-    mov ax, 0
-    jmp streq_end
+    streq_done_neq:
+        mov ax, 0
+        jmp streq_exit
 
-    done_eq:
-    mov ax, 1
+    streq_done_eq:
+        mov ax, 1
 
-    streq_end:
-    pop di ; return bx and di back from the stack
-    pop bx
-
-    mov sp, bp ; restore stack frame
+    streq_exit:
+    pop di
+    pop si
+    mov sp, bp
     pop bp
     ret 4
 
-; LBA addressing mode packet for BIOS call 0x13
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; void print(word *data) ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+print:
+    push bp
+    mov bp, sp
+    pusha
+
+    mov si, [bp + 4] ; String index
+    mov ah, 0x0e     ; TTY mode
+
+    print_nextchar:
+    mov al, [si]     ; Load char to write
+    int 0x10
+    inc si
+
+    cmp byte [si], 0 ; Check end of string
+    jnz print_nextchar
+
+    popa
+    mov sp, bp
+    pop bp
+    ret 2 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; void printchr(word char) ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+printchr:
+    push bp
+    mov bp, sp
+    pusha
+
+    mov ah, 0x0e            ; TTY mode
+    mov byte al, [bp + 4]   ; Character to write
+    int 0x10
+
+    popa
+    mov sp, bp
+    pop bp
+    ret 2 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; void printhex(word num) ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+printhex:
+    push bp
+    mov bp, sp
+    pusha
+
+    mov ax, [bp + 4] ; Load number
+
+    ; 1st nibble
+    mov bx, 0
+    mov bl, ah
+    and bl, 0xf0
+    mov cl, 4
+    shr bl, cl
+    add bx, hextable
+    push word [bx]
+    call printchr
+
+    ; 2nd nibble
+    mov bx, 0
+    mov bl, ah
+    and bl, 0x0f
+    add bx, hextable
+    push word [bx]
+    call printchr
+
+    ; 3rd nibble
+    mov bx, 0
+    mov bl, al
+    and bl, 0xf0
+    mov cl, 4
+    shr bl, cl
+    add bx, hextable
+    push word [bx]
+    call printchr
+
+    ; 4th nibble
+    mov bx, 0
+    mov bl, al
+    and bl, 0x0f
+    add bx, hextable
+    push word [bx]
+    call printchr
+
+    ; EOL
+    push newline
+    call print
+
+    popa
+    mov sp, bp
+    pop bp
+    ret 2 
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; Disk access packet ;;
+;; for LBA BIOS calls ;;
+;;;;;;;;;;;;;;;;;;;;;;;;
 disk_packet:
                db 0x10 ; size of packet (16 bytes)
                db 0x00 ; always zero
@@ -314,174 +328,148 @@ dst_addr:      dw 0x00 ; memory dst address
 dst_seg:       dw 0x00 ; memory dst segment
 src_lba:       dd 0x00 ; lba location
                dd 0x00
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; void read_sectors(word lba, word num)             ;;
+;;                                                   ;;
+;; Will write the sectors to ES:BX and increase ES   ;;
+;; and BX as neccessary                              ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+read_sectors:
+    push bp
+    mov bp, sp
+    push ax
+    push cx
+    push dx
+
+    mov dx, [bp + 4]    ; Remaining sectors to read
+    mov cx, [bp + 6]    ; Source LBA
     
-; void read_sector(word lba, word *dest)
+    rds_next_sector:
+
+    push cx
+    push bx
+    call read_sector
+
+    add bx, 512         ; destAddress += 512
+    cmp bx, 0           ; Did we cross a segment border?
+    jne rds_continue    ; If not, then just continue
+
+    mov ax, es          ; If we did, increase the segment by 0x1000
+    add ax, 0x1000
+    mov es, ax
+
+    rds_continue:
+    inc cx              ; ++sourceLba
+    dec dx              ; --remainingSectors
+    cmp dx, 0
+    jnz rds_next_sector ; Check if we have remaining sectors
+
+    pop dx
+    pop cx
+    pop ax
+    mov sp, bp
+    pop bp
+    ret 6
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; void read_sector(word lba, word *dest) ;;
+;;                                        ;;
+;; Will write the sector to ES:dest       ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 read_sector:
     push bp
     mov bp, sp
     pusha
 
-    ; configure disk packet
-    mov word [num_blocks], 1
-    mov [dst_seg], es
+    mov word [num_blocks], 1  ; Configure disk packet:
+    mov [dst_seg], es         ; Load dest segment
     
-    mov ax, [bp + 4]
+    mov ax, [bp + 4]          ; Dest address
     mov [dst_addr], ax
 
-    mov ax, [bp + 6]
+    mov ax, [bp + 6]          ; Source LBA
     mov [src_lba], ax
     
-    ; send disk packet
-    mov si, disk_packet
+    mov si, disk_packet       ; Send disk packet
     mov ah, 0x42
-    mov dl, [disk]
+    mov dl, [disk_num]
     int 0x13
     
-    ; catch errors
-    jc on_disk_error
+    jc on_disk_error          ; Catch errors
 
     popa
     mov sp, bp
     pop bp
     ret 4
 
-; void printhex(word num)
-printhex:
-    push bp     ; save stack frame
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; void clearScreen() ;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+clear_screen:
+    push bp
     mov bp, sp
+    pusha
 
-    pusha ;save register states to stack
+    mov ah, 0x07   ; scroll down
+    mov al, 0x00   ; full window
+    mov bh, 0x07   ; white on black
+    mov cx, 0x00   ; origin is 0|0
+    mov dh, 0x18   ; 18h = 24 rows
+    mov dl, 0x4f   ; 4fh = 79 cols
+    int 0x10       ; video int
 
-    mov ax, [bp+4] ; load the number
+    mov ah, 0x02   ; cursor pos
+    mov dx, 0x0000 ; set to 0|0
+    mov bh, 0x00   ; page 0
+    int 0x10       ; video int
 
-    mov bx, 0
-    mov bl, ah
-    and bl, 0xf0
-    mov cl, 4
-    shr bl, cl
-    add bx, hextable
-    push word [bx]
-    call printchar
+    popa
+    mov sp, bp
+    pop bp
+    ret
 
-    mov bx, 0
-    mov bl, ah
-    and bl, 0x0f
-    add bx, hextable
-    push word [bx]
-    call printchar
-
-    mov bx, 0
-    mov bl, al
-    and bl, 0xf0
-    mov cl, 4
-    shr bl, cl
-    add bx, hextable
-    push word [bx]
-    call printchar
-
-    mov bx, 0
-    mov bl, al
-    and bl, 0x0f
-    add bx, hextable
-    push word [bx]
-    call printchar
-
-    push newline
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Error condition targets ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+on_not_found:
+    push err_not_found
     call print
+    jmp halt_system
 
-    popa ;load register states back from stack
+on_disk_error:
+    push err_disk_io
+    call print
+    jmp halt_system
 
-    mov sp, bp ;return stack frame
-    pop bp
+halt_system:
+    cli
+    hlt
+    jmp halt_system
 
-    ret 2 ; clean stack and return
+;;;;;;;;;;;;;;;;;
+;; Disk params ;;
+;;;;;;;;;;;;;;;;;
+disk_num:            db 0x00
+partition_lba:       dw 0x00
+rootdir_start_lba:   dw 0x00
+rootdir_end_lba:     dw 0x00
+reserved_sectors:    dw 0x00
+sectors_per_cluster: dw 0x00
 
-; void printchar(word char)
-printchar:
-    push bp     ; save stack frame
-    mov bp, sp
-
-    pusha
-    mov ah, 0x0e
-    mov byte al, [bp+4]
-    int 0x10
-    popa
-
-    mov sp, bp ;return stack frame
-    pop bp
-
-    ret 2 ; clean stack and return
-
-; void print(word *message)
-print:
-    push bp     ; save stack frame
-    mov bp, sp
-
-    pusha ;save register states to stack
-
-    mov si, [bp+4] ; get argument from stack
-    mov ah, 0x0e ; set mode to tty
-
-    nextchar:
-    mov al, [si] ; load char
-    int 0x10 ; call video int
-    inc si ; increment si
-
-    cmp byte [si], 0 ; check if we reached the end
-    jne nextchar; if not, write next char
-
-    popa ;load register states back from stack
-
-    mov sp, bp ;return stack frame
-    pop bp
-
-    ret 2 ; clean stack and return
-
-; void clearScreen()
-clearscreen:
-    push bp     ; save stack frame
-    mov bp, sp
-
-    pusha
-
-    ; clear screen
-    mov ah, 0x07 ; scroll down
-    mov al, 0x00 ; full window
-    mov bh, 0x07 ; white on black
-    mov cx, 0x00 ; origin is 0|0
-    mov dh, 0x18 ; 18h = 24 rows
-    mov dl, 0x4f ; 4fh = 79 cols
-    int 0x10 ; video int
-
-    ; reset cursor
-    mov ah, 0x02 ;cursor pos
-    mov dx, 0x0000 ;set to 0|0
-    mov bh, 0x00 ; page 0
-    int 0x10 ;video int
-
-    popa
-
-    mov sp, bp ;return stack frame
-    pop bp
-
-    ret ; stack is clean, no args, so return
-
-; Boot loader log messages
-log_header: db "nekosys Bootloader", 0xa, 0xd, 0
-log_welcome: db "(c) 2020 Twometer Applications", 0xa, 0xd, 0
-log_readfat: db "Reading file system...", 0xa, 0xd, 0
-log_found: db " found", 0xa, 0xd, 0
-log_newseg: db "Next segment", 0xa, 0xd, 0
-log_ldkernel: db "Loading kernel...", 0x0a, 0x0d, 0
-log_done: db "Entering kernel... bye :3", 0x0a, 0x0d, 0
-
-; Boot loader error messages
-err_diskio: db "Disk IO Error!", 0xa, 0xd, 0
-err_nokrnl: db "Kernel file not found!", 0xa, 0xd, 0
-
-; Other strings
-newline: db 0x0a, 0x0d, 0
+;;;;;;;;;;;;;;;;;;;;;;
+;; String constants ;;
+;;;;;;;;;;;;;;;;;;;;;;
 kernel_file: db "koneko.bin", 0
+newline: db 0x0a, 0x0d, 0
 hextable: db "0123456789ABCDEF"
 
-times 1024 - ($-$$) db 0 ; pad to 2 sectors
+;;;;;;;;;;;;;;;;;;
+;; Log messages ;;
+;;;;;;;;;;;;;;;;;;
+log_welcome: db "nekosys Bootloader", 0xa, 0xd, 0
+log_readfat: db "Reading FAT", 0xa, 0xd, 0
+log_success: db "Kernel found", 0xa, 0xd, 0
+
+err_disk_io: db "I/O Error", 0xa, 0xd, 0
+err_not_found: db "Kernel not found", 0xa, 0xd, 0
