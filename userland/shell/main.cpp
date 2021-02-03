@@ -8,6 +8,24 @@
 
 #include "CommandParser.h"
 
+void start_process(const Command &cmd)
+{
+	pid_t pid = 0;
+
+	const char **args = new const char *[cmd.params.Size()];
+	for (size_t i = 0; i < cmd.params.Size(); i++)
+		args[i] = cmd.params[i].CStr();
+
+	if (spawnp(&pid, cmd.file.CStr(), cmd.params.Size(), args))
+	{
+		printf("nsh: error: Could not start\n");
+	}
+	else
+	{
+		waitp(pid);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	char cwd[PATH_MAX];
@@ -24,7 +42,7 @@ int main(int argc, char **argv)
 		nk::String command(buf); // Parse
 		auto parsedCommand = CommandParser::parse(command);
 
-		if (command == "exit")
+		if (command == "exit") // Handle
 		{
 			break;
 		}
@@ -36,13 +54,10 @@ int main(int argc, char **argv)
 			}
 			continue;
 		}
-
-		pid_t pid = 0;
-		if (spawnp(&pid, parsedCommand.file.CStr(), nullptr, nullptr)) // Execute
+		else
 		{
-			printf("nsh: error: File not found\n");
+			start_process(parsedCommand);
 		}
-		waitp(pid);
 	}
 
 	return 0;

@@ -115,7 +115,10 @@ uint32_t sys$$spawnp(void *param)
 {
     auto params = (sys$$spawnp_param *)param;
     auto resolved = resolve_file(params->path);
-    auto proc = ElfLoader::CreateProcess(resolved.CStr(), 0, params->argv);
+#if SYS_DEBUG
+    kdbg("sys: spawnp: argc=%d argv=%x\n", params->argc, params->argv);
+#endif
+    auto proc = ElfLoader::CreateProcess(resolved.CStr(), params->argc, params->argv);
     if (proc == nullptr)
         return 1;
     *params->pid = proc->GetId();

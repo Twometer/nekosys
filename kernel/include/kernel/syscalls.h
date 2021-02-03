@@ -62,8 +62,8 @@ extern "C"
     {
         pid_t *pid;
         const char *path;
+        int argc;
         char **argv;
-        char **env;
     } sys$$spawnp_param;
 
     typedef struct

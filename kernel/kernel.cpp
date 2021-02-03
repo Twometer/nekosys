@@ -223,10 +223,6 @@ extern "C"
 		delete[] appBuf;
 
 		kdbg("Free kernel heap: %dKB/1024KB\n", get_free_heap() / 1024);
-		{
-			nk::Path test ("/a/b/c/d/dont/leak/memory/on/me");
-		}
-		kdbg("Free kernel heap: %dKB/1024KB\n", get_free_heap() / 1024);
 
 		// Tasking
 		kdbg("Initializing task system\n");

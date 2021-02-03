@@ -10,6 +10,7 @@
 #define PATH_MAX 1024
 
 #include <sys/types.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -25,7 +26,7 @@ extern "C"
         size_t pixelStride;
     } FRAMEBUF;
 
-    int spawnp(pid_t *pid, const char *path, char *const argv[], char *const env[]);
+    int spawnp(pid_t *pid, const char *path, int argc, const char **argv);
     int waitp(pid_t pid);
 
     int readln(char *dst, size_t maxSize);

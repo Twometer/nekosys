@@ -1,13 +1,13 @@
 #include <sys/syscall.h>
 #include <nekosys.h>
 
-int spawnp(pid_t *pid, const char *path, char *const argv[], char *const env[])
+int spawnp(pid_t *pid, const char *path, int argc, const char **argv)
 {
     sys$$spawnp_param param;
     param.pid = pid;
     param.path = path;
+    param.argc = argc;
     param.argv = (char **)argv;
-    param.env = (char **)env;
     return syscall(SYS_SPAWNP, &param);
 }
 

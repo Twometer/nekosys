@@ -4,7 +4,7 @@ org 0x8000  ; Stage 2 Loader offset
 ;;;;;;;;;;;;;;;;;;;
 ;; Configuration ;;
 ;;;;;;;;;;;;;;;;;;;
-%define debug_log     1
+%define debug_log     0
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Memory location definitions ;;
