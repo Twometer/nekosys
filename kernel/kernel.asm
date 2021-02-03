@@ -37,11 +37,13 @@ boot:
 ; INIT HANDOVER STRUCT
     mov dword [krnlh_mmap_state], 0
     mov dword [krnlh_mmap_length], 0
-    mov dword [krnlh_mmap_ptr], mmap_content_base
+    
     mov dword [krnlh_vesa_state], 0
     mov dword [krnlh_vesa_length], 0
+    
     mov dword [krnlh_vesa_info_ptr], vesa_info_block
     mov dword [krnlh_vesa_mode_ptr], vesa_mode_array
+    mov dword [krnlh_mmap_ptr], mmap_content_base
 
 ; MMAP LOADER
     ; Set ES:DI target location for memory map
@@ -141,7 +143,6 @@ boot:
 
         mov ax, [si + 0x14] ; Check current X resolution
         cmp ax, requested_x_resolution
-        mov [krnlh_vesa_state], ax
         jne vesa_loop_continue
 
         mov ax, [si + 0x16] ; Check current Y resolution

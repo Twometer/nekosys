@@ -72,7 +72,6 @@ extern "C"
 
 		// Banner
 		kdbg("Starting koneko kernel " NEKO_VERSION "...\n");
-
 		KernelHandover *handover = (KernelHandover *)KERNEL_HANDOVER_STRUCT_LOC;
 
 		// Memory
