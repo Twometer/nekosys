@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 			}
 			continue;
 		}
-		else
+		else if (command.Length() > 0)
 		{
 			start_process(parsedCommand);
 		}
