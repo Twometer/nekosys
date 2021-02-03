@@ -122,6 +122,7 @@ uint32_t sys$$spawnp(void *param)
     if (proc == nullptr)
         return 1;
     *params->pid = proc->GetId();
+    proc->SetCwd(Process::Current()->GetCwd());
     proc->Start();
     return 0;
 }
