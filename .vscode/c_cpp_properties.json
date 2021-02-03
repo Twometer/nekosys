@@ -1,0 +1,18 @@
+{
+    "configurations": [
+        {
+            "name": "nekosys",
+            "intelliSenseMode": "linux-gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++14",
+            "includePath": [
+                "${workspaceFolder}/kernel/include",
+                "${workspaceFolder}/libc/include",
+                "${workspaceFolder}/libelf/include",
+                "${workspaceFolder}/libneko"
+            ]
+        }
+    ],
+    "version": 4
+}
