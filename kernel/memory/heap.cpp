@@ -117,7 +117,7 @@ extern "C"
         int alloc_result = find_free_allocation_units(num_alloc_units);
         if (alloc_result < 0)
         {
-            Kernel::Panic("kernel_heap", "No more space for %d bytes.\n", size);
+            Kernel::Panic("kernel_heap", "No more space for %x bytes.\n", size);
             return 0;
         }
 

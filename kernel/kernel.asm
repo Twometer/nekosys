@@ -14,9 +14,9 @@ krnlh_vesa_mode_ptr: equ 0x0518
 krnlh_vesa_current_mode: equ 0x51C
 
 ; Array contents
-mmap_content_base: equ 0x600
-vesa_info_block: equ 0x1000
-vesa_mode_array: equ 0x2000
+mmap_content_base: equ 0x1000
+vesa_info_block: equ 0x2000
+vesa_mode_array: equ 0x3000
 
 ; Video mode config
 ;  This is currently hardcoded, as
@@ -40,7 +40,6 @@ boot:
     
     mov dword [krnlh_vesa_state], 0
     mov dword [krnlh_vesa_length], 0
-    
     mov dword [krnlh_vesa_info_ptr], vesa_info_block
     mov dword [krnlh_vesa_mode_ptr], vesa_mode_array
     mov dword [krnlh_mmap_ptr], mmap_content_base

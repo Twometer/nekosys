@@ -136,6 +136,9 @@ init:
     cmp ax, 0xFFFF        ; Check if we reached the end of the chain
     jne load_next_cluster
 
+    push log_booting
+    call print
+
     jmp kernel_offset     ; Transfer control to the kernel
 
     jmp halt_system
@@ -370,7 +373,7 @@ read_sectors:
     pop ax
     mov sp, bp
     pop bp
-    ret 6
+    ret 4
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; void read_sector(word lba, word *dest) ;;
@@ -470,6 +473,7 @@ hextable: db "0123456789ABCDEF"
 log_welcome: db "nekosys Bootloader", 0xa, 0xd, 0
 log_readfat: db "Reading FAT", 0xa, 0xd, 0
 log_success: db "Kernel found", 0xa, 0xd, 0
+log_booting: db "Starting kernel", 0xa, 0xd, 0
 
 err_disk_io: db "I/O Error", 0xa, 0xd, 0
 err_not_found: db "Kernel not found", 0xa, 0xd, 0
