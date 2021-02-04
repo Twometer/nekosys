@@ -1,6 +1,7 @@
 #include <sys/syscall.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <errno.h>
 
 FILE *fopen(const char *path, const char *mode)
 {
@@ -37,7 +38,7 @@ size_t fread(void *ptr, size_t size, size_t count, FILE *stream)
 int fseek(FILE *stream, long offset, int origin)
 {
     if (offset < 0 || offset >= stream->fsize)
-        return 1;
+        return -ERANGE;
 
     if (origin == SEEK_SET)
         stream->offset = offset;

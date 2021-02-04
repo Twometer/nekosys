@@ -91,23 +91,23 @@ extern "C"
 }
 #endif
 
-uint32_t sys$$texit(void *param);
-uint32_t sys$$print(void *param);
-uint32_t sys$$exit(void *param);
-uint32_t sys$$putchar(void *param);
-uint32_t sys$$fopen(void *param);
-uint32_t sys$$fread(void *param);
-uint32_t sys$$fwrite(void *param);
-uint32_t sys$$fclose(void *param);
-uint32_t sys$$pagealloc(void *param);
-uint32_t sys$$sleep(void *param);
-uint32_t sys$$spawnp(void *param);
-uint32_t sys$$waitp(void *param);
-uint32_t sys$$readln(void *param);
-uint32_t sys$$fb_acquire(void *param);
-uint32_t sys$$fb_flush(void *param);
-uint32_t sys$$fb_release(void *param);
-uint32_t sys$$chdir(void *param);
-uint32_t sys$$getcwd(void *param);
+int sys$$texit(void *param);
+int sys$$print(void *param);
+int sys$$exit(void *param);
+int sys$$putchar(void *param);
+int sys$$fopen(void *param);
+int sys$$fread(void *param);
+int sys$$fwrite(void *param);
+int sys$$fclose(void *param);
+int sys$$pagealloc(void *param);
+int sys$$sleep(void *param);
+int sys$$spawnp(void *param);
+int sys$$waitp(void *param);
+int sys$$readln(void *param);
+int sys$$fb_acquire(void *param);
+int sys$$fb_flush(void *param);
+int sys$$fb_release(void *param);
+int sys$$chdir(void *param);
+int sys$$getcwd(void *param);
 
 #endif

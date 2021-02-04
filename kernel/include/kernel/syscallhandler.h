@@ -8,7 +8,7 @@
 
 namespace Kernel
 {
-    typedef uint32_t (*syscall_t)(void *);
+    typedef int (*syscall_t)(void *);
 
     class SyscallHandler : public InterruptHandler
     {

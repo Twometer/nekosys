@@ -4,6 +4,7 @@
 #include <kernel/tasks/thread.h>
 #include <kernel/kdebug.h>
 #include <kernel/video/tty.h>
+#include <errno.h>
 
 using namespace Memory;
 
@@ -60,7 +61,7 @@ namespace Kernel
         auto syscallHandler = syscalls->At(syscall_num);
         if (syscallHandler == nullptr)
         {
-            *retval = -1;
+            *retval = -ENOSYS;
             kdbg("warn: Thread %d attempted invalid syscall %x\n", Thread::Current()->GetId(), syscall_num);
             return;
         }

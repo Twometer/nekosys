@@ -26,7 +26,7 @@ nk::String resolve_file(const nk::Path path)
     return file;
 }
 
-uint32_t sys$$texit(void *param)
+int sys$$texit(void *param)
 {
     uint32_t exit_code = *(uint32_t *)(param);
     kdbg("User thread %d exited with exit code %d\n", Thread::Current()->GetId(), exit_code);
@@ -34,32 +34,32 @@ uint32_t sys$$texit(void *param)
     return 0;
 }
 
-uint32_t sys$$print(void *param)
+int sys$$print(void *param)
 {
     printf("%s", param);
     return 0;
 }
 
-uint32_t sys$$exit(void *param)
+int sys$$exit(void *param)
 {
     uint32_t exit_code = *(uint32_t *)(param);
     auto process = Process::Current();
     if (process == nullptr)
-        return 1;
+        return -ENOSYS;
 
     kdbg("User process %d exited with exit code %d\n", process->GetId(), exit_code);
     process->Kill();
     return 0;
 }
 
-uint32_t sys$$putchar(void *param)
+int sys$$putchar(void *param)
 {
     char c = *(char *)param;
     VideoManager::GetInstance()->GetTTY()->Write(&c, sizeof(c));
     return 0;
 }
 
-uint32_t sys$$fopen(void *param)
+int sys$$fopen(void *param)
 {
     auto params = (sys$$fopen_param *)param;
 
@@ -74,27 +74,27 @@ uint32_t sys$$fopen(void *param)
     return 0;
 }
 
-uint32_t sys$$fread(void *param)
+int sys$$fread(void *param)
 {
     auto params = (sys$$fread_param *)param;
     FS::VirtualFileSystem::GetInstance()->Read(params->fd, params->offset, params->length, (uint8_t *)params->dst);
     return 0;
 }
 
-uint32_t sys$$fwrite(void *param)
+int sys$$fwrite(void *param)
 {
     auto params = (sys$$fwrite_param *)param;
     return 0;
 }
 
-uint32_t sys$$fclose(void *param)
+int sys$$fclose(void *param)
 {
     auto params = (sys$$fclose_param *)param;
     FS::VirtualFileSystem::GetInstance()->Close(params->fd);
     return 0;
 }
 
-uint32_t sys$$pagealloc(void *param)
+int sys$$pagealloc(void *param)
 {
     int num = *(int *)param;
     auto ptr = (uint32_t)Process::Current()->MapNewPages(num);
@@ -104,7 +104,7 @@ uint32_t sys$$pagealloc(void *param)
     return ptr;
 }
 
-uint32_t sys$$sleep(void *param)
+int sys$$sleep(void *param)
 {
     uint32_t timeout = *(uint32_t *)(param);
     auto thread = Thread::Current();
@@ -112,7 +112,7 @@ uint32_t sys$$sleep(void *param)
     return 0;
 }
 
-uint32_t sys$$spawnp(void *param)
+int sys$$spawnp(void *param)
 {
     auto params = (sys$$spawnp_param *)param;
     auto resolved = resolve_file(params->path);
@@ -128,7 +128,7 @@ uint32_t sys$$spawnp(void *param)
     return 0;
 }
 
-uint32_t sys$$waitp(void *param)
+int sys$$waitp(void *param)
 {
     pid_t pid = PARAM_VALUE(param, pid_t);
     auto proc = ProcessDir::GetInstance()->GetProcess(pid);
@@ -138,14 +138,14 @@ uint32_t sys$$waitp(void *param)
     return 0;
 }
 
-uint32_t sys$$readln(void *param)
+int sys$$readln(void *param)
 {
     auto params = (sys$$readln_param *)param;
     Thread::Current()->Block(new KeyboardBlocker('\n'));
     return Device::DeviceManager::keyboard->ReadUntil(params->dst, params->maxSize, '\n');
 }
 
-uint32_t sys$$fb_acquire(void *param)
+int sys$$fb_acquire(void *param)
 {
     auto *buf = (FRAMEBUF *)param;
     auto vm = VideoManager::GetInstance();
@@ -164,7 +164,7 @@ uint32_t sys$$fb_acquire(void *param)
     return 0;
 }
 
-uint32_t sys$$fb_flush(void *param)
+int sys$$fb_flush(void *param)
 {
     auto params = (sys$$fb_flush_param *)param;
 
@@ -180,7 +180,7 @@ uint32_t sys$$fb_flush(void *param)
     return 0;
 }
 
-uint32_t sys$$fb_release(void *)
+int sys$$fb_release(void *)
 {
     auto vm = VideoManager::GetInstance();
     if (vm->GetFramebufferController() != Process::Current()->GetId())
@@ -192,7 +192,7 @@ uint32_t sys$$fb_release(void *)
     return 0;
 }
 
-uint32_t sys$$chdir(void *param)
+int sys$$chdir(void *param)
 {
     char *params = (char *)param;
     auto newCwd = nk::Path::Resolve(Process::Current()->GetCwd(), params);
@@ -206,7 +206,7 @@ uint32_t sys$$chdir(void *param)
     return 0;
 }
 
-uint32_t sys$$getcwd(void *param)
+int sys$$getcwd(void *param)
 {
     sys$$getcwd_param *params = (sys$$getcwd_param *)param;
 
