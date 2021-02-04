@@ -13,12 +13,11 @@ extern "C"
     __attribute__((__noreturn__)) void exit(int retval);
     void *malloc(size_t size);
     void free(void *ptr);
+    char *getenv(const char *);
 
     /* dummy stuff for gcc to stop complaining */
     int atexit(void (*)(void));
     int atoi(const char *);
-    void free(void *);
-    char *getenv(const char *);
 
 #ifdef __cplusplus
 }

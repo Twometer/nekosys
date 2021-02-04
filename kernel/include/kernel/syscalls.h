@@ -24,6 +24,7 @@
 #define SYS_FBRELEASE 16
 #define SYS_CHDIR 17
 #define SYS_GETCWD 18
+#define SYS_GETENV 19
 
 #define PARAM_VALUE(param, type) (*(type *)(param))
 
@@ -87,6 +88,12 @@ extern "C"
         size_t size;
     } sys$$getcwd_param;
 
+    typedef struct
+    {
+        char *key;
+        char *val;
+    } sys$$getenv_param;
+
 #ifdef __cplusplus
 }
 #endif
@@ -109,5 +116,6 @@ int sys$$fb_flush(void *param);
 int sys$$fb_release(void *param);
 int sys$$chdir(void *param);
 int sys$$getcwd(void *param);
+int sys$$getenv(void *param);
 
 #endif

@@ -230,3 +230,13 @@ int sys$$getcwd(void *param)
     memcpy(params->buf, cwd.CStr(), size);
     return 0;
 }
+
+int sys$$getenv(void *param)
+{
+    sys$$getenv_param *params = (sys$$getenv_param *)param;
+    auto val = Environment::GetInstance()->Get(params->key);
+    if (val.Empty())
+        return -EINVAL;
+    memcpy(params->val, val.CStr(), val.Length());
+    return 0;
+}

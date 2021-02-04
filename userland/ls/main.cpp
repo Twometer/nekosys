@@ -1,9 +1,14 @@
 #include <nekosys.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 int main(int argc, char **argv)
 {
+    char *p = getenv("Path");
+    printf("path env: %s\n", p);
+    free(p);
+
     char cwd[PATH_MAX];
     getcwd(cwd, PATH_MAX);
 
