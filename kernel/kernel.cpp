@@ -5,6 +5,7 @@
 #include <kernel/arch/interrupts.h>
 #include <kernel/timemanager.h>
 #include <kernel/syscallhandler.h>
+#include <kernel/environment.h>
 #include <kernel/device/devicemanager.h>
 #include <kernel/device/pit.h>
 #include <kernel/disk/atadisk.h>
@@ -208,6 +209,9 @@ extern "C"
 
 		printf("Startup app: %s\n", startupAppPath.CStr());
 		delete[] startupConfBuf;
+
+		kdbg("Reading environment\n");
+		Environment::GetInstance()->Load();
 
 		kdbg("Loading startup app\n");
 		size_t appSize = 0;

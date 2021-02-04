@@ -21,7 +21,7 @@ namespace nk
         {
         }
 
-        bool IsAbsolute()
+        bool IsAbsolute() const
         {
             return isAbsolute;
         }

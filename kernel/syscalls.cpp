@@ -6,6 +6,7 @@
 #include <kernel/memory/pagedirectory.h>
 #include <kernel/device/devicemanager.h>
 #include <kernel/video/videomanager.h>
+#include <kernel/environment.h>
 #include <kernel/kdebug.h>
 #include <kernel/fs/vfs.h>
 #include <nekosys.h>
@@ -20,6 +21,18 @@ using namespace Video;
 
 nk::String resolve_file(const nk::Path path)
 {
+    if (!path.IsAbsolute())
+    {
+        auto pathEnv = Environment::GetInstance()->Get("Path");
+        // TODO allow for multiple entries in path
+
+        auto resolvedInPath = nk::Path::Resolve(pathEnv, path);
+        auto resolvedInPathStr = resolvedInPath->ToString();
+        delete resolvedInPath;
+        if (FS::VirtualFileSystem::GetInstance()->GetFileMeta(resolvedInPathStr).type != FS::DirEntryType::Invalid)
+            return resolvedInPathStr;
+    }
+
     auto resolved = nk::Path::Resolve(Process::Current()->GetCwd(), path);
     auto file = resolved->ToString();
     delete resolved;
