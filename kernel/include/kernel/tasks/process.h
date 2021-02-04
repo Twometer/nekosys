@@ -6,6 +6,7 @@
 #include <nk/string.h>
 #include <kernel/tasks/thread.h>
 #include <sys/types.h>
+#include <signal.h>
 
 namespace Kernel
 {
@@ -26,6 +27,8 @@ namespace Kernel
 
         uint8_t *heapBase = 0;
 
+        int exitCode;
+
     public:
         Process(Memory::PageDirectory *pageDir, nk::Vector<Kernel::Thread *> *threads, nk::Vector<void *> *pages);
 
@@ -33,15 +36,18 @@ namespace Kernel
 
         void Start();
 
-        void Crash();
+        void Crash(int signal);
 
-        void Kill();
+        void Exit(int exitCode);
 
         void *MapNewPages(size_t num);
 
         pid_t GetId() { return pid; }
 
         bool IsRunning();
+
+        int GetExitCode() { return exitCode; }
+        void SetExitCode(int exitCode) { this->exitCode = exitCode; }
 
         void SetHeapBase(void *heapBase) { this->heapBase = (uint8_t *)heapBase; }
         uint8_t *GetHeapBase() { return heapBase; }

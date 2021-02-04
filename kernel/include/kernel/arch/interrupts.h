@@ -50,13 +50,16 @@ namespace Kernel
 
         static void WaitForInt();
 
-        static void HandleException(unsigned int vector, struct interrupt_frame *frame);
+        static void HandleException(unsigned int vector, interrupt_frame *frame, int code);
 
         static void SetIdtEntry(unsigned int interrupt, unsigned char type, unsigned long address);
 
         static void HandleInterrupt(unsigned int interrupt);
 
         static void AddHandler(unsigned int interrupt, InterruptHandler *handler);
+
+    private:
+        static void HandleUserspaceException(unsigned int vector, interrupt_frame *frame, int code);
     };
 
 }; // namespace Kernel

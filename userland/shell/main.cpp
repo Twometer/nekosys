@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <nekosys.h>
+#include <signal.h>
 
 #include <nk/string.h>
 
@@ -22,7 +23,28 @@ void start_process(const Command &cmd)
 	}
 	else
 	{
-		waitp(pid);
+		int retcode = waitp(pid);
+		if (retcode > RCSIGBASE)
+		{
+			int signal = retcode - RCSIGBASE;
+			switch (signal)
+			{
+			case SIGSEGV:
+				printf("Segmentation fault\n");
+				break;
+			case SIGABRT:
+				printf("Aborted\n");
+				break;
+			case SIGILL:
+				printf("Illegal instruction\n");
+				break;
+			case SIGFPE:
+				printf("Arithmetic error\n");
+				break;
+			default:
+				break;
+			}
+		}
 	}
 }
 

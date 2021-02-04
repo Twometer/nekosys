@@ -47,8 +47,7 @@ int sys$$exit(void *param)
     if (process == nullptr)
         return -ENOSYS;
 
-    kdbg("User process %d exited with exit code %d\n", process->GetId(), exit_code);
-    process->Kill();
+    process->Exit(exit_code);
     return 0;
 }
 
@@ -135,7 +134,7 @@ int sys$$waitp(void *param)
     if (proc == nullptr)
         return -ESRCH;
     Thread::Current()->Block(new ProcessWaitBlocker(proc));
-    return 0;
+    return proc->GetExitCode();
 }
 
 int sys$$readln(void *param)

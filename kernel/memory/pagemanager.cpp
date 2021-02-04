@@ -49,7 +49,6 @@ namespace Memory
     {
         for (uint32_t i = 0; i < num_pages; i++)
         {
-
             bool found = true;
             for (uint32_t j = 0; j < pages; j++)
             {
@@ -64,12 +63,11 @@ namespace Memory
                 continue;
 
             for (uint32_t j = 0; j < pages; j++)
-            {
                 frame_map[i + j] = PAGE_USED;
-            }
 
             return pageframes_base + i * PAGE_SIZE;
         }
+        return 0;
     }
 
     pageframe_t PageManager::AllocPageframe()

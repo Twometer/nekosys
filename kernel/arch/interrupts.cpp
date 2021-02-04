@@ -6,6 +6,7 @@
 #include <kernel/device/keyboard.h>
 #include <kernel/device/cpu.h>
 #include <kernel/device/pic.h>
+#include <kernel/tasks/process.h>
 #include <stdio.h>
 
 #define TYPE_INTERRUPT_GATE 0x8e
@@ -162,10 +163,10 @@ extern "C"
 		Interrupts::HandleInterrupt(128);
 	}
 
-#define EXCEPTION_HANDLER(vec)                                              \
-	__attribute__((interrupt)) void exc##vec(struct interrupt_frame *frame) \
-	{                                                                       \
-		Interrupts::HandleException(vec, frame);                            \
+#define EXCEPTION_HANDLER(vec)                                                     \
+	__attribute__((interrupt)) void exc##vec(interrupt_frame *frame, int code = 0) \
+	{                                                                              \
+		Interrupts::HandleException(vec, frame, code);                             \
 	}
 
 	EXCEPTION_HANDLER(0)
@@ -296,10 +297,39 @@ void Interrupts::SetIdtEntry(unsigned int interrupt, unsigned char type, unsigne
 	IDT[interrupt].offset_higherbits = (address & 0xffff0000) >> 16;
 }
 
-void Interrupts::HandleException(unsigned int vector, struct interrupt_frame *frame)
+void Interrupts::HandleException(unsigned int vector, interrupt_frame *frame, int code)
 {
-	Kernel::Panic("cpu_error", "Fatal CPU exception!\nVector: %x\nDescription: %s\nIP: %x\nSP: %x\nCS: %x\nSS: %x\nFlags: %x\n", vector, exception_descriptors[vector],
-				  frame->ip, frame->sp, frame->cs, frame->ss, frame->flags);
+	// Exceptions in userspace should not raise
+	// a kernel panic for obvious reasons.
+	if (Thread::Current()->GetRing() == Ring::Ring3)
+	{
+		HandleUserspaceException(vector, frame, code);
+		return;
+	}
+
+	Kernel::Panic("cpu_error", "Fatal CPU exception!\nVector: %x\nDescription: %s\nIP: %x\nSP: %x\nCS: %x\nSS: %x\nFlags: %x\nCode: %x\n", vector, exception_descriptors[vector],
+				  frame->ip, frame->sp, frame->cs, frame->ss, frame->flags, code);
+}
+
+void Interrupts::HandleUserspaceException(unsigned int vector, interrupt_frame *, int)
+{
+	switch (vector)
+	{
+	case 0x0D: // General Protection Fault
+		Process::Current()->Crash(SIGABRT);
+		break;
+
+	case 0x0E: // Page Fault
+		Process::Current()->Crash(SIGSEGV);
+		break;
+
+	case 0x00: // Divide by zero
+	case 0x10: // or x87 Error
+		Process::Current()->Crash(SIGFPE);
+		break;
+	default:
+		break;
+	}
 }
 
 void Interrupts::HandleInterrupt(unsigned int interrupt)

@@ -24,15 +24,18 @@ namespace Kernel
         threads->At(0)->Start();
     }
 
-    void Process::Crash()
+    void Process::Crash(int signal)
     {
-        printf("Process crashed\n");
-        Kill();
+        Exit(RCSIGBASE + signal);
     }
 
-    void Process::Kill()
+    void Process::Exit(int exitCode)
     {
         ProcessDir::GetInstance()->OnProcessDied(this);
+
+        this->exitCode = exitCode;
+        kdbg("User process %d died with exit code %d\n", pid, exitCode);
+
         for (size_t i = 0; i < threads->Size(); i++)
             threads->At(i)->Kill();
     }
