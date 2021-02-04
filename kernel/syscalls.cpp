@@ -10,6 +10,7 @@
 #include <kernel/fs/vfs.h>
 #include <nekosys.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <nk/path.h>
 
@@ -65,7 +66,7 @@ uint32_t sys$$fopen(void *param)
     auto resolved = resolve_file(params->path);
     auto file = FS::VirtualFileSystem::GetInstance()->GetFileMeta(resolved);
     if (file.type == FS::DirEntryType::Invalid)
-        return 1;
+        return -ENOENT;
 
     auto fd = FS::VirtualFileSystem::GetInstance()->Open(resolved);
     *params->fsize = file.size;
@@ -120,7 +121,7 @@ uint32_t sys$$spawnp(void *param)
 #endif
     auto proc = ElfLoader::CreateProcess(resolved.CStr(), params->argc, params->argv);
     if (proc == nullptr)
-        return 1;
+        return -ENOEXEC;
     *params->pid = proc->GetId();
     proc->SetCwd(Process::Current()->GetCwd());
     proc->Start();
@@ -132,7 +133,7 @@ uint32_t sys$$waitp(void *param)
     pid_t pid = PARAM_VALUE(param, pid_t);
     auto proc = ProcessDir::GetInstance()->GetProcess(pid);
     if (proc == nullptr)
-        return 1;
+        return -ESRCH;
     Thread::Current()->Block(new ProcessWaitBlocker(proc));
     return 0;
 }
@@ -151,7 +152,7 @@ uint32_t sys$$fb_acquire(void *param)
     if (!vm->KernelControlsFramebuffer())
     {
         // User processes cannot steal the fbuf from each other
-        return 1;
+        return -EPERM;
     }
     vm->AcquireFramebuffer(Process::Current()->GetId());
     PageDirectory::Current()->MapRange(vm->GetFramebufferPhysical(), (vaddress_t)SECONDARY_FRAMEBUFFER_LOC, vm->GetFramebufferSize(), PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
@@ -169,7 +170,7 @@ uint32_t sys$$fb_flush(void *param)
 
     auto vm = VideoManager::GetInstance();
     if (vm->GetFramebufferController() != Process::Current()->GetId())
-        return 1;
+        return -EACCES;
 
     if (params->full)
         vm->FlushBuffer();
@@ -183,7 +184,7 @@ uint32_t sys$$fb_release(void *)
 {
     auto vm = VideoManager::GetInstance();
     if (vm->GetFramebufferController() != Process::Current()->GetId())
-        return 1;
+        return -EACCES;
 
     // TODO: Unmap the fbuf
 
@@ -198,7 +199,7 @@ uint32_t sys$$chdir(void *param)
 
     auto dirent = FS::VirtualFileSystem::GetInstance()->GetFileMeta(newCwd->ToString());
     if (dirent.type != FS::DirEntryType::Folder)
-        return 1;
+        return -ENOTDIR;
 
     Process::Current()->SetCwd(newCwd->ToString());
     delete newCwd;

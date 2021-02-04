@@ -17,7 +17,7 @@ namespace Kernel
         void *vesaInfoBlock;
         void *vesaModeArray;
         uint32_t vesaCurrentMode;
-    } __attribute__ ((packed));
+    } __attribute__((packed));
 
 }; // namespace Kernel
 
