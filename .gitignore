@@ -1,6 +1,7 @@
 # Outputs
 *.bin
 build/
+sysroot/bin
 
 # CMake
 CMakeCache.txt

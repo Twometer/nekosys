@@ -6,7 +6,7 @@ int main(int argc, char **argv)
 {
     if (argc == 0)
     {
-        printf("Usage: crash.app <div0|segv|gpf>\n");
+        printf("Usage: crash <div0|segv|gpf>\n");
         return 1;
     }
 
