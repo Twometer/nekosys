@@ -9,8 +9,8 @@ namespace Kernel
     Process *Process::current = nullptr;
     pid_t Process::idCounter = 0;
 
-    Process::Process(Memory::PageDirectory *pageDir, nk::Vector<Kernel::Thread *> *threads, nk::Vector<void *> *pages)
-        : pid(++idCounter), pageDir(pageDir), threads(threads), pages(pages)
+    Process::Process(nk::String name, Memory::PageDirectory *pageDir, nk::Vector<Kernel::Thread *> *threads, nk::Vector<void *> *pages)
+        : pid(++idCounter), name(name), pageDir(pageDir), threads(threads), pages(pages)
     {
     }
 

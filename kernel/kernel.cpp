@@ -214,17 +214,7 @@ extern "C"
 		Environment::GetInstance()->Load();
 
 		kdbg("Loading startup app\n");
-		size_t appSize = 0;
-		auto appBuf = ReadFile(startupAppPath.CStr(), &appSize);
-
-		ELF::Image image(appBuf, appSize);
-		if (!image.IsValid())
-		{
-			Kernel::Panic("boot", "Startup app not valid ELF");
-		}
-
-		auto startupApp = ElfLoader::CreateProcess(image, 0, nullptr);
-		delete[] appBuf;
+		auto startupApp = ElfLoader::CreateProcess(startupAppPath.CStr(), 0, nullptr);
 
 		kdbg("Free kernel heap: %dKB/1024KB\n", get_free_heap() / 1024);
 

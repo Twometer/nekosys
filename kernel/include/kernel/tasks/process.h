@@ -19,6 +19,7 @@ namespace Kernel
 
         pid_t pid;
 
+        nk::String name;
         Memory::PageDirectory *pageDir;
         nk::Vector<Kernel::Thread *> *threads;
         nk::Vector<void *> *pages;
@@ -30,7 +31,7 @@ namespace Kernel
         int exitCode;
 
     public:
-        Process(Memory::PageDirectory *pageDir, nk::Vector<Kernel::Thread *> *threads, nk::Vector<void *> *pages);
+        Process(nk::String name, Memory::PageDirectory *pageDir, nk::Vector<Kernel::Thread *> *threads, nk::Vector<void *> *pages);
 
         ~Process();
 

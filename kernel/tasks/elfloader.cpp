@@ -4,6 +4,7 @@
 #include <kernel/memory/pagemanager.h>
 #include <kernel/kdebug.h>
 #include <kernel/fs/vfs.h>
+#include <nk/path.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -25,14 +26,15 @@ namespace Kernel
         vfs->Read(fd, 0, meta.size, buf);
         vfs->Close(fd);
 
+        nk::String name = nk::Path(path).GetFilename();
         ELF::Image image(buf, meta.size);
-        auto proc = CreateProcess(image, argc, argv);
+        auto proc = CreateProcess(name, image, argc, argv);
 
         delete[] buf;
         return proc;
     }
 
-    Process *ElfLoader::CreateProcess(const ELF::Image &image, int argc, char **argv)
+    Process *ElfLoader::CreateProcess(const nk::String &name, const ELF::Image &image, int argc, char **argv)
     {
         if (!image.IsValid())
             return nullptr;
@@ -128,7 +130,7 @@ namespace Kernel
         auto threads = new nk::Vector<Thread *>();
         threads->Add(thread);
 
-        auto process = new Process(pagedir, threads, pages);
+        auto process = new Process(name, pagedir, threads, pages);
         process->SetHeapBase(executableEndAddr + 4096);
 
         thread->SetProcess(process);
