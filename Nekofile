@@ -62,7 +62,7 @@ sysroot:
     cp -RT libc/include sysroot/usr/include
     cp -RT libelf/include sysroot/usr/include
     cp -RT libpng/include sysroot/usr/include
-    cp -RT libneko sysroot/usr/include
+    cp -RT libneko/include sysroot/usr/include
 
 ; Compile kernel version of libc
 libk:

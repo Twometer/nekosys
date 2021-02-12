@@ -10,7 +10,7 @@
                 "${workspaceFolder}/kernel/include",
                 "${workspaceFolder}/libc/include",
                 "${workspaceFolder}/libelf/include",
-                "${workspaceFolder}/libneko",
+                "${workspaceFolder}/libneko/include",
                 "${workspaceFolder}/libpng/include"
             ]
         }
