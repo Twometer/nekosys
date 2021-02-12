@@ -27,15 +27,24 @@ extern "C"
         size_t pixelStride;
     } FRAMEBUF;
 
+    /* FIXME: hacky stdin readline - should be redone */
+    int readln(char *dst, size_t maxSize);
+
+    /* Processes */
     int spawnp(pid_t *pid, const char *path, int argc, const char **argv);
     int waitp(pid_t pid);
 
-    int readln(char *dst, size_t maxSize);
-
+    /* Kernel framebuffer */
     int framebuf_acquire(FRAMEBUF *framebuf);
+    int framebuf_release();
     int framebuf_flush(int x, int y, int w, int h);
     int framebuf_flush_all();
-    int framebuf_release();
+
+    /* Shared buffers / memory regions */
+    int shbuf_create(size_t size, void **mapped);
+    int shbuf_destroy(int bufid);
+    int shbuf_map(int bufid, void **mapped);
+    int shbuf_unmap(int bufid);
 
 #ifdef __cplusplus
 }
