@@ -168,7 +168,7 @@ int sys$$fb_acquire(void *param)
     }
     vm->AcquireFramebuffer(Process::Current()->GetId());
     PageDirectory::Current()->MapRange(vm->GetFramebufferPhysical(), (vaddress_t)SECONDARY_FRAMEBUFFER_LOC, vm->GetFramebufferSize(), PAGE_BIT_READ_WRITE | PAGE_BIT_ALLOW_USER);
-    buf->buffer = (void *)SECONDARY_FRAMEBUFFER_LOC;
+    buf->buffer = (uint8_t *)SECONDARY_FRAMEBUFFER_LOC;
     buf->width = vm->GetCurrentMode()->Xres;
     buf->height = vm->GetCurrentMode()->Yres;
     buf->pitch = vm->GetCurrentMode()->pitch;

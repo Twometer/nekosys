@@ -22,3 +22,10 @@ void free(void *ptr)
     return usr_free(ptr);
 #endif
 }
+
+void *realloc(void *ptr, size_t size)
+{
+#ifndef __KERNEL
+    return usr_realloc(ptr, size);
+#endif
+}

@@ -11,6 +11,7 @@
 
 #include <sys/types.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -19,7 +20,7 @@ extern "C"
 
     typedef struct
     {
-        void *buffer;
+        uint8_t *buffer;
         size_t width;
         size_t height;
         size_t pitch;
