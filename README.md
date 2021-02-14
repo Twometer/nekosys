@@ -1,5 +1,11 @@
-# The Nekosys OS
-nekosys is an x86 operating system written from scratch
+<p align="center">
+<img src="art/logo.png" width=128>
+<h1 align="center">The Nekosys OS</h1>
+</p>
+<p align="center">
+ nekosys is an x86 operating system written from scratch
+</p>
+
 
 ## Build System
 nekosys uses the custom [NekoMake](https://github.com/nekosys-os/nkm) build system
@@ -28,6 +34,7 @@ A map for nekosys' memory layout can be found at [memory.md](memory.md)
 - `libc`: Basic C functionality such as print, malloc etc.
 - `libneko`: Useful C++ tools library with containers, templates, etc.
 - `libelf`: Parser for ELF executables
+- `libpng`: PNG image loader (lodepng port)
 - ...
 
 ## Userland
