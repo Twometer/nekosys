@@ -5,6 +5,7 @@
 #include <nk/vector.h>
 #include <nk/string.h>
 #include <kernel/tasks/thread.h>
+#include <kernel/memory/shbuf.h>
 #include <sys/types.h>
 #include <signal.h>
 
@@ -23,6 +24,8 @@ namespace Kernel
         Memory::PageDirectory *pageDir;
         nk::Vector<Kernel::Thread *> *threads;
         nk::Vector<void *> *pages;
+        nk::Vector<uint32_t> *openFiles;
+        nk::Vector<Memory::SharedBuffer> *shbufs;
 
         nk::String cwd = "/";
 
@@ -55,6 +58,9 @@ namespace Kernel
 
         nk::String &GetCwd() { return cwd; };
         void SetCwd(const nk::String &cwd) { this->cwd = cwd; };
+
+        nk::Vector<uint32_t> *GetOpenFiles() const { return openFiles; }
+        nk::Vector<Memory::SharedBuffer> *GetShbufs() const { return shbufs; }
 
         static void SetCurrent(Process *process) { current = process; };
         static Process *Current() { return current; }

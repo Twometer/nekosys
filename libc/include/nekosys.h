@@ -41,10 +41,15 @@ extern "C"
     int framebuf_flush_all();
 
     /* Shared buffers / memory regions */
-    int shbuf_create(size_t size, void **mapped);
-    int shbuf_destroy(int bufid);
+    int shbuf_create(size_t size);
     int shbuf_map(int bufid, void **mapped);
     int shbuf_unmap(int bufid);
+
+    /* Connection pipes */
+    int pipe_open(const char *name);
+    int pipe_close(int pipeid);
+    int pipe_receive(int pipeid, pid_t *src, size_t size, uint8_t *buffer);
+    int pipe_send(int pipeid, size_t size, uint8_t *data);
 
 #ifdef __cplusplus
 }

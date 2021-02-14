@@ -4,6 +4,7 @@
 #include <kernel/tasks/blockers.h>
 #include <kernel/tasks/elfloader.h>
 #include <kernel/memory/pagedirectory.h>
+#include <kernel/memory/pagemanager.h>
 #include <kernel/device/devicemanager.h>
 #include <kernel/video/videomanager.h>
 #include <kernel/environment.h>
@@ -83,6 +84,8 @@ int sys$$fopen(void *param)
     auto fd = FS::VirtualFileSystem::GetInstance()->Open(resolved);
     *params->fsize = file.size;
     *params->fd = fd;
+
+    Process::Current()->GetOpenFiles()->Add(fd);
     return 0;
 }
 
@@ -261,4 +264,18 @@ int sys$$readdir(void *param)
         dst.type = static_cast<unsigned>(src.type);
     }
     return maxSize;
+}
+
+int sys$$shbuf_create(void *param)
+{
+    size_t size = PARAM_VALUE(param, uint32_t);
+    size_t pages = (size + PAGE_SIZE) / PAGE_SIZE;
+    // FIXME: Continuous is probably not neccessary
+    pageframe_t frames = PageManager::GetInstance()->AllocContinuous(pages);
+    if (!frames)
+        return -ENOMEM;
+
+    auto shbuf = SharedBuffer(frames, pages);
+    Process::Current()->GetShbufs()->Add(shbuf);
+    return shbuf.GetBufId();
 }

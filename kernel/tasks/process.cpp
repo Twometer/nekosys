@@ -10,7 +10,8 @@ namespace Kernel
     pid_t Process::idCounter = 0;
 
     Process::Process(nk::String name, Memory::PageDirectory *pageDir, nk::Vector<Kernel::Thread *> *threads, nk::Vector<void *> *pages)
-        : pid(++idCounter), name(name), pageDir(pageDir), threads(threads), pages(pages)
+        : pid(++idCounter), name(name), pageDir(pageDir), threads(threads), pages(pages),
+          openFiles(new nk::Vector<uint32_t>()), shbufs(new nk::Vector<SharedBuffer>())
     {
     }
 

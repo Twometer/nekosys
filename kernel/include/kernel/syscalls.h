@@ -27,6 +27,9 @@
 #define SYS_GETCWD 18
 #define SYS_GETENV 19
 #define SYS_READDIR 20
+#define SYS_SHBUFCREATE 21
+#define SYS_SHBUFMAP 22
+#define SYS_SHBUFUNMAP 23
 
 #define PARAM_VALUE(param, type) (*(type *)(param))
 
@@ -127,5 +130,6 @@ int sys$$chdir(void *param);
 int sys$$getcwd(void *param);
 int sys$$getenv(void *param);
 int sys$$readdir(void *param);
+int sys$$shbuf_create(void *param);
 
 #endif
