@@ -1,6 +1,8 @@
 #include <kernel/tasks/process.h>
 #include <kernel/memory/pagemanager.h>
 #include <kernel/tasks/processdir.h>
+#include <kernel/tasks/scheduler.h>
+#include <kernel/fs/vfs.h>
 
 using namespace Memory;
 
@@ -17,6 +19,11 @@ namespace Kernel
 
     Process::~Process()
     {
+        delete pageDir;
+        delete threads;
+        delete pages;
+        delete openFiles;
+        delete shbufs;
     }
 
     void Process::Start()
@@ -37,8 +44,16 @@ namespace Kernel
         this->exitCode = exitCode;
         kdbg("User process %d died with exit code %d\n", pid, exitCode);
 
+        for (size_t i = 0; i < openFiles->Size(); i++)
+            FS::VirtualFileSystem::GetInstance()->Close(openFiles->At(i));
+
         for (size_t i = 0; i < threads->Size(); i++)
-            threads->At(i)->Kill();
+            threads->At(i)->SetState(Kernel::ThreadState::Dead);
+
+        // TODO also free the memory pages here
+
+        if (current == this)
+            Scheduler::GetInstance()->Yield();
     }
 
     bool Process::IsRunning()
