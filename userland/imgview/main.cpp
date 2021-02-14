@@ -6,10 +6,16 @@
 
 int main(int argc, char **argv)
 {
-    FILE *fd = fopen("/etc/logo.png", "r");
+    if (argv == 0)
+    {
+        printf("Syntax: imgview <path>\b");
+        return 1;
+    }
+
+    FILE *fd = fopen(argv[0], "r");
     if (!fd)
     {
-        printf("sakura: error: Could not open bitmap\n");
+        printf("imgview: error: Could not load image\n");
         return 1;
     }
 
@@ -29,10 +35,7 @@ int main(int argc, char **argv)
     if (error)
     {
         printf("decoder error: %s\n", lodepng_error_text(error));
-    }
-    else
-    {
-        printf("decoded successfully");
+        return 1;
     }
 
     FRAMEBUF buf;
@@ -42,13 +45,11 @@ int main(int argc, char **argv)
     size_t sOffset = 0;
     for (size_t row = 0; row < height; row++)
     {
-        for (size_t col = 0; col < width; col ++)
+        for (size_t col = 0; col < width; col++)
         {
-            //dstbuf[dOffset + col] = (srcbuf[sOffset + col] >> 8) & 0x00FFFFFF;
-            //buf.buffer[dOffset + col*4] = 0;
-            buf.buffer[dOffset + col*4 + 2] = image[sOffset + col*3 + 0];
-            buf.buffer[dOffset + col*4 + 1] = image[sOffset + col*3 + 1];
-            buf.buffer[dOffset + col*4 + 0] = image[sOffset + col*3 + 2];
+            buf.buffer[dOffset + col * 4 + 2] = image[sOffset + col * 3 + 0];
+            buf.buffer[dOffset + col * 4 + 1] = image[sOffset + col * 3 + 1];
+            buf.buffer[dOffset + col * 4 + 0] = image[sOffset + col * 3 + 2];
         }
         dOffset += buf.pitch;
         sOffset += width * 3;
@@ -56,8 +57,6 @@ int main(int argc, char **argv)
 
     framebuf_flush_all();
     framebuf_release();
-
-    printf("image size: %d x %d\n", width, height);
 
     delete[] data;
     free(image);
