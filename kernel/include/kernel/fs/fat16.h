@@ -38,7 +38,7 @@ namespace FS
 
         void Read(const DirEntry &entry, size_t offset, size_t size, uint8_t *dst) override;
 
-        void ListDirectory(const nk::String &path) override;
+        nk::Vector<DirEntry> ListDirectory(const nk::String &path) override;
 
     private:
         uint8_t *LoadDirectory(const nk::Path &path);

@@ -37,7 +37,7 @@ namespace FS
 
         void Close(uint32_t fileHandle);
 
-        void ListDirectory(const nk::String &path);
+        nk::Vector<DirEntry> ListDirectory(const nk::String &path);
 
     private:
         nk::String GetRelativePath(MountPoint *mountPoint, const nk::String &absolutePath);

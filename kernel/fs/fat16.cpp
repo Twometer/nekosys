@@ -127,10 +127,10 @@ namespace FS
         } while ((cluster = NextCluster(cluster)) != FAT_END);
     }
 
-    void Fat16::ListDirectory(const nk::String &path)
+    nk::Vector<DirEntry> Fat16::ListDirectory(const nk::String &path)
     {
-        printf("List of %s:\n", path.CStr());
-
+        nk::Vector<DirEntry> result;
+        result.EnsureCapacity(16);
         auto directory = LoadDirectory(path);
 
         bool eof = false;
@@ -140,15 +140,9 @@ namespace FS
             if (eof)
                 break;
 
-            if (entry.type == DirEntryType::File)
-            {
-                printf(" [f] %s\n", entry.name.CStr());
-            }
-            else if (entry.type == DirEntryType::Folder)
-            {
-                printf(" [d] %s\n", entry.name.CStr());
-            }
+            result.Add(entry);
         }
+        return result;
     }
 
     uint8_t *Fat16::LoadDirectory(const nk::Path &path)

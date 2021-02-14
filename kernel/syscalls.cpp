@@ -240,3 +240,25 @@ int sys$$getenv(void *param)
     memcpy(params->val, val.CStr(), val.Length());
     return 0;
 }
+
+int sys$$readdir(void *param)
+{
+    sys$$readdir_param *params = (sys$$readdir_param *)param;
+    auto dirent = FS::VirtualFileSystem::GetInstance()->GetFileMeta(params->dir);
+    if (!dirent.IsValid())
+        return -ENOENT;
+    if (dirent.type != FS::DirEntryType::Folder)
+        return -ENOTDIR;
+
+    auto dir = FS::VirtualFileSystem::GetInstance()->ListDirectory(params->dir);
+    size_t maxSize = dir.Size() > params->dstSize ? params->dstSize : dir.Size();
+    for (size_t i = 0; i < maxSize; i++)
+    {
+        auto src = dir[i];
+        auto &dst = params->dst[i];
+        memcpy(dst.name, src.name.CStr(), src.name.Length() + 1);
+        dst.size = src.size;
+        dst.type = static_cast<unsigned>(src.type);
+    }
+    return maxSize;
+}

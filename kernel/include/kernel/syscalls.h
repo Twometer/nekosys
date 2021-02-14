@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <dirent.h>
 
 #define SYS_INVAL 0
 #define SYS_TEXIT 1
@@ -25,6 +26,7 @@
 #define SYS_CHDIR 17
 #define SYS_GETCWD 18
 #define SYS_GETENV 19
+#define SYS_READDIR 20
 
 #define PARAM_VALUE(param, type) (*(type *)(param))
 
@@ -94,6 +96,13 @@ extern "C"
         char *val;
     } sys$$getenv_param;
 
+    typedef struct
+    {
+        const char *dir;
+        dirent *dst;
+        size_t dstSize;
+    } sys$$readdir_param;
+
 #ifdef __cplusplus
 }
 #endif
@@ -117,5 +126,6 @@ int sys$$fb_release(void *param);
 int sys$$chdir(void *param);
 int sys$$getcwd(void *param);
 int sys$$getenv(void *param);
+int sys$$readdir(void *param);
 
 #endif

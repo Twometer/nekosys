@@ -108,18 +108,15 @@ namespace FS
         }
     }
 
-    void VirtualFileSystem::ListDirectory(const nk::String &path)
+    nk::Vector<DirEntry> VirtualFileSystem::ListDirectory(const nk::String &path)
     {
         auto mountPoint = FindMountPoint(path);
         if (mountPoint == nullptr)
         {
             kdbg("vfs: Mount point not found for %s\n", path.CStr());
-            return;
+            return {};
         }
-#if VFS_DEBUG
-        kdbg("vfs: list_dir %s\n", mountPoint->path.CStr());
-#endif
-        mountPoint->fs->ListDirectory(GetRelativePath(mountPoint, path));
+        return mountPoint->fs->ListDirectory(GetRelativePath(mountPoint, path));
     }
 
     nk::String VirtualFileSystem::GetRelativePath(MountPoint *mountPoint, const nk::String &absolutePath)
