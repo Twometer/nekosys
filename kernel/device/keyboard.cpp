@@ -17,7 +17,7 @@ void Keyboard::Initialize()
     NewScancode(4, '3');
     NewScancode(5, '4');
     NewScancode(6, '5');
-    NewScancode(7, '6');
+    NewScancode(7, '&');
     NewScancode(8, '/');
     NewScancode(9, '8');
     NewScancode(10, '9');

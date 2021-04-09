@@ -54,7 +54,7 @@ int framebuf_release()
 
 int shbuf_create(size_t size)
 {
-    return syscall(SYS_SHBUFCREATE, size);
+    return syscall(SYS_SHBUFCREATE, &size);
 }
 
 int shbuf_map(int bufid, void **mapped)

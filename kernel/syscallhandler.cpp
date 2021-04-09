@@ -39,6 +39,8 @@ namespace Kernel
         AddSyscall(SYS_GETCWD, sys$$getcwd);
         AddSyscall(SYS_GETENV, sys$$getenv);
         AddSyscall(SYS_READDIR, sys$$readdir);
+        AddSyscall(SYS_SHBUFCREATE, sys$$shbuf_create);
+        AddSyscall(SYS_SHBUFMAP, sys$$shbuf_map);
         Interrupts::AddHandler(0x80, this);
     }
 

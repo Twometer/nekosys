@@ -271,6 +271,7 @@ int sys$$shbuf_create(void *param)
     size_t size = PARAM_VALUE(param, uint32_t);
     size_t pages = (size + PAGE_SIZE) / PAGE_SIZE;
     // FIXME: Continuous is probably not neccessary
+    kdbg("Allocating %d pages for shbuf of size %d\n", pages, size);
     pageframe_t frames = PageManager::GetInstance()->AllocContinuous(pages);
     if (!frames)
         return -ENOMEM;
@@ -283,6 +284,7 @@ int sys$$shbuf_create(void *param)
 int sys$$shbuf_map(void *param)
 {
     sys$$shbuf_map_param *params = (sys$$shbuf_map_param *)param;
+    kdbg("Mapping shbuf %d\n", params->shbuf);
     SharedBuffer *buf = ProcessDir::GetInstance()->FindShBuf(params->shbuf);
     if (buf == nullptr)
         return -ENOENT;
