@@ -21,6 +21,8 @@ namespace Kernel
         void OnProcessDied(Process *proc);
 
         Process *GetProcess(pid_t pid);
+
+        Memory::SharedBuffer *FindShBuf(uint32_t bufid);
     };
 
 }; // namespace Kernel

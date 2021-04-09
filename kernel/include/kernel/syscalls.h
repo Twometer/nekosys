@@ -106,6 +106,12 @@ extern "C"
         size_t dstSize;
     } sys$$readdir_param;
 
+    typedef struct
+    {
+        int shbuf;
+        void **dst;
+    } sys$$shbuf_map_param;
+
 #ifdef __cplusplus
 }
 #endif
@@ -131,5 +137,6 @@ int sys$$getcwd(void *param);
 int sys$$getenv(void *param);
 int sys$$readdir(void *param);
 int sys$$shbuf_create(void *param);
+int sys$$shbuf_map(void *param);
 
 #endif

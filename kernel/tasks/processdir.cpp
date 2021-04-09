@@ -33,4 +33,21 @@ namespace Kernel
         return nullptr;
     }
 
+    Memory::SharedBuffer *ProcessDir::FindShBuf(uint32_t bufid)
+    {
+        for (size_t i = 0; i < processes->Size(); i++)
+        {
+            auto process = processes->At(i);
+            for (size_t j = 0; j < process->GetShbufs()->Size(); j++)
+            {
+                auto &buf = process->GetShbufs()->At(j);
+                if (buf.GetBufId() == bufid)
+                {
+                    return &buf;
+                }
+            }
+        }
+        return nullptr;
+    }
+
 } // namespace Kernel

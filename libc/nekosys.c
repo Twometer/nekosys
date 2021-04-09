@@ -51,3 +51,20 @@ int framebuf_release()
 {
     return syscall(SYS_FBRELEASE, 0);
 }
+
+int shbuf_create(size_t size)
+{
+    return syscall(SYS_SHBUFCREATE, size);
+}
+
+int shbuf_map(int bufid, void **mapped)
+{
+    sys$$shbuf_map_param param;
+    param.shbuf = bufid;
+    param.dst = mapped;
+    return syscall(SYS_SHBUFMAP, &param);
+}
+
+int shbuf_unmap(int bufid)
+{
+}

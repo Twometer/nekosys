@@ -21,7 +21,7 @@ void start_process(const Command &cmd)
 	{
 		printf("nsh: error: Could not start\n");
 	}
-	else
+	else if (!cmd.background)
 	{
 		int retcode = waitp(pid);
 		if (retcode > RCSIGBASE)

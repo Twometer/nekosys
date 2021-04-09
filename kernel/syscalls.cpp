@@ -279,3 +279,20 @@ int sys$$shbuf_create(void *param)
     Process::Current()->GetShbufs()->Add(shbuf);
     return shbuf.GetBufId();
 }
+
+int sys$$shbuf_map(void *param)
+{
+    sys$$shbuf_map_param *params = (sys$$shbuf_map_param *)param;
+    SharedBuffer *buf = ProcessDir::GetInstance()->FindShBuf(params->shbuf);
+    if (buf == nullptr)
+        return -ENOENT;
+
+    auto shbufSize = buf->GetNumPages() * PAGE_SIZE;
+    auto currentProcess = Process::Current();
+    auto shbufPtr = currentProcess->GetHeapBase();
+    currentProcess->SetHeapBase(shbufPtr + shbufSize);
+
+    PageDirectory::Current()->MapRange(buf->GetBaseFrame(), shbufPtr, shbufSize, PAGE_BIT_ALLOW_USER | PAGE_BIT_READ_WRITE);
+    *params->dst = shbufPtr;
+    return 0;
+}
