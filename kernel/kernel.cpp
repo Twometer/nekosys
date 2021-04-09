@@ -160,7 +160,9 @@ extern "C"
 
 		kdbg("Setting up video\n");
 		VideoManager::GetInstance()->Initialize(handover);
-		printf("\n\nWelcome to nekosys " NEKO_VERSION "\n\n");
+		VideoManager::GetInstance()->GetTTY()->SetColor(TerminalColor::LightCyan);
+		printf("Welcome to nekosys " NEKO_VERSION "\n\n");
+		VideoManager::GetInstance()->GetTTY()->SetColor(TerminalColor::LightGray);
 
 		kdbg("Setting up devices\n");
 		DeviceManager::Initialize();
@@ -207,7 +209,7 @@ extern "C"
 			Kernel::Panic("boot", "Startup app path cannot be empty.");
 		}
 
-		printf("Startup app: %s\n", startupAppPath.CStr());
+		printf("Starting %s\n\n", startupAppPath.CStr());
 		delete[] startupConfBuf;
 
 		kdbg("Reading environment\n");
@@ -233,7 +235,6 @@ extern "C"
 
 		// Kernel initialized, let the scheduler take over
 		VideoManager::GetInstance()->GetTTY()->SetColor(TerminalColor::LightGray);
-		printf("System ready.\n\n");
 
 		kdbg("Waiting for the first interrupt that exits nkmain\n");
 		Interrupts::WaitForInt();
