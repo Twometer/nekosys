@@ -30,6 +30,10 @@
 #define SYS_SHBUFCREATE 21
 #define SYS_SHBUFMAP 22
 #define SYS_SHBUFUNMAP 23
+#define SYS_PIPEOPEN 24
+#define SYS_PIPECLOSE 25
+#define SYS_PIPERECV 26
+#define SYS_PIPESEND 27
 
 #define PARAM_VALUE(param, type) (*(type *)(param))
 
@@ -112,6 +116,21 @@ extern "C"
         void **dst;
     } sys$$shbuf_map_param;
 
+    typedef struct
+    {
+        int pipeId;
+        pid_t *src;
+        size_t size;
+        uint8_t *buffer;
+    } sys$$pipe_recv_param;
+
+    typedef struct
+    {
+        int pipeId;
+        size_t size;
+        uint8_t *data;
+    } sys$$pipe_send_param;
+
 #ifdef __cplusplus
 }
 #endif
@@ -138,5 +157,10 @@ int sys$$getenv(void *param);
 int sys$$readdir(void *param);
 int sys$$shbuf_create(void *param);
 int sys$$shbuf_map(void *param);
+int sys$$shbuf_unmap(void *param);
+int sys$$pipe_open(void *param);
+int sys$$pipe_close(void *param);
+int sys$$pipe_recv(void *param);
+int sys$$pipe_send(void *param);
 
 #endif

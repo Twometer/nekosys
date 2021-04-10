@@ -41,6 +41,11 @@ namespace Kernel
         AddSyscall(SYS_READDIR, sys$$readdir);
         AddSyscall(SYS_SHBUFCREATE, sys$$shbuf_create);
         AddSyscall(SYS_SHBUFMAP, sys$$shbuf_map);
+        AddSyscall(SYS_SHBUFUNMAP, sys$$shbuf_unmap);
+        AddSyscall(SYS_PIPEOPEN, sys$$pipe_open);
+        AddSyscall(SYS_PIPECLOSE, sys$$pipe_close);
+        AddSyscall(SYS_PIPESEND, sys$$pipe_send);
+        AddSyscall(SYS_PIPERECV, sys$$pipe_recv);
         Interrupts::AddHandler(0x80, this);
     }
 

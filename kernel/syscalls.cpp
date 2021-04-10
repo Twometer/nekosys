@@ -8,6 +8,7 @@
 #include <kernel/device/devicemanager.h>
 #include <kernel/video/videomanager.h>
 #include <kernel/environment.h>
+#include <kernel/namedpipe.h>
 #include <kernel/kdebug.h>
 #include <kernel/fs/vfs.h>
 #include <nekosys.h>
@@ -297,4 +298,49 @@ int sys$$shbuf_map(void *param)
     PageDirectory::Current()->MapRange(buf->GetBaseFrame(), shbufPtr, shbufSize, PAGE_BIT_ALLOW_USER | PAGE_BIT_READ_WRITE);
     *params->dst = shbufPtr;
     return 0;
+}
+
+int sys$$shbuf_unmap(void *param)
+{
+    uint32_t bufid = PARAM_VALUE(param, uint32_t);
+}
+
+int sys$$pipe_open(void *param)
+{
+    nk::String pipeName = (const char *)param;
+    return PipeManager::GetInstance()->FindOrCreatePipe(pipeName)->pipeId;
+}
+
+int sys$$pipe_close(void *param)
+{
+    uint32_t pipeId = PARAM_VALUE(param, uint32_t);
+    auto pipe = PipeManager::GetInstance()->FindPipe(pipeId);
+    if (pipe == nullptr)
+        return -ENOENT;
+    else if (pipe->ownerProcess == Process::Current()->GetId())
+    {
+        // notify everyone waiting, and then delete
+    }
+}
+
+int sys$$pipe_recv(void *param)
+{
+    sys$$pipe_recv_param *params = (sys$$pipe_recv_param *)param;
+    auto pipe = PipeManager::GetInstance()->FindPipe(params->pipeId);
+    if (pipe == nullptr)
+        return -ENOENT;
+    else
+    {
+    }
+}
+
+int sys$$pipe_send(void *param)
+{
+    sys$$pipe_send_param *params = (sys$$pipe_send_param *)param;
+    auto pipe = PipeManager::GetInstance()->FindPipe(params->pipeId);
+    if (pipe == nullptr)
+        return -ENOENT;
+    else
+    {
+    }
 }
