@@ -23,8 +23,16 @@ namespace Kernel
         nk::String name;
         uint32_t pipeId;
         pid_t ownerProcess;
-        nk::Vector<PipePacket *> packets{};
         bool broken = false;
+        nk::Vector<PipePacket *> *packets;
+
+        NamedPipe() {
+            packets = new nk::Vector<PipePacket*>();
+        }
+
+        ~NamedPipe() {
+            delete packets;
+        }
     };
 
     class PipeManager

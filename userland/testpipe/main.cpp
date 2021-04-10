@@ -8,8 +8,11 @@ int pipe = 0;
 
 void test_thread()
 {
+	printf("hello from the thread\n");
 	pid_t src;
 	uint8_t *buf = new uint8_t[128];
+
+	printf("listening to the pipe\n");
 
 	while (true)
 	{
@@ -34,20 +37,23 @@ void test_thread()
 
 int main(int argc, char **argv)
 {
+	printf("[ Pipe Test ]\n");
 	pipe = pipe_open("testpipe");
 	thread_create(test_thread);
 
-	sleep(5);
+	sleep(2);
 
+	printf("Sending packet!\n");
 	auto test = "test packet! :3";
-	pipe_send(pipe, strlen(test) + 1, (uint8_t *)test);
+	pipe_send(pipe, 0, strlen(test) + 1, (uint8_t *)test);
 
 	sleep(5);
 
-	printf("destryoing pipe...\n");
+	printf("Destryoing pipe!\n");
 	pipe_close(pipe);
 
-	sleep(5);
+	printf("Shutting down!\n");
+	sleep(2);
 
 	printf("bye ~\n");
 	return 0;

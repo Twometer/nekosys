@@ -99,10 +99,11 @@ int pipe_recv(int pipeid, pid_t *src, size_t size, uint8_t *buffer)
     return syscall(SYS_PIPERECV, &param);
 }
 
-int pipe_send(int pipeid, size_t size, uint8_t *data)
+int pipe_send(int pipeid, pid_t dst, size_t size, uint8_t *data)
 {
     sys$$pipe_send_param param;
     param.pipeId = pipeid;
+    param.dstProcess = dst;
     param.size = size;
     param.data = data;
     return syscall(SYS_PIPESEND, &param);

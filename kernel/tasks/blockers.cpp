@@ -45,9 +45,9 @@ namespace Kernel
         if (pipe->broken)
             return false;
 
-        for (size_t i = 0; i < pipe->packets.Size(); i++)
+        for (size_t i = 0; i < pipe->packets->Size(); i++)
         {
-            if (pipe->packets.At(i)->dstProcess == me)
+            if (pipe->packets->At(i)->dstProcess == me)
                 return false;
         }
         return true;

@@ -49,7 +49,7 @@ extern "C"
     int pipe_open(const char *name);
     int pipe_close(int pipeid);
     int pipe_recv(int pipeid, pid_t *src, size_t size, uint8_t *buffer);
-    int pipe_send(int pipeid, size_t size, uint8_t *data);
+    int pipe_send(int pipeid, pid_t dst, size_t size, uint8_t *data);
 
     /* Threads */
     int thread_create(void (*entryPoint)());

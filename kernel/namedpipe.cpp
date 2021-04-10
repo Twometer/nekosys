@@ -1,4 +1,6 @@
+#include <kernel/kdebug.h>
 #include <kernel/namedpipe.h>
+
 
 namespace Kernel
 {
@@ -24,6 +26,7 @@ namespace Kernel
         pipe->name = name;
         pipe->pipeId = idCounter;
         pipe->ownerProcess = Process::Current()->GetId();
+        pipe->broken = false;
         pipes.Add(pipe);
         return pipe;
     }

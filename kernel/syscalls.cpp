@@ -338,19 +338,18 @@ int sys$$pipe_recv(void *param)
     {
         // Wait for a packet on the pipe that is for the current process
         Thread::Current()->Block(new PipeBlocker(Process::Current()->GetId(), pipe));
-
         if (pipe->broken)
         {
             return -EPIPE;
         }
 
         // Now find that packet, remove it from the queue, and return it to the caller
-        for (size_t i = 0; i < pipe->packets.Size(); i++)
+        for (size_t i = 0; i < pipe->packets->Size(); i++)
         {
-            auto packet = pipe->packets.At(i);
+            auto packet = pipe->packets->At(i);
             if (packet->dstProcess == Process::Current()->GetId())
             {
-                pipe->packets.Remove(i);
+                pipe->packets->Remove(i);
 
                 auto size = packet->size > params->size ? params->size : packet->size;
 
@@ -371,7 +370,6 @@ int sys$$pipe_recv(void *param)
 int sys$$pipe_send(void *param)
 {
     sys$$pipe_send_param *params = (sys$$pipe_send_param *)param;
-
     if (params->size > 16384)
     {
         return -EINVAL;
@@ -388,7 +386,7 @@ int sys$$pipe_send(void *param)
         packet->size = params->size;
         packet->data = new uint8_t[packet->size];
         memcpy(packet->data, params->data, packet->size);
-        pipe->packets.Add(packet);
+        pipe->packets->Add(packet);
         return 0;
     }
 }
@@ -400,6 +398,7 @@ int sys$$thread_create(void *param)
     auto stack = proc->MapNewPages(1);
 
     auto thread = Thread::CreateUserThread(entryPoint, proc->GetPageDir(), new Memory::Stack(stack, PAGE_SIZE));
+    thread->SetProcess(Process::Current());
     proc->GetThreads()->Add(thread);
     thread->Start();
     return 0;
