@@ -304,6 +304,7 @@ int sys$$shbuf_map(void *param)
 int sys$$shbuf_unmap(void *param)
 {
     uint32_t bufid = PARAM_VALUE(param, uint32_t);
+    return 0;
 }
 
 int sys$$pipe_open(void *param)
@@ -320,8 +321,11 @@ int sys$$pipe_close(void *param)
         return -ENOENT;
     else if (pipe->ownerProcess == Process::Current()->GetId())
     {
-        // notify everyone waiting, and then delete
+        pipe->broken = true;
+        // wait for everyone, and then delete
+        return 0;
     }
+    return -EPERM; // Only the owner can close
 }
 
 int sys$$pipe_recv(void *param)
@@ -332,17 +336,60 @@ int sys$$pipe_recv(void *param)
         return -ENOENT;
     else
     {
+        // Wait for a packet on the pipe that is for the current process
+        Thread::Current()->Block(new PipeBlocker(Process::Current()->GetId(), pipe));
+
+        if (pipe->broken)
+        {
+            return -EPIPE;
+        }
+
+        // Now find that packet, remove it from the queue, and return it to the caller
+        for (size_t i = 0; i < pipe->packets.Size(); i++)
+        {
+            auto packet = pipe->packets.At(i);
+            if (packet->dstProcess == Process::Current()->GetId())
+            {
+                pipe->packets.Remove(i);
+
+                auto size = packet->size > params->size ? params->size : packet->size;
+
+                *params->src = packet->srcProcess;
+                memcpy(params->buffer, packet->data, size);
+
+                delete[] packet->data;
+                delete packet;
+
+                return size;
+            }
+        }
+
+        return -EWTF;
     }
 }
 
 int sys$$pipe_send(void *param)
 {
     sys$$pipe_send_param *params = (sys$$pipe_send_param *)param;
+
+    if (params->size > 16384)
+    {
+        return -EINVAL;
+    }
+
     auto pipe = PipeManager::GetInstance()->FindPipe(params->pipeId);
     if (pipe == nullptr)
         return -ENOENT;
     else
     {
+        auto packet = new PipePacket();
+        packet->dstProcess = (params->dstProcess == 0 ? pipe->ownerProcess : params->dstProcess);
+        packet->srcProcess = Process::Current()->GetId();
+        packet->size = params->size;
+        packet->data = new uint8_t[packet->size];
+        memcpy(packet->data, params->data, packet->size);
+        pipe->packets.Add(packet);
+        return 0;
     }
 }
 

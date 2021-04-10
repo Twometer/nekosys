@@ -78,3 +78,32 @@ int thread_die(int retcode)
 {
     return syscall(SYS_TEXIT, &retcode);
 }
+
+int pipe_open(const char *name)
+{
+    return syscall(SYS_PIPEOPEN, name);
+}
+
+int pipe_close(int pipeid)
+{
+    return syscall(SYS_PIPECLOSE, &pipeid);
+}
+
+int pipe_recv(int pipeid, pid_t *src, size_t size, uint8_t *buffer)
+{
+    sys$$pipe_recv_param param;
+    param.pipeId = pipeid;
+    param.src = src;
+    param.size = size;
+    param.buffer = buffer;
+    return syscall(SYS_PIPERECV, &param);
+}
+
+int pipe_send(int pipeid, size_t size, uint8_t *data)
+{
+    sys$$pipe_send_param param;
+    param.pipeId = pipeid;
+    param.size = size;
+    param.data = data;
+    return syscall(SYS_PIPESEND, &param);
+}

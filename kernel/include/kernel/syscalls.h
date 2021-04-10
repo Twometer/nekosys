@@ -128,6 +128,7 @@ extern "C"
     typedef struct
     {
         int pipeId;
+        pid_t dstProcess;
         size_t size;
         uint8_t *data;
     } sys$$pipe_send_param;

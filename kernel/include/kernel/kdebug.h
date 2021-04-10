@@ -9,7 +9,7 @@
 #define VFS_DEBUG 0
 #define PAGE_DEBUG 0
 #define ELFLOADER_DEBUG 0
-#define SCHEDULER_DEBUG 1
+#define SCHEDULER_DEBUG 0
 
 /* debug output modes */
 #define KDBG_MODE_NONE 0

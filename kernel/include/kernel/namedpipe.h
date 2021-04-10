@@ -24,6 +24,7 @@ namespace Kernel
         uint32_t pipeId;
         pid_t ownerProcess;
         nk::Vector<PipePacket *> packets{};
+        bool broken = false;
     };
 
     class PipeManager

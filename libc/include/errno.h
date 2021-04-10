@@ -25,5 +25,6 @@
 #define ESRCH 22
 #define ENOTDIR 23
 #define EINVAL 24
+#define EWTF 25
 
 #endif

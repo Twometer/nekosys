@@ -3,6 +3,7 @@
 
 #include <kernel/tasks/blocker.h>
 #include <kernel/tasks/process.h>
+#include <kernel/namedpipe.h>
 #include <stdint.h>
 
 namespace Kernel
@@ -37,6 +38,18 @@ namespace Kernel
 
     public:
         KeyboardBlocker(char delim);
+
+        bool IsBlocked() override;
+    };
+
+    class PipeBlocker : public IThreadBlocker
+    {
+    private:
+        pid_t me;
+        NamedPipe *pipe;
+
+    public:
+        PipeBlocker(pid_t me, NamedPipe *pipe);
 
         bool IsBlocked() override;
     };
