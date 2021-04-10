@@ -4,6 +4,10 @@ namespace Kernel
 {
     DEFINE_SINGLETON(PipeManager);
 
+    PipeManager::PipeManager()
+    {
+    }
+
     NamedPipe *PipeManager::FindOrCreatePipe(const nk::String &name)
     {
         for (size_t i = 0; i < pipes.Size(); i++)

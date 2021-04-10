@@ -31,7 +31,11 @@ namespace Kernel
 
     Thread::~Thread()
     {
-        delete[] stack->GetStackBottom();
+        // Only destroy the stack if it is in kernel memory and allocated using kernel memory...
+        // Calling delete[] on user memory will just triple-fault
+        if ((uint32_t)stack->GetStackBottom() > 0xC0000000)
+            delete[] stack->GetStackBottom();
+
         delete stack;
 
         if (ring == Ring::Ring3)

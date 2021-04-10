@@ -51,6 +51,9 @@ extern "C"
     int pipe_recv(int pipeid, pid_t *src, size_t size, uint8_t *buffer);
     int pipe_send(int pipeid, size_t size, uint8_t *data);
 
+    /* Threads */
+    int thread_create(void (*entryPoint)());
+    int thread_die(int retcode);
 #ifdef __cplusplus
 }
 #endif

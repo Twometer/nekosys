@@ -61,6 +61,8 @@ namespace Kernel
 
         nk::Vector<uint32_t> *GetOpenFiles() const { return openFiles; }
         nk::Vector<Memory::SharedBuffer> *GetShbufs() const { return shbufs; }
+        nk::Vector<Kernel::Thread *> *GetThreads() const { return threads; }
+        Memory::PageDirectory *GetPageDir() const { return pageDir; }
 
         static void SetCurrent(Process *process) { current = process; };
         static Process *Current() { return current; }

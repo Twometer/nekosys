@@ -46,6 +46,7 @@ namespace Kernel
         AddSyscall(SYS_PIPECLOSE, sys$$pipe_close);
         AddSyscall(SYS_PIPESEND, sys$$pipe_send);
         AddSyscall(SYS_PIPERECV, sys$$pipe_recv);
+        AddSyscall(SYS_THCREATE, sys$$thread_create);
         Interrupts::AddHandler(0x80, this);
     }
 

@@ -7,6 +7,7 @@
 #include <kernel/memory/pagemanager.h>
 #include <kernel/device/devicemanager.h>
 #include <kernel/video/videomanager.h>
+#include <kernel/tasks/elfloader.h>
 #include <kernel/environment.h>
 #include <kernel/namedpipe.h>
 #include <kernel/kdebug.h>
@@ -343,4 +344,16 @@ int sys$$pipe_send(void *param)
     else
     {
     }
+}
+
+int sys$$thread_create(void *param)
+{
+    auto entryPoint = (ThreadMain)param;
+    auto proc = Process::Current();
+    auto stack = proc->MapNewPages(1);
+
+    auto thread = Thread::CreateUserThread(entryPoint, proc->GetPageDir(), new Memory::Stack(stack, PAGE_SIZE));
+    proc->GetThreads()->Add(thread);
+    thread->Start();
+    return 0;
 }

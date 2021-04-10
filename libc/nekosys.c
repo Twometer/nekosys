@@ -68,3 +68,13 @@ int shbuf_map(int bufid, void **mapped)
 int shbuf_unmap(int bufid)
 {
 }
+
+int thread_create(void (*entryPoint)())
+{
+    return syscall(SYS_THCREATE, entryPoint);
+}
+
+int thread_die(int retcode)
+{
+    return syscall(SYS_TEXIT, &retcode);
+}
