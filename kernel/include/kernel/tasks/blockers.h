@@ -54,6 +54,17 @@ namespace Kernel
         bool IsBlocked() override;
     };
 
+    class ThreadJoinBlocker : public IThreadBlocker
+    {
+    private:
+        Thread *thread;
+
+    public:
+        ThreadJoinBlocker(Thread *thread);
+
+        bool IsBlocked() override;
+    };
+
 }; // namespace Kernel
 
 #endif

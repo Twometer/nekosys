@@ -27,6 +27,7 @@ namespace Kernel
 
         void Yield();
 
+        Thread *FindThread(tid_t tid);
     private:
         void PreemptCurrent();
 

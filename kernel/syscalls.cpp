@@ -8,6 +8,7 @@
 #include <kernel/device/devicemanager.h>
 #include <kernel/video/videomanager.h>
 #include <kernel/tasks/elfloader.h>
+#include <kernel/tasks/scheduler.h>
 #include <kernel/environment.h>
 #include <kernel/namedpipe.h>
 #include <kernel/kdebug.h>
@@ -401,5 +402,17 @@ int sys$$thread_create(void *param)
     thread->SetProcess(Process::Current());
     proc->GetThreads()->Add(thread);
     thread->Start();
-    return 0;
+    return thread->GetId();
+}
+
+int sys$$thread_join(void *param)
+{
+    tid_t threadId = PARAM_VALUE(param, tid_t);
+    Thread *thread = Scheduler::GetInstance()->FindThread(threadId);
+    if (thread == nullptr || thread->GetId() == Thread::Current()->GetId())
+        return -EINVAL;
+    else
+    {
+        Thread::Current()->Block(new ThreadJoinBlocker(thread));
+    }
 }

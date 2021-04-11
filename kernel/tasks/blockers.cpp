@@ -53,4 +53,14 @@ namespace Kernel
         return true;
     }
 
+    ThreadJoinBlocker::ThreadJoinBlocker(Thread *thread)
+        : thread(thread)
+    {
+    }
+
+    bool ThreadJoinBlocker::IsBlocked()
+    {
+        return thread->GetState() != ThreadState::Dead;
+    }
+
 }; // namespace Kernel

@@ -35,6 +35,7 @@
 #define SYS_PIPERECV 26
 #define SYS_PIPESEND 27
 #define SYS_THCREATE 28
+#define SYS_THJOIN 29
 
 #define PARAM_VALUE(param, type) (*(type *)(param))
 
@@ -165,5 +166,6 @@ int sys$$pipe_close(void *param);
 int sys$$pipe_recv(void *param);
 int sys$$pipe_send(void *param);
 int sys$$thread_create(void *param);
+int sys$$thread_join(void *param);
 
 #endif

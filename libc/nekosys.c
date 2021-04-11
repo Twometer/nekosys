@@ -74,6 +74,10 @@ int thread_create(void (*entryPoint)())
     return syscall(SYS_THCREATE, entryPoint);
 }
 
+int thread_join(int threadId) {
+    return syscall(SYS_THJOIN, &threadId);
+}
+
 int thread_die(int retcode)
 {
     return syscall(SYS_TEXIT, &retcode);

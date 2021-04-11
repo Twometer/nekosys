@@ -53,6 +53,7 @@ extern "C"
 
     /* Threads */
     int thread_create(void (*entryPoint)());
+    int thread_join(int threadId);
     int thread_die(int retcode);
 #ifdef __cplusplus
 }

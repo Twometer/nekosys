@@ -38,6 +38,17 @@ namespace Kernel
         HandleInterrupt(0, nullptr);
     }
 
+    Thread *Scheduler::FindThread(tid_t threadId)
+    {
+        for (size_t i = 0; i < threads.Size(); i++)
+        {
+            auto thread = threads.At(i);
+            if (thread->GetId() == threadId)
+                return thread;
+        }
+        return nullptr;
+    }
+
     void Scheduler::HandleInterrupt(unsigned int, RegisterStates *)
     {
         auto *currentThread = Thread::Current();
