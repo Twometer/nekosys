@@ -14,6 +14,8 @@ uarch_t __atexitFuncCount = 0;
 void *__dso_handle = 0;
 #endif
 
+void *__gxx_personality_v0;
+
 int __cxa_atexit(void (*f)(void *), void *objptr, void *dso)
 {
     if (__atexitFuncCount >= ATEXIT_FUNC_MAX)

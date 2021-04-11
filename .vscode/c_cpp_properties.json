@@ -11,7 +11,8 @@
                 "${workspaceFolder}/libc/include",
                 "${workspaceFolder}/libelf/include",
                 "${workspaceFolder}/libneko/include",
-                "${workspaceFolder}/libpng/include"
+                "${workspaceFolder}/libpng/include",
+                "${workspaceFolder}/libgui/include"
             ]
         }
     ],
