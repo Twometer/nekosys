@@ -64,6 +64,10 @@ void receiver_thread()
 			shbuf_map(bufid, (void **)&fbuf);
 
 			windows.Add({packet->title, packet->x, packet->y, packet->width, packet->height, bufid, fbuf});
+
+			PWindowFbuf reply;
+			reply.shbufId = bufid;
+			connection->SendTo(ID_PCreateWindow, sizeof(PCreateWindow), &reply, packetData.source);
 			break;
 		}
 		default:

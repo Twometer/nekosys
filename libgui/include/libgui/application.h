@@ -14,6 +14,8 @@ namespace Gui
 
         bool exitRequested;
 
+        Window *lastWindow;
+
     public:
         Application();
 

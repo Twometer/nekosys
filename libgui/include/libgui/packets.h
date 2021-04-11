@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 #define ID_PCreateWindow 1
+#define ID_PWindowBuf 2
 
 namespace Gui
 {

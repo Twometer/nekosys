@@ -18,10 +18,15 @@ GuiConnection::~GuiConnection()
 
 void GuiConnection::Send(uint8_t packetId, size_t size, void *data)
 {
+    SendTo(packetId, size, data, 0);
+}
+
+void GuiConnection::SendTo(uint8_t packetId, size_t size, void *data, pid_t dst)
+{
     uint8_t *packet = new uint8_t[size + 1];
     packet[0] = packetId;
     memcpy(packet + 1, data, size);
-    pipe_send(pipe, 0, size + 1, packet);
+    pipe_send(pipe, dst, size + 1, packet);
     delete[] packet;
 }
 

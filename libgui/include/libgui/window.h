@@ -1,6 +1,7 @@
 #ifndef _WINDOW_H
 #define _WINDOW_H
 
+#include <stdint.h>
 #include <nk/string.h>
 
 namespace Gui

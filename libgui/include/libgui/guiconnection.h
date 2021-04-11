@@ -26,6 +26,8 @@ namespace Gui
 
         ~GuiConnection();
 
+        void SendTo(uint8_t packetId, size_t size, void *data, pid_t dst);
+
         void Send(uint8_t packetId, size_t size, void *data);
 
         PacketData Receive();
