@@ -67,7 +67,7 @@ void receiver_thread()
 
 			PWindowFbuf reply;
 			reply.shbufId = bufid;
-			connection->SendTo(ID_PCreateWindow, sizeof(PCreateWindow), &reply, packetData.source);
+			connection->SendTo(ID_PWindowBuf, sizeof(PCreateWindow), &reply, packetData.source);
 			break;
 		}
 		default:

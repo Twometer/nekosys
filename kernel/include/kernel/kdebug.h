@@ -3,7 +3,7 @@
 
 /* debug flags */
 #define HEAP_DEBUG 0
-#define SYS_DEBUG 0
+#define SYS_DEBUG 1
 #define DISK_DEBUG 0
 #define FAT16_DEBUG 0
 #define VFS_DEBUG 0

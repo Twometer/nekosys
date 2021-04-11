@@ -386,6 +386,9 @@ int sys$$pipe_send(void *param)
         packet->srcProcess = Process::Current()->GetId();
         packet->size = params->size;
         packet->data = new uint8_t[packet->size];
+#if SYS_DEBUG
+        kdbg("pipe: sending packet with size %d to process %d\n", packet->size, packet->dstProcess);
+#endif
         memcpy(packet->data, params->data, packet->size);
         pipe->packets->Add(packet);
         return 0;
