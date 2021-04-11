@@ -10,9 +10,16 @@ namespace Gui
 
     struct PCreateWindow
     {
+        int x;
+        int y;
         int width;
         int height;
         char title[128];
+    };
+
+    struct PWindowFbuf
+    {
+        int shbufId;
     };
 
 };

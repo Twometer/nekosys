@@ -12,7 +12,8 @@ void Application::Run()
 {
     while (!exitRequested)
     {
-        connection.Receive();
+        auto packet = connection.Receive();
+
     }
 }
 
@@ -26,6 +27,8 @@ void Application::OpenWindow(Window &win)
     PCreateWindow packet{};
     packet.width = win.width;
     packet.height = win.height;
+    packet.x = win.x;
+    packet.y = win.y;
     memcpy(packet.title, win.title.CStr(), win.title.Length());
     connection.Send(ID_PCreateWindow, sizeof(packet), &packet);
 }

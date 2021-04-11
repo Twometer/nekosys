@@ -4,7 +4,7 @@ int main()
 {
     Gui::Application application;
 
-    Gui::Window window("Test", 128, 128);
+    Gui::Window window("Test", 400, 300);
     application.OpenWindow(window);
 
     application.Run();
