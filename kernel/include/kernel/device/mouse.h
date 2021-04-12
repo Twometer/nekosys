@@ -3,8 +3,20 @@
 
 #include <kernel/arch/interrupts.h>
 
+#define MOUSEBTN_LEFT 1
+#define MOUSEBTN_RIGHT 2
+#define MOUSEBTN_WHEEL 4
+
 namespace Device
 {
+    struct MousePacket
+    {
+        int dx;
+        int dy;
+        int dwheel;
+        int buttons;
+    };
+
     class Mouse : public Kernel::InterruptHandler
     {
     public:

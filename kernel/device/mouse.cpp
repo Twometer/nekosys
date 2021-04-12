@@ -80,9 +80,22 @@ void Mouse::HandleInterrupt(unsigned int, RegisterStates *)
     {
         int x = mousePacket[1];
         int y = mousePacket[2];
-        kdbg("Mouse %d %d\n", x, y);
+
+        bool xOverflow = mousePacket[0] & 0x40;
+        bool yOverflow = mousePacket[0] & 0x40;
+        bool xSign = mousePacket[0] & 0x10;
+        bool ySign = mousePacket[0] & 0x20;
+        if (x && xSign)
+            x -= 255;
+        if (y && ySign)
+            y -= 255;
+        if (xOverflow || yOverflow)
+        {
+            x = y = 0;
+        }
+        int buttons = mousePacket[0] & 0x07;
+        kdbg("Mouse %d %d %x\n", x, y, buttons);
     }
-    
 }
 
 void Mouse::WaitForReadyToWrite()
