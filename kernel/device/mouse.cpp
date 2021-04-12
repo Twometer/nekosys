@@ -9,9 +9,6 @@ using namespace Device;
 #define PS2_PORT_STATUS 0x64
 #define PS2_PORT_BUFFER 0x60
 
-#define PS2_MSG_GET_STATUS 0x20
-#define PS2_MSG_SET_STATUS 0x60
-
 void Mouse::Initialize()
 {
     kdbg("Initializing mouse...\n");
@@ -33,13 +30,25 @@ void Mouse::Initialize()
     WaitForReadyToRead();
     kdbg("Mouse Id: %x\n", IO::In8(PS2_PORT_BUFFER));
 
-    // load defaults
-    auto defaults = SendCommand(0xF6);
-    kdbg("Defaults: %x\n", defaults);
+    // enable aux port
+    WaitForReadyToWrite();
+    IO::Out8(PS2_PORT_STATUS, 0xA8);
 
-    // enable packet streaming
-    auto enable = SendCommand(0xF4);
-    kdbg("Enabled: %x\n", enable);
+    // compaq byte
+    WaitForReadyToWrite();
+    IO::Out8(PS2_PORT_STATUS, 0x20);
+    WaitForReadyToRead();
+    auto status = IO::In8(PS2_PORT_BUFFER);
+    SET_BIT(status, 1);   // int12 generation
+    CLEAR_BIT(status, 5); // mouse clock
+    WaitForReadyToWrite();
+    IO::Out8(PS2_PORT_STATUS, 0x60);
+    WaitForReadyToWrite();
+    IO::Out8(PS2_PORT_BUFFER, status);
+
+    // enable automatic packet sending
+    SendCommand(0xF6);
+    SendCommand(0xF4);
 }
 
 uint8_t Mouse::SendCommand(uint8_t command)
@@ -55,17 +64,35 @@ uint8_t Mouse::SendCommand(uint8_t command)
 
 void Mouse::HandleInterrupt(unsigned int, RegisterStates *)
 {
-    kdbg("Mouse int!\n");
+    uint8_t status = IO::In8(PS2_PORT_STATUS);
+
+    uint8_t mousePacket[4];
+    size_t mousePacketSize = 0;
+
+    while (status & 1)
+    {
+        uint8_t data = IO::In8(PS2_PORT_BUFFER);
+        mousePacket[mousePacketSize++] = data;
+        status = IO::In8(PS2_PORT_STATUS);
+    }
+
+    if (mousePacketSize != 0)
+    {
+        int x = mousePacket[1];
+        int y = mousePacket[2];
+        kdbg("Mouse %d %d\n", x, y);
+    }
+    
 }
 
 void Mouse::WaitForReadyToWrite()
 {
-    while (IO::In8(PS2_PORT_STATUS) & 2 != 0)
+    while ((IO::In8(PS2_PORT_STATUS) & 2) != 0)
         ;
 }
 
 void Mouse::WaitForReadyToRead()
 {
-    while (IO::In8(PS2_PORT_STATUS) & 1 == 0)
+    while ((IO::In8(PS2_PORT_STATUS) & 1) == 0)
         ;
 }

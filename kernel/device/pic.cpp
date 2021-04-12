@@ -1,4 +1,5 @@
 #include <kernel/device/pic.h>
+#include <kernel/kdebug.h>
 #include <kernel/io.h>
 
 using namespace Device;
@@ -23,4 +24,6 @@ void PIC::Remap()
 
     IO::Out8(0x21, m1);
     IO::Out8(0xA1, m2);
+
+    kdbg("PIC Mask: %x %x\n", m1, m2);
 }
