@@ -419,3 +419,19 @@ int sys$$thread_join(void *param)
         Thread::Current()->Block(new ThreadJoinBlocker(thread));
     }
 }
+
+int sys$$mouse_poll(void *param) 
+{
+    MOUSEPACKET *packet = (MOUSEPACKET*)param;
+    auto queue = Device::DeviceManager::mouse->queue;
+    if (queue->IsEmpty())
+        return -ENODATA;
+
+    auto kernelPacket = queue->Dequeue();
+    packet->dx = kernelPacket.dx;
+    packet->dy = kernelPacket.dy;
+    packet->dwheel = kernelPacket.dwheel;
+    packet->buttons = kernelPacket.buttons;
+
+    return 0;
+}

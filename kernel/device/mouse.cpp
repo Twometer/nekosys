@@ -10,7 +10,7 @@ using namespace Device;
 #define PS2_PORT_BUFFER 0x60
 
 Mouse::Mouse()
-    : queue(MOUSE_PACKET_NUM)
+    : queue(new nk::CircularQueue<MousePacket>(MOUSE_PACKET_NUM))
 {
 }
 
@@ -104,6 +104,7 @@ void Mouse::HandleInterrupt(unsigned int, RegisterStates *)
         int buttons = mousePacket[0] & 0x07;
 
         MousePacket packet = {x, y, w, buttons};
+        queue->Enqueue(packet);
     }
 }
 

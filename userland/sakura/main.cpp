@@ -25,6 +25,9 @@ FRAMEBUF framebuf;
 GuiConnection *connection;
 nk::Vector<window_info> windows;
 
+int mouse_x = 0;
+int mouse_y = 0;
+
 uint8_t *read_file(const char *path, size_t *size)
 {
 	FILE *fd = fopen(path, "r");
@@ -115,6 +118,8 @@ int main(int argc, char **argv)
 		spawnp(nullptr, conf->GetProperty("StartupApp").CStr(), 0, nullptr);
 		printf("[info] demo application started.\n");
 
+		MOUSEPACKET mouse{};
+
 		/* compositor test */
 		while (true)
 		{
@@ -151,6 +156,25 @@ int main(int argc, char **argv)
 					sOffset += window.width * 3;
 				}
 			}
+
+			if (mouse_poll(&mouse) == 0)
+			{
+				mouse_x += mouse.dx;
+				mouse_y -= mouse.dy;
+				if (mouse_x < 0)
+					mouse_x = 0;
+				if (mouse_y < 0)
+					mouse_y = 0;
+				if (mouse_x > width - 1)
+					mouse_x = width - 1;
+				if (mouse_y > height - 1)
+					mouse_y = height - 1;
+			}
+
+			size_t baseidx = mouse_y * framebuf.pitch + mouse_x * 4;
+			framebuf.buffer[baseidx] = 0xff;
+			framebuf.buffer[baseidx + 1] = 0x00;
+			framebuf.buffer[baseidx + 2] = 0x00;
 
 			framebuf_flush_all();
 			sleep(0);

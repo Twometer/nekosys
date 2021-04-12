@@ -27,6 +27,14 @@ extern "C"
         size_t pixelStride;
     } FRAMEBUF;
 
+    typedef struct
+    {
+        int dx;
+        int dy;
+        int dwheel;
+        int buttons;
+    } MOUSEPACKET;
+
     /* FIXME: hacky stdin readline - should be redone */
     int readln(char *dst, size_t maxSize);
 
@@ -55,6 +63,9 @@ extern "C"
     int thread_create(void (*entryPoint)());
     int thread_join(int threadId);
     int thread_die(int retcode);
+
+    /* Mouse */
+    int mouse_poll(MOUSEPACKET *packet);
 #ifdef __cplusplus
 }
 #endif

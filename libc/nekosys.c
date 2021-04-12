@@ -74,7 +74,8 @@ int thread_create(void (*entryPoint)())
     return syscall(SYS_THCREATE, entryPoint);
 }
 
-int thread_join(int threadId) {
+int thread_join(int threadId)
+{
     return syscall(SYS_THJOIN, &threadId);
 }
 
@@ -111,4 +112,9 @@ int pipe_send(int pipeid, pid_t dst, size_t size, uint8_t *data)
     param.size = size;
     param.data = data;
     return syscall(SYS_PIPESEND, &param);
+}
+
+int mouse_poll(MOUSEPACKET *packet)
+{
+    return syscall(SYS_MOUSEPOLL, packet);
 }

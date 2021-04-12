@@ -48,6 +48,7 @@ namespace Kernel
         AddSyscall(SYS_PIPERECV, sys$$pipe_recv);
         AddSyscall(SYS_THCREATE, sys$$thread_create);
         AddSyscall(SYS_THJOIN, sys$$thread_join);
+        AddSyscall(SYS_MOUSEPOLL, sys$$mouse_poll);
         Interrupts::AddHandler(0x80, this);
     }
 

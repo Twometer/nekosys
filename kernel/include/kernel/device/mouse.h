@@ -5,7 +5,7 @@
 #include <kernel/arch/interrupts.h>
 
 // Number of mouse packets the mouse saves before it overwrites the oldest one.
-#define MOUSE_PACKET_NUM 256
+#define MOUSE_PACKET_NUM 16
 
 #define MOUSEBTN_LEFT 1
 #define MOUSEBTN_RIGHT 2
@@ -29,7 +29,7 @@ namespace Device
         int wheelPosition;
         int buttons;
 
-        nk::CircularQueue<MousePacket> queue;
+        nk::CircularQueue<MousePacket> *queue;
 
         Mouse();
 

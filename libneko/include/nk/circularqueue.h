@@ -46,7 +46,6 @@ namespace nk
                 head = tail = -1;
             else
                 head = (head + 1) % size;
-
             return elem;
         }
 
