@@ -9,6 +9,11 @@ using namespace Device;
 #define PS2_PORT_STATUS 0x64
 #define PS2_PORT_BUFFER 0x60
 
+Mouse::Mouse()
+    : queue(MOUSE_PACKET_NUM)
+{
+}
+
 void Mouse::Initialize()
 {
     kdbg("Initializing mouse...\n");
@@ -80,6 +85,9 @@ void Mouse::HandleInterrupt(unsigned int, RegisterStates *)
     {
         int x = mousePacket[1];
         int y = mousePacket[2];
+        int w = mousePacket[3] & 0x0f;
+        if (w == 15)
+            w = -1;
 
         bool xOverflow = mousePacket[0] & 0x40;
         bool yOverflow = mousePacket[0] & 0x40;
@@ -94,7 +102,8 @@ void Mouse::HandleInterrupt(unsigned int, RegisterStates *)
             x = y = 0;
         }
         int buttons = mousePacket[0] & 0x07;
-        kdbg("Mouse %d %d %x\n", x, y, buttons);
+
+        MousePacket packet = {x, y, w, buttons};
     }
 }
 
