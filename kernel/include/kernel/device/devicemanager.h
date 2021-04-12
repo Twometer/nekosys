@@ -4,6 +4,7 @@
 #include "cpu.h"
 #include "keyboard.h"
 #include "pic.h"
+#include "mouse.h"
 #include "cmos.h"
 
 namespace Device
@@ -13,6 +14,8 @@ namespace Device
     {
     public:
         static Keyboard *keyboard;
+
+        static Mouse *mouse;
 
         static PIC *pic;
 
