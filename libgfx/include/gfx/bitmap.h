@@ -15,13 +15,15 @@ enum class PixelFormat
 
 class Bitmap
 {
-private:
+public:
     unsigned int width;
     unsigned int height;
     unsigned int stride;
     unsigned int bpp;
-    uint8_t *data;
     PixelFormat format;
+
+private:
+    uint8_t *data;
     bool ownsBuffer;
 
 public:

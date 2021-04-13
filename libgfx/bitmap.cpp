@@ -17,8 +17,8 @@ Bitmap::Bitmap(const nk::String &path)
     fread(data, 1, len, fd);
     fclose(fd);
 
-    unsigned error = lodepng_decode_memory(&data, &width, &height, data, len, LodePNGColorType::LCT_RGB, 8);
-    bpp = 3;
+    unsigned error = lodepng_decode_memory(&this->data, &width, &height, data, len, LodePNGColorType::LCT_RGB, 8);
+    stride = width * bpp;
 }
 
 Bitmap::Bitmap(unsigned int width, unsigned int height, unsigned int stride, uint8_t *data, PixelFormat format)

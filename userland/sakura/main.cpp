@@ -10,6 +10,7 @@
 #include <nk/inifile.h>
 #include <nk/vector.h>
 #include <png/lodepng.h>
+#include <gfx/bitmap.h>
 #include "Mouse.h"
 
 using namespace Gui;
@@ -20,9 +21,10 @@ struct window_info
 	int x, y, width, height;
 	int fbuf_id;
 	uint8_t *fbuf;
+	Bitmap *bitmap;
 };
 
-FRAMEBUF framebuf;
+Bitmap *framebuffer;
 GuiConnection *connection;
 nk::Vector<window_info> windows;
 
@@ -54,6 +56,7 @@ void receiver_thread()
 		auto packetData = connection->Receive();
 
 		switch (packetData.packetId)
+
 		{
 		case ID_PCreateWindow:
 		{
@@ -81,27 +84,16 @@ void receiver_thread()
 
 int main(int argc, char **argv)
 {
+	FRAMEBUF framebuf;
 	framebuf_acquire(&framebuf);
+	framebuffer = new Bitmap(framebuf.width, framebuf.height, framebuf.pitch, framebuf.buffer, PixelFormat::Bgr32);
 
 	size_t iniFileSize;
 	uint8_t *inifileData = read_file("/etc/sakura.ini", &iniFileSize);
 	nk::IniFile config((char *)inifileData);
 	auto conf = config.GetSection("Sakura");
 
-	size_t wallpaperSize;
-	uint8_t *wallpaperPng = read_file(conf->GetProperty("Wallpaper").CStr(), &wallpaperSize);
-	printf("wallpaper: %s\n", conf->GetProperty("Wallpaper").CStr());
-
-	unsigned char *image;
-	unsigned int width, height;
-
-	unsigned error = lodepng_decode_memory(&image, &width, &height, wallpaperPng, wallpaperSize, LodePNGColorType::LCT_RGB, 8);
-
-	if (error)
-	{
-		printf("decoder error: %s\n", lodepng_error_text(error));
-		return 1;
-	}
+	Bitmap wallpaper(conf->GetProperty("Wallpaper"));
 
 	connection = new GuiConnection();
 	int result = thread_create(receiver_thread);
@@ -111,58 +103,17 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		printf("[info] sakura window server started.\n");
-
 		spawnp(nullptr, conf->GetProperty("StartupApp").CStr(), 0, nullptr);
-		printf("[info] demo application started.\n");
 
-		Mouse mouse(width, height);
+		Mouse mouse(framebuffer->width, framebuffer->height);
 
 		/* compositor test */
 		while (true)
 		{
-			size_t dOffset = 0;
-			size_t sOffset = 0;
-			for (size_t row = 0; row < height; row++)
-			{
-				for (size_t col = 0; col < width; col++)
-				{
-					framebuf.buffer[dOffset + col * 4 + 2] = image[sOffset + col * 3 + 0];
-					framebuf.buffer[dOffset + col * 4 + 1] = image[sOffset + col * 3 + 1];
-					framebuf.buffer[dOffset + col * 4 + 0] = image[sOffset + col * 3 + 2];
-				}
-				dOffset += framebuf.pitch;
-				sOffset += width * 3;
-			}
-
-			for (size_t i = 0; i < windows.Size(); i++)
-			{
-				auto &window = windows.At(i);
-
-				sOffset = 0;
-				dOffset = window.y * framebuf.pitch + window.x * framebuf.pixelStride;
-
-				for (size_t row = 0; row < window.height; row++)
-				{
-					for (size_t col = 0; col < window.width; col++)
-					{
-						framebuf.buffer[dOffset + col * 4 + 2] = window.fbuf[sOffset + col * 3 + 0];
-						framebuf.buffer[dOffset + col * 4 + 1] = window.fbuf[sOffset + col * 3 + 1];
-						framebuf.buffer[dOffset + col * 4 + 0] = window.fbuf[sOffset + col * 3 + 2];
-					}
-					dOffset += framebuf.pitch;
-					sOffset += window.width * 3;
-				}
-			}
+			framebuffer->Blit(wallpaper, Rectangle(0, 0, framebuffer->width, framebuffer->height));
 
 			mouse.Update();
-
-			
-
-			size_t baseidx = mouse.GetPosY() * framebuf.pitch + mouse.GetPosX() * 4;
-			framebuf.buffer[baseidx] = 0xff;
-			framebuf.buffer[baseidx + 1] = 0x00;
-			framebuf.buffer[baseidx + 2] = 0x00;
+			framebuffer->SetPixel(mouse.GetPosX(), mouse.GetPosY(), {255, 255, 0});
 
 			framebuf_flush_all();
 			usleep(1000);
