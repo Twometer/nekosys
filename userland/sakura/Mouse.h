@@ -6,8 +6,8 @@
 class Mouse
 {
 private:
-    uint16_t posX;
-    uint16_t posY;
+    int posX;
+    int posY;
 
     uint16_t maxX;
     uint16_t maxY;

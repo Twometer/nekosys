@@ -3,9 +3,7 @@
 
 #include "point.h"
 #include "size.h"
-
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#include "util.h"
 
 struct Rectangle
 {

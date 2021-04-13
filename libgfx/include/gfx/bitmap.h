@@ -33,8 +33,8 @@ public:
     inline void SetPixel(unsigned int x, unsigned int y, Color pixel);
     inline Color GetPixel(unsigned int x, unsigned int y) const;
 
-    void Blit(const Bitmap &other, const Point &srcOffset, const Rectangle &dstRect);
-    void DrawBitmap(const Bitmap &other, const Rectangle &dstRect);
+    void Blit(const Bitmap &other, const Point &srcOffset, Rectangle dstRect);
+    void DrawBitmap(const Bitmap &other, Rectangle dstRect);
 
 private:
     inline size_t GetIndex(unsigned int x, unsigned int y) const;

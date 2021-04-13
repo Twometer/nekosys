@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <png/lodepng.h>
 #include <gfx/bitmap.h>
+#include <gfx/util.h>
 #include <nk/memutil.h>
 
 Bitmap::Bitmap(const nk::String &path)
@@ -59,8 +60,11 @@ inline size_t Bitmap::GetIndex(unsigned int x, unsigned int y) const
     return y * stride + x * bpp;
 }
 
-void Bitmap::Blit(const Bitmap &other, const Point &srcOffset, const Rectangle &dstRect)
+void Bitmap::Blit(const Bitmap &other, const Point &srcOffset, Rectangle dstRect)
 {
+    dstRect.x1 = MIN(dstRect.x1, width);
+    dstRect.y1 = MIN(dstRect.y1, height);
+
     if (format == other.format)
     {
         uint8_t *src = other.data + srcOffset.y * other.stride + srcOffset.x * other.bpp;
@@ -96,8 +100,11 @@ void Bitmap::Blit(const Bitmap &other, const Point &srcOffset, const Rectangle &
     }
 }
 
-void Bitmap::DrawBitmap(const Bitmap &other, const Rectangle &dstRect)
+void Bitmap::DrawBitmap(const Bitmap &other, Rectangle dstRect)
 {
+    dstRect.x1 = MIN(dstRect.x1, width);
+    dstRect.y1 = MIN(dstRect.y1, height);
+
     size_t srcIdx = 0;
     size_t dstIdx = dstRect.position().y * stride + dstRect.position().x * bpp;
     size_t srcLineskip = other.stride - dstRect.size().width * other.bpp;
