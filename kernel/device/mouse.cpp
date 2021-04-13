@@ -6,8 +6,18 @@
 using namespace Kernel;
 using namespace Device;
 
+#define MOUSE_INT 12
+
 #define PS2_PORT_STATUS 0x64
 #define PS2_PORT_BUFFER 0x60
+
+#define CMD_RESET           0xFF
+#define CMD_ENABLE_AUX_DEV  0xA8
+#define CMD_GET_COMPAQ_BYTE 0x20
+#define CMD_SET_COMPAQ_BYTE 0x60
+#define CMD_BUFWRITE        0xD4
+#define CMD_SET_DEFAULTS    0xF6
+#define CMD_ENABLE_STREAM   0xF4
 
 Mouse::Mouse()
     : queue(new nk::CircularQueue<MousePacket>(MOUSE_PACKET_NUM))
@@ -17,10 +27,12 @@ Mouse::Mouse()
 void Mouse::Initialize()
 {
     kdbg("Initializing mouse...\n");
-    Interrupts::AddHandler(12, this);
+    Interrupts::AddHandler(MOUSE_INT, this);
 
     // Reset Mouse
-    SendCommand(0xFF);
+    SendCommand(CMD_RESET);
+
+    // Read self test status
     WaitForReadyToRead();
     auto selfTest = IO::In8(PS2_PORT_BUFFER);
     if (selfTest != 0xaa)
@@ -37,29 +49,31 @@ void Mouse::Initialize()
 
     // enable aux port
     WaitForReadyToWrite();
-    IO::Out8(PS2_PORT_STATUS, 0xA8);
+    IO::Out8(PS2_PORT_STATUS, CMD_ENABLE_AUX_DEV);
+
+    // load defaults
+    SendCommand(CMD_SET_DEFAULTS);
 
     // compaq byte
     WaitForReadyToWrite();
-    IO::Out8(PS2_PORT_STATUS, 0x20);
+    IO::Out8(PS2_PORT_STATUS, CMD_GET_COMPAQ_BYTE);
     WaitForReadyToRead();
     auto status = IO::In8(PS2_PORT_BUFFER);
     SET_BIT(status, 1);   // int12 generation
     CLEAR_BIT(status, 5); // mouse clock
     WaitForReadyToWrite();
-    IO::Out8(PS2_PORT_STATUS, 0x60);
+    IO::Out8(PS2_PORT_STATUS, CMD_SET_COMPAQ_BYTE);
     WaitForReadyToWrite();
     IO::Out8(PS2_PORT_BUFFER, status);
 
     // enable automatic packet sending
-    SendCommand(0xF6);
-    SendCommand(0xF4);
+    SendCommand(CMD_ENABLE_STREAM);
 }
 
 uint8_t Mouse::SendCommand(uint8_t command)
 {
     WaitForReadyToWrite();
-    IO::Out8(PS2_PORT_STATUS, 0xD4);
+    IO::Out8(PS2_PORT_STATUS, CMD_BUFWRITE);
     WaitForReadyToWrite();
     IO::Out8(PS2_PORT_BUFFER, command);
     WaitForReadyToRead();
