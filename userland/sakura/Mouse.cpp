@@ -3,6 +3,8 @@
 Mouse::Mouse(uint16_t maxX, uint16_t maxY)
     : maxX(maxX), maxY(maxY)
 {
+    posX = maxX / 2;
+    posY = maxY / 2;
 }
 
 void Mouse::Update()

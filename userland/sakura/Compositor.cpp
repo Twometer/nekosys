@@ -27,13 +27,7 @@ void Compositor::RenderFrame()
     for (size_t i = 0; i < windows->Size(); i++)
     {
         auto window = windows->At(i);
-        for (size_t x = 0; x < window.width; x++)
-        {
-            for (size_t y = 0; y < window.height; y++)
-            {
-                framebuffer->SetPixel(x + window.x, y + window.y, {0, 0, 0});
-            }
-        }
+        framebuffer->Blit(*window.bitmap, Rectangle(window.x, window.y, window.width, window.height));
     }
 
     framebuffer->SetPixel(mouse->GetPosX(), mouse->GetPosY(), {255, 0, 0});
