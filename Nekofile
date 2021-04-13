@@ -37,6 +37,7 @@ default:
     % libelf
     % libpng
     % libgui
+    % libgfx
     % bootloader
     % kernel
 
@@ -51,6 +52,7 @@ clean:
     mkdir -p build/libelf
     mkdir -p build/libpng
     mkdir -p build/libgui
+    mkdir -p build/libgfx
 
     ; Sysroot
     mkdir -p sysroot/usr/include
@@ -66,6 +68,7 @@ sysroot:
     cp -RT libpng/include sysroot/usr/include
     cp -RT libgui/include sysroot/usr/include
     cp -RT libneko/include sysroot/usr/include
+    cp -RT libgfx/include sysroot/usr/include
 
 ; Compile kernel version of libc
 libk:
@@ -113,6 +116,14 @@ libgui:
     [ar]
         input: build/libgui/*.o
         output: sysroot/usr/lib/libgui.a
+
+libgfx:
+    [libcc]
+        input: libgfx/**.cpp
+        output: build/libgfx/~.o
+    [ar]
+        input: build/libgfx/*.o
+        output: sysroot/usr/lib/libgfx.a
 
 ; Compiles the bootloader
 bootloader:
