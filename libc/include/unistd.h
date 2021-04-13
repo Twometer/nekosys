@@ -8,6 +8,7 @@ extern "C"
 #endif
 
     unsigned int sleep(unsigned int seconds);
+    unsigned int usleep(unsigned int microseconds);
     int chdir(const char *path);
     char *getcwd(char *buf, size_t size);
 

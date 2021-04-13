@@ -1,9 +1,16 @@
 #include <sys/syscall.h>
 #include <unistd.h>
 
+unsigned int usleep(unsigned int microseconds)
+{
+    microseconds /= 1000;                   // Sleep takes ms
+    return syscall(SYS_SLEEP, &microseconds);
+}
+
 unsigned int sleep(unsigned int seconds)
 {
-    return syscall(SYS_SLEEP, &seconds);
+    seconds *= 1000;
+    return syscall(SYS_SLEEP, &seconds);    // Sleep takes ms
 }
 
 int chdir(const char *path)

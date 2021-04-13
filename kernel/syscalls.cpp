@@ -126,7 +126,7 @@ int sys$$sleep(void *param)
 {
     uint32_t timeout = *(uint32_t *)(param);
     auto thread = Thread::Current();
-    thread->Sleep(timeout * 1000);
+    thread->Sleep(timeout);
     return 0;
 }
 

@@ -157,8 +157,10 @@ int main(int argc, char **argv)
 				}
 			}
 
-			if (mouse_poll(&mouse) == 0)
+			while (mouse_poll(&mouse) == 0)
 			{
+				float scale = mouse.dx + mouse.dy;
+
 				mouse_x += mouse.dx;
 				mouse_y -= mouse.dy;
 				if (mouse_x < 0)
@@ -171,13 +173,15 @@ int main(int argc, char **argv)
 					mouse_y = height - 1;
 			}
 
+			
+
 			size_t baseidx = mouse_y * framebuf.pitch + mouse_x * 4;
 			framebuf.buffer[baseidx] = 0xff;
 			framebuf.buffer[baseidx + 1] = 0x00;
 			framebuf.buffer[baseidx + 2] = 0x00;
 
 			framebuf_flush_all();
-			sleep(0);
+			usleep(1000);
 		}
 
 		thread_join(result);
