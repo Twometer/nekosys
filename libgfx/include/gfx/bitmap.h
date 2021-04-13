@@ -24,6 +24,8 @@ private:
 public:
     Bitmap(const nk::String &path);
 
+    Bitmap(unsigned int width, unsigned int height, PixelFormat *format);
+
     Bitmap(unsigned int width, unsigned int height, unsigned int stride, uint8_t *data, PixelFormat *format);
 
     ~Bitmap();

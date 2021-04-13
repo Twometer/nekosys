@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "liballoc.h": "c",
+        "stdlib.h": "c"
+    }
+}

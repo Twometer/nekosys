@@ -21,6 +21,8 @@ KFLAGS = -ffreestanding -nostdlib -lelf -lk
 ; Lib compiler
 [flibcc, multi]:
     {GCC} -c {input} -o {output} {CCBASECONF} {flags}
+[olibcc, multi]:
+    {GCC} -c {input} -o {output} -fno-rtti -O3
 [libcc, multi]:
     {GCC} -c {input} -o {output} -fno-rtti
 
@@ -118,7 +120,7 @@ libgui:
         output: sysroot/usr/lib/libgui.a
 
 libgfx:
-    [libcc]
+    [olibcc]
         input: libgfx/**.cpp
         output: build/libgfx/~.o
     [ar]

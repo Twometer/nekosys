@@ -6,6 +6,7 @@ Compositor::Compositor(Bitmap *framebuffer, Bitmap *wallpaper)
       windows(new nk::Vector<WindowInfo>()),
       mouse(new Mouse(framebuffer->width, framebuffer->height))
 {
+    renderbuffer = new Bitmap(framebuffer->width, framebuffer->height, PixelFormat::Rgb24);
 }
 
 Compositor::~Compositor()
@@ -22,13 +23,15 @@ void Compositor::AddWindow(WindowInfo window)
 void Compositor::RenderFrame()
 {
     mouse->Update();
-    framebuffer->Blit(*wallpaper, Rectangle(0, 0, framebuffer->width, framebuffer->height));
+    renderbuffer->Blit(*wallpaper, Rectangle(0, 0, framebuffer->width, framebuffer->height));
 
     for (size_t i = 0; i < windows->Size(); i++)
     {
         auto window = windows->At(i);
-        framebuffer->Blit(*window.bitmap, Rectangle(window.x, window.y, window.width, window.height));
+        renderbuffer->Blit(*window.bitmap, Rectangle(window.x, window.y, window.width, window.height));
     }
 
-    framebuffer->DrawBitmap(cursor, Rectangle(mouse->GetPosX(), mouse->GetPosY(), cursor.width, cursor.height));
+    renderbuffer->DrawBitmap(cursor, Rectangle(mouse->GetPosX(), mouse->GetPosY(), cursor.width, cursor.height));
+
+    framebuffer->Blit(*renderbuffer, Rectangle(0, 0, framebuffer->width, framebuffer->height));
 }

@@ -11,6 +11,7 @@ private:
     nk::Vector<WindowInfo> *windows;
 
     Bitmap *framebuffer;
+    Bitmap *renderbuffer;
     Bitmap *wallpaper;
     Bitmap cursor = Bitmap("/usr/cursors/default.png");
     Mouse *mouse;
