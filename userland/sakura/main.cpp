@@ -10,6 +10,7 @@
 #include <nk/inifile.h>
 #include <nk/vector.h>
 #include <png/lodepng.h>
+#include <gfx/gfx.h>
 #include <gfx/bitmap.h>
 #include "Mouse.h"
 #include "Compositor.h"
@@ -80,6 +81,8 @@ void receiver_thread()
 
 int main(int argc, char **argv)
 {
+	gfx_initialize();
+
 	FRAMEBUF framebuf;
 	framebuf_acquire(&framebuf);
 	framebuffer = new Bitmap(framebuf.width, framebuf.height, framebuf.pitch, framebuf.buffer, PixelFormat::Bgr32);

@@ -3,7 +3,7 @@
 #include <gfx/bitmap.h>
 
 Bitmap::Bitmap(const nk::String &path)
-    : ownsBuffer(true), format(PixelFormat::Rgba32), bpp(4)
+    : ownsBuffer(true), format(PixelFormat::Rgba32)
 {
     FILE *fd = fopen(path.CStr(), "r");
     if (!fd)
@@ -18,13 +18,14 @@ Bitmap::Bitmap(const nk::String &path)
     fclose(fd);
 
     unsigned error = lodepng_decode_memory(&this->data, &width, &height, data, len, LodePNGColorType::LCT_RGBA, 8);
+    bpp = format->GetBpp();
     stride = width * bpp;
 }
 
-Bitmap::Bitmap(unsigned int width, unsigned int height, unsigned int stride, uint8_t *data, PixelFormat format)
+Bitmap::Bitmap(unsigned int width, unsigned int height, unsigned int stride, uint8_t *data, PixelFormat *format)
     : width(width), height(height), stride(stride), data(data), format(format), ownsBuffer(false)
 {
-    bpp = format == PixelFormat::Bgr32 ? 4 : 3;
+    bpp = format->GetBpp();
 }
 
 Bitmap::~Bitmap()
@@ -36,42 +37,13 @@ Bitmap::~Bitmap()
 void Bitmap::SetPixel(unsigned int x, unsigned int y, Color pixel)
 {
     size_t baseIdx = GetIndex(x, y);
-    if (format == PixelFormat::Rgb24)
-    {
-        data[baseIdx + 0] = pixel.r;
-        data[baseIdx + 1] = pixel.g;
-        data[baseIdx + 2] = pixel.b;
-    }
-    else if (format == PixelFormat::Bgr32)
-    {
-        data[baseIdx + 2] = pixel.r;
-        data[baseIdx + 1] = pixel.g;
-        data[baseIdx + 0] = pixel.b;
-    }
-    else if (format == PixelFormat::Rgba32)
-    {
-        data[baseIdx + 0] = pixel.r;
-        data[baseIdx + 1] = pixel.g;
-        data[baseIdx + 2] = pixel.b;
-        data[baseIdx + 3] = pixel.a;
-    }
+    format->SetPixel(data, baseIdx, pixel);
 }
 
 Color Bitmap::GetPixel(unsigned int x, unsigned int y) const
 {
     size_t baseIdx = GetIndex(x, y);
-    if (format == PixelFormat::Rgb24)
-    {
-        return {data[baseIdx + 0], data[baseIdx + 1], data[baseIdx + 2], 1};
-    }
-    else if (format == PixelFormat::Bgr32)
-    {
-        return {data[baseIdx + 2], data[baseIdx + 1], data[baseIdx + 0], 1};
-    }
-    else if (format == PixelFormat::Rgba32)
-    {
-        return {data[baseIdx + 0], data[baseIdx + 1], data[baseIdx + 2], data[baseIdx + 3]};
-    }
+    return format->GetPixel(data, baseIdx);
 }
 
 inline size_t Bitmap::GetIndex(unsigned int x, unsigned int y) const
@@ -113,6 +85,5 @@ Color Bitmap::Blend(Color b, Color a)
         static_cast<uint8_t>(alpha * (float)a.r + alphaInv * (float)b.r),
         static_cast<uint8_t>(alpha * (float)a.g + alphaInv * (float)b.g),
         static_cast<uint8_t>(alpha * (float)a.b + alphaInv * (float)b.b),
-        255
-    };
+        255};
 }
