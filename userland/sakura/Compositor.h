@@ -4,6 +4,7 @@
 #include <nk/vector.h>
 #include "Mouse.h"
 #include "WindowInfo.h"
+#include "DirtyRegionManager.h"
 
 class Compositor
 {
@@ -15,6 +16,8 @@ private:
     Bitmap *wallpaper;
     Bitmap cursor = Bitmap("/usr/cursors/default.png");
     Mouse *mouse;
+
+    DirtyRegionManager *dirtyManager;
 
 public:
     Compositor(Bitmap *framebuffer, Bitmap *wallpaper);

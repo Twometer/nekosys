@@ -18,6 +18,12 @@ struct Rectangle
         : position({x, y}), size({width, height})
     {
     }
+
+    bool Intersects(const Rectangle &other)
+    {
+        // TODO
+        return true;
+    }
 };
 
 #endif
