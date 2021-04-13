@@ -3,7 +3,7 @@
 #include <gfx/bitmap.h>
 
 Bitmap::Bitmap(const nk::String &path)
-    : ownsBuffer(true), format(PixelFormat::Rgb24), bpp(3)
+    : ownsBuffer(true), format(PixelFormat::Rgba32), bpp(4)
 {
     FILE *fd = fopen(path.CStr(), "r");
     if (!fd)
@@ -17,7 +17,7 @@ Bitmap::Bitmap(const nk::String &path)
     fread(data, 1, len, fd);
     fclose(fd);
 
-    unsigned error = lodepng_decode_memory(&this->data, &width, &height, data, len, LodePNGColorType::LCT_RGB, 8);
+    unsigned error = lodepng_decode_memory(&this->data, &width, &height, data, len, LodePNGColorType::LCT_RGBA, 8);
     stride = width * bpp;
 }
 
@@ -48,6 +48,13 @@ void Bitmap::SetPixel(unsigned int x, unsigned int y, Color pixel)
         data[baseIdx + 1] = pixel.g;
         data[baseIdx + 0] = pixel.b;
     }
+    else if (format == PixelFormat::Rgba32)
+    {
+        data[baseIdx + 0] = pixel.r;
+        data[baseIdx + 1] = pixel.g;
+        data[baseIdx + 2] = pixel.b;
+        data[baseIdx + 3] = pixel.a;
+    }
 }
 
 Color Bitmap::GetPixel(unsigned int x, unsigned int y) const
@@ -60,6 +67,10 @@ Color Bitmap::GetPixel(unsigned int x, unsigned int y) const
     else if (format == PixelFormat::Bgr32)
     {
         return {data[baseIdx + 2], data[baseIdx + 1], data[baseIdx + 0], 1};
+    }
+    else if (format == PixelFormat::Rgba32)
+    {
+        return {data[baseIdx + 0], data[baseIdx + 1], data[baseIdx + 2], data[baseIdx + 3]};
     }
 }
 
@@ -78,4 +89,30 @@ void Bitmap::Blit(const Bitmap &other, const Rectangle &dstRect)
             SetPixel(x + dstRect.position.x, y + dstRect.position.y, px);
         }
     }
+}
+
+void Bitmap::DrawBitmap(const Bitmap &other, const Rectangle &dstRect)
+{
+    for (size_t x = 0; x < dstRect.size.width; x++)
+    {
+        for (size_t y = 0; y < dstRect.size.height; y++)
+        {
+            auto srcPixel = GetPixel(x + dstRect.position.x, y + dstRect.position.y);
+            auto dstPx = other.GetPixel(x, y);
+            auto blended = Blend(srcPixel, dstPx);
+            SetPixel(x + dstRect.position.x, y + dstRect.position.y, blended);
+        }
+    }
+}
+
+Color Bitmap::Blend(Color b, Color a)
+{
+    float alpha = a.a / 255.0f;
+    float alphaInv = 1.0f - alpha;
+    return {
+        static_cast<uint8_t>(alpha * (float)a.r + alphaInv * (float)b.r),
+        static_cast<uint8_t>(alpha * (float)a.g + alphaInv * (float)b.g),
+        static_cast<uint8_t>(alpha * (float)a.b + alphaInv * (float)b.b),
+        255
+    };
 }

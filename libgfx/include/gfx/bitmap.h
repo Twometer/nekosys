@@ -10,7 +10,8 @@
 enum class PixelFormat
 {
     Bgr32,
-    Rgb24
+    Rgb24,
+    Rgba32
 };
 
 class Bitmap
@@ -37,9 +38,12 @@ public:
     Color GetPixel(unsigned int x, unsigned int y) const;
 
     void Blit(const Bitmap &other, const Rectangle &dstRect);
+    void DrawBitmap(const Bitmap &other, const Rectangle &dstRect);
 
 private:
     inline size_t GetIndex(unsigned int x, unsigned int y) const;
+
+    Color Blend(Color a, Color b);
 };
 
 #endif

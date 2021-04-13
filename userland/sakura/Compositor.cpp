@@ -30,5 +30,5 @@ void Compositor::RenderFrame()
         framebuffer->Blit(*window.bitmap, Rectangle(window.x, window.y, window.width, window.height));
     }
 
-    framebuffer->SetPixel(mouse->GetPosX(), mouse->GetPosY(), {255, 0, 0});
+    framebuffer->DrawBitmap(cursor, Rectangle(mouse->GetPosX(), mouse->GetPosY(), cursor.width, cursor.height));
 }

@@ -12,6 +12,7 @@ private:
 
     Bitmap *framebuffer;
     Bitmap *wallpaper;
+    Bitmap cursor = Bitmap("/usr/cursors/default.png");
     Mouse *mouse;
 
 public:
