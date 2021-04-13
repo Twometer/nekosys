@@ -2,6 +2,7 @@
 #include <kernel/memory/pagemanager.h>
 #include <kernel/tasks/processdir.h>
 #include <kernel/tasks/scheduler.h>
+#include <kernel/video/videomanager.h>
 #include <kernel/fs/vfs.h>
 
 using namespace Memory;
@@ -51,6 +52,11 @@ namespace Kernel
             threads->At(i)->SetState(Kernel::ThreadState::Dead);
 
         // TODO also free the memory pages here
+
+        if (Video::VideoManager::GetInstance()->GetFramebufferController() == pid)
+        {
+            Video::VideoManager::GetInstance()->AcquireFramebuffer(0);
+        }
 
         if (current == this)
             Scheduler::GetInstance()->Yield();
