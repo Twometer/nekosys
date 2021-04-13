@@ -29,3 +29,10 @@ void *realloc(void *ptr, size_t size)
     return usr_realloc(ptr, size);
 #endif
 }
+
+void *calloc(size_t num, size_t size)
+{
+#ifndef __KERNEL
+    return usr_calloc(num, size);
+#endif
+}

@@ -15,6 +15,7 @@ extern "C"
     void free(void *ptr);
     char *getenv(const char *);
     void *realloc(void *, size_t);
+    void *calloc(size_t, size_t);
 
     /* dummy stuff for gcc to stop complaining */
     int atexit(void (*)(void));
