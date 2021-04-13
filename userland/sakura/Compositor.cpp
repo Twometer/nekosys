@@ -24,7 +24,7 @@ void Compositor::AddWindow(WindowInfo window)
     dirtyManager->MarkDirty(window.clientRectangle());
 }
 
-void Compositor::RenderFrame()
+Rectangle Compositor::RenderFrame()
 {
     Point oldMousePos = {mouse->GetPosX(), mouse->GetPosY()};
     mouse->Update();
@@ -35,7 +35,7 @@ void Compositor::RenderFrame()
     }
 
     if (!dirtyManager->AnyDirty())
-        return;
+        return Rectangle(0, 0, 0, 0);
 
     auto rect = dirtyManager->GetRectangle();
     // printf("Redrawing %d,%d %dx%d\n", rect.x0, rect.y0, rect.size().width, rect.size().height);
@@ -56,4 +56,5 @@ void Compositor::RenderFrame()
     framebuffer->DrawBitmap(cursor, Rectangle(mouse->GetPosX(), mouse->GetPosY(), cursor.width, cursor.height));
 
     dirtyManager->Reset();
+    return rect;
 }

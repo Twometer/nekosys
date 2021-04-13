@@ -111,8 +111,13 @@ int main(int argc, char **argv)
 	// Render loop
 	while (true)
 	{
-		compositor->RenderFrame();
-		framebuf_flush_all();
+		auto rect = compositor->RenderFrame();
+		auto size = rect.size();
+		if (size.width != 0 && size.height != 0)
+		{
+			framebuf_flush(rect.x0, rect.y0, size.width, size.height);
+		}
+
 		usleep(1000);
 	}
 

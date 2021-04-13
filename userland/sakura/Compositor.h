@@ -26,7 +26,7 @@ public:
 
     void AddWindow(WindowInfo window);
 
-    void RenderFrame();
+    Rectangle RenderFrame();
 };
 
 #endif
