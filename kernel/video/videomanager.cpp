@@ -7,6 +7,7 @@
 #include <kernel/video/kernelfont.h>
 #include <kernel/video/graphicstty.h>
 #include <kernel/video/texttty.h>
+#include <nk/memutil.h>
 
 using namespace Kernel;
 using namespace Memory;
@@ -72,31 +73,22 @@ namespace Video
     {
         x *= pixelStride;
         w *= pixelStride;
+
         size_t offset = y * currentMode.pitch + x;
-        for (size_t row = y; row < y + h; row++)
+        uint8_t *src = secondaryBuffer + offset;
+        uint8_t *dst = framebuffer + offset;
+
+        for (size_t row = 0; row < h; row++)
         {
-            for (size_t i = 0; i < w; i++)
-            {
-                framebuffer[offset + i] = secondaryBuffer[offset + i];
-            }
-            offset += currentMode.pitch;
+            fast_copy(src, dst, w);
+            src += currentMode.pitch;
+            dst += currentMode.pitch;
         }
     }
 
     void VideoManager::FlushBuffer()
     {
-        size_t num_qwords = fbSize / sizeof(uint64_t);
-        size_t num_bytes = fbSize % sizeof(uint64_t);
-
-        uint64_t *dst = (uint64_t *)framebuffer;
-        uint64_t *src = (uint64_t *)secondaryBuffer;
-        for (size_t i = 0; i < num_qwords; i++)
-            dst[i] = src[i];
-
-        uint8_t *bdst = (uint8_t *)(dst + num_qwords);
-        uint8_t *bsrc = (uint8_t *)(src + num_qwords);
-        for (size_t i = 0; i < num_bytes; i++)
-            bdst[i] = bsrc[i];
+        FlushBlock(0, 0, currentMode.Xres, currentMode.Yres);
     }
 
     void VideoManager::LoadInformation(KernelHandover *handover)
