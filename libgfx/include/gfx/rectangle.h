@@ -4,6 +4,9 @@
 #include "point.h"
 #include "size.h"
 
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
 struct Rectangle
 {
     unsigned int x0;
@@ -28,6 +31,16 @@ struct Rectangle
     {
         auto &rectA = *this;
         return rectA.x0 < rectB.x1 && rectA.x1 > rectB.x0 && rectA.y0 < rectB.y1 && rectA.y1 > rectB.y0;
+    }
+
+    Rectangle Intersection(const Rectangle &other)
+    {
+        unsigned int x0 = MAX(this->x0, other.x0);
+        unsigned int y0 = MAX(this->y0, other.y0);
+
+        unsigned int x1 = MIN(this->x1, other.x1);
+        unsigned int y1 = MIN(this->y1, other.y1);       
+        return Rectangle(x0, y0, x1 - x0, y1 - y0);
     }
 
     Point position() const

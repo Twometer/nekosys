@@ -21,6 +21,7 @@ Compositor::~Compositor()
 void Compositor::AddWindow(WindowInfo window)
 {
     windows->Add(window);
+    dirtyManager->MarkDirty(window.clientRectangle());
 }
 
 void Compositor::RenderFrame()
@@ -37,17 +38,18 @@ void Compositor::RenderFrame()
         return;
 
     auto rect = dirtyManager->GetRectangle();
+    // printf("Redrawing %d,%d %dx%d\n", rect.x0, rect.y0, rect.size().width, rect.size().height);
 
     framebuffer->Blit(*wallpaper, rect.position(), rect);
 
     for (size_t i = 0; i < windows->Size(); i++)
     {
         auto window = windows->At(i);
-        auto renderRect = Rectangle(window.x, window.y, window.width, window.height);
-
-        if (rect.Intersects(renderRect))
+        auto clientRect = window.clientRectangle();
+        if (rect.Intersects(clientRect))
         {
-            framebuffer->Blit(*window.bitmap, {0, 0}, renderRect);
+            auto dirtyRect = clientRect.Intersection(rect);
+            framebuffer->Blit(*window.bitmap, {dirtyRect.x0 - clientRect.x0, dirtyRect.y0 - clientRect.y0}, dirtyRect);
         }
     }
 
