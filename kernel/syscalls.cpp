@@ -16,12 +16,13 @@
 #include <nekosys.h>
 #include <stdio.h>
 #include <errno.h>
-
 #include <nk/path.h>
 
 using namespace Kernel;
 using namespace Memory;
 using namespace Video;
+
+#define RELAY_PUTCHAR_TO_DEBUG 1
 
 nk::String resolve_file(const nk::Path path)
 {
@@ -72,6 +73,9 @@ int sys$$putchar(void *param)
 {
     char c = *(char *)param;
     VideoManager::GetInstance()->GetTTY()->Write(&c, sizeof(c));
+#if RELAY_PUTCHAR_TO_DEBUG
+    kputchar(c);
+#endif
     return 0;
 }
 
@@ -420,9 +424,9 @@ int sys$$thread_join(void *param)
     }
 }
 
-int sys$$mouse_poll(void *param) 
+int sys$$mouse_poll(void *param)
 {
-    MOUSEPACKET *packet = (MOUSEPACKET*)param;
+    MOUSEPACKET *packet = (MOUSEPACKET *)param;
     auto queue = Device::DeviceManager::mouse->queue;
     if (queue->IsEmpty())
         return -ENODATA;
