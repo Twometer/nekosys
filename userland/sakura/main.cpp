@@ -12,21 +12,13 @@
 #include <png/lodepng.h>
 #include <gfx/bitmap.h>
 #include "Mouse.h"
+#include "Compositor.h"
 
 using namespace Gui;
 
-struct window_info
-{
-	nk::String title;
-	int x, y, width, height;
-	int fbuf_id;
-	uint8_t *fbuf;
-	Bitmap *bitmap;
-};
-
 Bitmap *framebuffer;
 GuiConnection *connection;
-nk::Vector<window_info> windows;
+Compositor *compositor;
 
 uint8_t *read_file(const char *path, size_t *size)
 {
@@ -56,21 +48,25 @@ void receiver_thread()
 		auto packetData = connection->Receive();
 
 		switch (packetData.packetId)
-
 		{
 		case ID_PCreateWindow:
 		{
 			auto packet = (PCreateWindow *)packetData.data;
 			printf("Creating window '%s' with size %dx%d\n", packet->title, packet->width, packet->height);
 
-			uint8_t *fbuf;
-			auto bufid = shbuf_create(packet->width * packet->height * 3);
-			shbuf_map(bufid, (void **)&fbuf);
+			// Create shared buffer for framebuffer
+			uint8_t *shbuf;
+			auto shbufId = shbuf_create(packet->width * packet->height * 3);
+			shbuf_map(shbufId, (void **)&shbuf);
 
-			windows.Add({packet->title, packet->x, packet->y, packet->width, packet->height, bufid, fbuf});
+			// Create window
+			auto bitmap = new Bitmap(packet->width, packet->height, 3, shbuf, PixelFormat::Rgb24);
+			WindowInfo window = {packet->title, packet->x, packet->y, packet->width, packet->height, shbufId, bitmap};
+			compositor->AddWindow(window);
 
+			// Send reply
 			PWindowFbuf reply;
-			reply.shbufId = bufid;
+			reply.shbufId = shbufId;
 			connection->SendTo(ID_PWindowBuf, sizeof(PCreateWindow), &reply, packetData.source);
 			break;
 		}
@@ -88,41 +84,41 @@ int main(int argc, char **argv)
 	framebuf_acquire(&framebuf);
 	framebuffer = new Bitmap(framebuf.width, framebuf.height, framebuf.pitch, framebuf.buffer, PixelFormat::Bgr32);
 
+	// Load config
 	size_t iniFileSize;
 	uint8_t *inifileData = read_file("/etc/sakura.ini", &iniFileSize);
 	nk::IniFile config((char *)inifileData);
 	auto conf = config.GetSection("Sakura");
 
+	// Init renderer
 	Bitmap wallpaper(conf->GetProperty("Wallpaper"));
-
+	compositor = new Compositor(framebuffer, &wallpaper);
 	connection = new GuiConnection();
-	int result = thread_create(receiver_thread);
-	if (result < 0)
+
+	// Create reciever thread
+	int threadId = thread_create(receiver_thread);
+	if (threadId < 0)
 	{
 		return 1;
 	}
-	else
+
+	// Autostart
+	spawnp(nullptr, conf->GetProperty("StartupApp").CStr(), 0, nullptr);
+
+	// Render loop
+	while (true)
 	{
-		spawnp(nullptr, conf->GetProperty("StartupApp").CStr(), 0, nullptr);
-
-		Mouse mouse(framebuffer->width, framebuffer->height);
-
-		/* compositor test */
-		while (true)
-		{
-			framebuffer->Blit(wallpaper, Rectangle(0, 0, framebuffer->width, framebuffer->height));
-
-			mouse.Update();
-			framebuffer->SetPixel(mouse.GetPosX(), mouse.GetPosY(), {255, 255, 0});
-
-			framebuf_flush_all();
-			usleep(1000);
-		}
-
-		thread_join(result);
+		compositor->RenderFrame();
+		framebuf_flush_all();
+		usleep(1000);
 	}
 
+	// Shutdown (..?)
+	thread_join(threadId);
 	framebuf_release();
+
+	delete framebuffer;
+	delete compositor;
 	delete connection;
 	return 0;
 }
