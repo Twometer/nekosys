@@ -38,16 +38,14 @@ void Compositor::RenderFrame()
 
     auto rect = dirtyManager->GetRectangle();
 
-    // printf("redrawing %d,%d %dx%d\n", rect.position.x, rect.position.y, rect.size.width, rect.size.height);
-
-    framebuffer->Blit(*wallpaper, {rect.position.x, rect.position.y}, rect);
+    framebuffer->Blit(*wallpaper, rect.position(), rect);
 
     for (size_t i = 0; i < windows->Size(); i++)
     {
         auto window = windows->At(i);
         auto renderRect = Rectangle(window.x, window.y, window.width, window.height);
 
-        if (renderRect.Intersects(rect))
+        if (rect.Intersects(renderRect))
         {
             framebuffer->Blit(*window.bitmap, {0, 0}, renderRect);
         }

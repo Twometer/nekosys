@@ -64,9 +64,9 @@ void Bitmap::Blit(const Bitmap &other, const Point &srcOffset, const Rectangle &
     if (format == other.format)
     {
         uint8_t *src = other.data + srcOffset.y * other.stride + srcOffset.x * other.bpp;
-        uint8_t *dst = data + dstRect.position.y * stride + dstRect.position.x * bpp;
-        size_t blocksize = dstRect.size.width * bpp;
-        for (size_t y = 0; y < dstRect.size.height; y++)
+        uint8_t *dst = data + dstRect.position().y * stride + dstRect.position().x * bpp;
+        size_t blocksize = dstRect.size().width * bpp;
+        for (size_t y = 0; y < dstRect.size().height; y++)
         {
             fast_copy(src, dst, blocksize);
             src += other.stride;
@@ -77,13 +77,13 @@ void Bitmap::Blit(const Bitmap &other, const Point &srcOffset, const Rectangle &
     else
     {
         size_t srcIdx = srcOffset.y * other.stride + srcOffset.x * other.bpp;
-        size_t dstIdx = dstRect.position.y * stride + dstRect.position.x * bpp;
-        size_t srcLineskip = other.stride - dstRect.size.width * other.bpp;
-        size_t dstLineskip = stride - dstRect.size.width * bpp;
+        size_t dstIdx = dstRect.position().y * stride + dstRect.position().x * bpp;
+        size_t srcLineskip = other.stride - dstRect.size().width * other.bpp;
+        size_t dstLineskip = stride - dstRect.size().width * bpp;
 
-        for (size_t y = 0; y < dstRect.size.height; y++)
+        for (size_t y = 0; y < dstRect.size().height; y++)
         {
-            for (size_t x = 0; x < dstRect.size.width; x++)
+            for (size_t x = 0; x < dstRect.size().width; x++)
             {
                 auto px = other.format->GetPixel(other.data, srcIdx);
                 format->SetPixel(data, dstIdx, px);
@@ -99,13 +99,13 @@ void Bitmap::Blit(const Bitmap &other, const Point &srcOffset, const Rectangle &
 void Bitmap::DrawBitmap(const Bitmap &other, const Rectangle &dstRect)
 {
     size_t srcIdx = 0;
-    size_t dstIdx = dstRect.position.y * stride + dstRect.position.x * bpp;
-    size_t srcLineskip = other.stride - dstRect.size.width * other.bpp;
-    size_t dstLineskip = stride - dstRect.size.width * bpp;
+    size_t dstIdx = dstRect.position().y * stride + dstRect.position().x * bpp;
+    size_t srcLineskip = other.stride - dstRect.size().width * other.bpp;
+    size_t dstLineskip = stride - dstRect.size().width * bpp;
 
-    for (size_t y = 0; y < dstRect.size.height; y++)
+    for (size_t y = 0; y < dstRect.size().height; y++)
     {
-        for (size_t x = 0; x < dstRect.size.width; x++)
+        for (size_t x = 0; x < dstRect.size().width; x++)
         {
             auto srcpx = other.format->GetPixel(other.data, srcIdx);
             auto dstpx = format->GetPixel(data, dstIdx);

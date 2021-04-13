@@ -7,14 +7,14 @@ DirtyRegionManager::DirtyRegionManager()
 
 void DirtyRegionManager::MarkDirty(const Rectangle &dirty)
 {
-    if (dirty.position.x < x0)
-        x0 = dirty.position.x;
-    if (dirty.position.y < y0)
-        y0 = dirty.position.y;
-    if (dirty.position.x + dirty.size.width > x1)
-        x1 = dirty.position.x + dirty.size.width;
-    if (dirty.position.y + dirty.size.height > y1)
-        y1 = dirty.position.y + dirty.size.height;
+    if (dirty.x0 < x0)
+        x0 = dirty.x0;
+    if (dirty.y0 < y0)
+        y0 = dirty.y0;
+    if (dirty.x1 > x1)
+        x1 = dirty.x1;
+    if (dirty.y1 > y1)
+        y1 = dirty.y1;
 
     invalidated = true;
 }
