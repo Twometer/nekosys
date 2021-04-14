@@ -7,17 +7,9 @@
 Bitmap::Bitmap(const nk::String &path)
     : ownsBuffer(true), format(PixelFormat::Rgba32)
 {
-    FILE *fd = fopen(path.CStr(), "r");
-    if (!fd)
-        return; // TODO: Error
+    size_t len;
+    auto data = read_file(path.CStr(), &len);
 
-    fseek(fd, 0, SEEK_END);
-    size_t len = ftell(fd);
-    fseek(fd, 0, SEEK_SET);
-
-    uint8_t *data = new uint8_t[len];
-    fread(data, 1, len, fd);
-    fclose(fd);
     unsigned error = lodepng_decode_memory(&this->data, &width, &height, data, len, LodePNGColorType::LCT_RGBA, 8);
 
     delete[] data;
@@ -123,6 +115,10 @@ void Bitmap::DrawBitmap(const Bitmap &other, Rectangle dstRect)
         srcIdx += srcLineskip;
         dstIdx += dstLineskip;
     }
+}
+
+void Bitmap::DrawText(const nk::String &text, const Font &font, const Point &position, const Color &color)
+{
 }
 
 Color Bitmap::Blend(Color b, Color a)

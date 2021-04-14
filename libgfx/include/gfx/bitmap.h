@@ -1,6 +1,7 @@
 #ifndef _BITMAP_H
 #define _BITMAP_H
 
+#include "font.h"
 #include "color.h"
 #include "rectangle.h"
 #include "pixelformat.h"
@@ -35,6 +36,7 @@ public:
 
     void Blit(const Bitmap &other, const Point &srcOffset, Rectangle dstRect);
     void DrawBitmap(const Bitmap &other, Rectangle dstRect);
+    void DrawText(const nk::String &text, const Font &font, const Point &position, const Color &color);
 
 private:
     inline size_t GetIndex(unsigned int x, unsigned int y) const;

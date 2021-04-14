@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 	compositor = new Compositor(framebuffer, &wallpaper);
 	connection = new GuiConnection();
 
-	// Create reciever thread
+	// Create receiever thread
 	int threadId = thread_create(receiver_thread);
 	if (threadId < 0)
 	{
