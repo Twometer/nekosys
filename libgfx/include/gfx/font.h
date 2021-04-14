@@ -2,6 +2,7 @@
 #define _FONT_H
 
 #include <stdint.h>
+#include <nk/string.h>
 
 struct Glyph
 {
@@ -17,10 +18,7 @@ struct Font
     Glyph *glyphs;
     uint8_t *file;
 
-    Font()
-    {
-        glyphs = new Glyph[256];
-    }
+    Font(const nk::String &path);
 
     ~Font()
     {
