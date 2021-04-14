@@ -12,6 +12,7 @@
 #include <png/lodepng.h>
 #include <gfx/gfx.h>
 #include <gfx/bitmap.h>
+#include <gfx/fontloader.h>
 #include "Mouse.h"
 #include "Compositor.h"
 
@@ -86,6 +87,9 @@ int main(int argc, char **argv)
 	FRAMEBUF framebuf;
 	framebuf_acquire(&framebuf);
 	framebuffer = new Bitmap(framebuf.width, framebuf.height, framebuf.pitch, framebuf.buffer, PixelFormat::Bgr32);
+
+	auto font = FontLoader::LoadFont("/res/fonts/opsans.fnt");
+	printf("font loaded: %s [%d x %d]\n", font->name, font->width, font->height);
 
 	// Load config
 	size_t iniFileSize;

@@ -7,7 +7,7 @@
 class FontLoader
 {
 public:
-    static Font *LoadFont(nk::String &path);
+    static Font *LoadFont(const nk::String &path);
 
 };
 

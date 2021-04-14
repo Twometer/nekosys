@@ -22,9 +22,9 @@ KFLAGS = -ffreestanding -nostdlib -lelf -lk
 [flibcc, multi]:
     {GCC} -c {input} -o {output} {CCBASECONF} {flags}
 [olibcc, multi]:
-    {GCC} -c {input} -o {output} -fno-rtti -O3
+    {GCC} -c {input} -o {output} -fno-rtti -O3 -fno-exceptions
 [libcc, multi]:
-    {GCC} -c {input} -o {output} -fno-rtti
+    {GCC} -c {input} -o {output} -fno-rtti -fno-exceptions
 
 ; GNU ar
 [ar, single]:
