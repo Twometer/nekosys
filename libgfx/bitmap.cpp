@@ -137,7 +137,7 @@ void Bitmap::DrawText(const nk::String &text, const Font &font, const Point &pos
             }
         }
 
-        xOffset += glyph.advance + 3;
+        xOffset += glyph.advance + 1; 
     }
 }
 
