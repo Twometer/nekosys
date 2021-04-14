@@ -14,7 +14,7 @@ private:
     Bitmap *framebuffer;
     Bitmap *renderbuffer;
     Bitmap *wallpaper;
-    Bitmap cursor = Bitmap("/usr/cursors/default.png");
+    Bitmap cursor = Bitmap("/res/cursors/default.png");
     Mouse *mouse;
 
     DirtyRegionManager *dirtyManager;
