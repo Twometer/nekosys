@@ -16,6 +16,7 @@ private:
     Bitmap *framebuffer;
     Bitmap *wallpaper;
     Bitmap cursor = Bitmap("/res/cursors/default.png");
+    Font font = Font("/res/fonts/opsans.fnt");
     Mouse *mouse;
 
     DirtyRegionManager *dirtyManager;

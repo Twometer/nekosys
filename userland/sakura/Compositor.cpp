@@ -80,6 +80,7 @@ Rectangle Compositor::RenderFrame()
     }
 
     framebuffer->DrawBitmap(cursor, Rectangle(mouse->GetPosX(), mouse->GetPosY(), cursor.width, cursor.height));
+    framebuffer->DrawText("sakura compositor", font, {15, 15}, {0, 0, 0, 255});
 
     dirtyManager->Reset();
     return rect;

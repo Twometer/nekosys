@@ -28,6 +28,6 @@ Font::Font(const nk::String &path)
         glyph.rows = glyphBase;
         glyph.advance = *((uint8_t*)(glyphBase + height) + 1);
         glyphs[i] = glyph;
-        glyphBase += height + 1;
+        glyphBase = (uint32_t*)(((uint8_t*)(glyphBase + height)) + 1);
     }
 }

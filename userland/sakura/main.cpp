@@ -88,9 +88,6 @@ int main(int argc, char **argv)
 	framebuf_acquire(&framebuf);
 	framebuffer = new Bitmap(framebuf.width, framebuf.height, framebuf.pitch, framebuf.buffer, PixelFormat::Bgr32);
 
-	auto font = Font("/res/fonts/opsans.fnt");
-	printf("font loaded: %s [%d x %d]\n", font.name, font.width, font.height);
-
 	// Load config
 	size_t iniFileSize;
 	uint8_t *inifileData = read_file("/etc/sakura.ini", &iniFileSize);

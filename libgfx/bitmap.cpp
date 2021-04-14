@@ -119,6 +119,26 @@ void Bitmap::DrawBitmap(const Bitmap &other, Rectangle dstRect)
 
 void Bitmap::DrawText(const nk::String &text, const Font &font, const Point &position, const Color &color)
 {
+    auto ptr = text.CStr();
+    unsigned int xOffset = 0;
+    for (size_t i = 0; i < text.Length(); i++)
+    {
+        Glyph &glyph = font.glyphs[ptr[i]];
+
+        for (unsigned int y = 0; y < font.height; y++)
+        {
+            uint16_t rowData = glyph.rows[y];
+            for (unsigned int x = 0; x < font.width; x++)
+            {
+                if (rowData & (1 << x))
+                {
+                    SetPixel(x + position.x + xOffset, y + position.y, color);
+                }
+            }
+        }
+
+        xOffset += glyph.advance;
+    }
 }
 
 Color Bitmap::Blend(Color b, Color a)
