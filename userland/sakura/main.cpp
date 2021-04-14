@@ -62,7 +62,7 @@ void receiver_thread()
 
 			// Create window
 			auto bitmap = new Bitmap(packet->width, packet->height, 3, shbuf, PixelFormat::Rgb24);
-			WindowInfo window = {packet->title, packet->x, packet->y, packet->width, packet->height, shbufId, bitmap};
+			auto window = new WindowInfo(packet->title, packet->x, packet->y, packet->width, packet->height, shbufId, bitmap);
 			compositor->AddWindow(window);
 
 			// Send reply

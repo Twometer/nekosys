@@ -9,10 +9,11 @@
 class Compositor
 {
 private:
-    nk::Vector<WindowInfo> *windows;
+    /* The windows are represented as a doubly linked list, so that moving windows to the front is a O(1) operation */
+    WindowInfo *windows_head = nullptr;
+    WindowInfo *windows_tail = nullptr;
 
     Bitmap *framebuffer;
-    Bitmap *renderbuffer;
     Bitmap *wallpaper;
     Bitmap cursor = Bitmap("/res/cursors/default.png");
     Mouse *mouse;
@@ -24,7 +25,9 @@ public:
 
     ~Compositor();
 
-    void AddWindow(WindowInfo window);
+    void AddWindow(WindowInfo *window);
+
+    void BringToFront(WindowInfo *window);
 
     Rectangle RenderFrame();
 };

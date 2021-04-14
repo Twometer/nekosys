@@ -12,6 +12,14 @@ struct WindowInfo
     int shbufId;
     Bitmap *bitmap;
 
+    WindowInfo *prev = nullptr;
+    WindowInfo *next = nullptr;
+
+    WindowInfo(const nk::String &title, int x, int y, int width, int height, int shbufId, Bitmap *bitmap)
+        : title(title), x(x), y(y), width(width), height(height), shbufId(shbufId), bitmap(bitmap)
+    {
+    }
+
     Rectangle clientRectangle()
     {
         return Rectangle(x, y, width, height);

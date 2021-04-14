@@ -5,7 +5,6 @@
 Compositor::Compositor(Bitmap *framebuffer, Bitmap *wallpaper)
     : framebuffer(framebuffer),
       wallpaper(wallpaper),
-      windows(new nk::Vector<WindowInfo>()),
       mouse(new Mouse(framebuffer->width, framebuffer->height))
 {
     dirtyManager = new DirtyRegionManager();
@@ -14,14 +13,39 @@ Compositor::Compositor(Bitmap *framebuffer, Bitmap *wallpaper)
 
 Compositor::~Compositor()
 {
-    delete windows;
     delete mouse;
 }
 
-void Compositor::AddWindow(WindowInfo window)
+void Compositor::AddWindow(WindowInfo *window)
 {
-    windows->Add(window);
-    dirtyManager->MarkDirty(window.clientRectangle());
+    if (windows_head == nullptr && windows_tail == nullptr)
+    {
+        windows_head = window;
+        windows_tail = window;
+    }
+    else
+    {
+        window->prev = windows_tail;
+        windows_tail->next = window;
+        windows_tail = window;
+    }
+    dirtyManager->MarkDirty(window->clientRectangle());
+}
+
+void Compositor::BringToFront(WindowInfo *window)
+{
+    // If window is not already at the front
+    if (window->prev != nullptr)
+    {
+        // Cut window out of the middle
+        window->prev->next = window->next;
+        window->next->prev = window->prev;
+
+        // And put at start of list
+        window->next = windows_head;
+        windows_head->prev = window;
+        windows_head = window;
+    }
 }
 
 Rectangle Compositor::RenderFrame()
@@ -42,15 +66,17 @@ Rectangle Compositor::RenderFrame()
 
     framebuffer->Blit(*wallpaper, rect.position(), rect);
 
-    for (size_t i = 0; i < windows->Size(); i++)
+    WindowInfo *window = windows_head;
+    while (window != nullptr)
     {
-        auto window = windows->At(i);
-        auto clientRect = window.clientRectangle();
+        auto clientRect = window->clientRectangle();
         if (rect.Intersects(clientRect))
         {
             auto dirtyRect = clientRect.Intersection(rect);
-            framebuffer->Blit(*window.bitmap, {dirtyRect.x0 - clientRect.x0, dirtyRect.y0 - clientRect.y0}, dirtyRect);
+            framebuffer->Blit(*window->bitmap, {dirtyRect.x0 - clientRect.x0, dirtyRect.y0 - clientRect.y0}, dirtyRect);
         }
+
+        window = window->next;
     }
 
     framebuffer->DrawBitmap(cursor, Rectangle(mouse->GetPosX(), mouse->GetPosY(), cursor.width, cursor.height));
