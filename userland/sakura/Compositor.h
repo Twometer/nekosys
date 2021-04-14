@@ -31,6 +31,9 @@ public:
     void BringToFront(WindowInfo *window);
 
     Rectangle RenderFrame();
+
+private:
+    void DrawCursor();
 };
 
 #endif

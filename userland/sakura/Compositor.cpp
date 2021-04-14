@@ -1,6 +1,6 @@
 #include "Compositor.h"
 
-#define MOUSE_UPDATE_SIZE 24
+#define MOUSE_UPDATE_SIZE 20
 
 Compositor::Compositor(Bitmap *framebuffer, Bitmap *wallpaper)
     : framebuffer(framebuffer),
@@ -74,14 +74,20 @@ Rectangle Compositor::RenderFrame()
         {
             auto dirtyRect = clientRect.Intersection(rect);
             framebuffer->Blit(*window->bitmap, {dirtyRect.x0 - clientRect.x0, dirtyRect.y0 - clientRect.y0}, dirtyRect);
+            framebuffer->DrawText(window->title, font, {window->x, window->y}, {125, 125, 125, 255});
         }
 
         window = window->next;
     }
 
-    framebuffer->DrawBitmap(cursor, Rectangle(mouse->GetPosX(), mouse->GetPosY(), cursor.width, cursor.height));
-    framebuffer->DrawText("Sakura Compositor", font, {5, 5}, {0, 0, 0, 255});
+    framebuffer->DrawText("sakura_compositor 0.01", font, {0, 0}, {0, 0, 255, 255});
 
+    DrawCursor();
     dirtyManager->Reset();
     return rect;
+}
+
+void Compositor::DrawCursor()
+{
+    framebuffer->DrawBitmap(cursor, Rectangle(mouse->GetPosX(), mouse->GetPosY(), cursor.width, cursor.height));
 }
