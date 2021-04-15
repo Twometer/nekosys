@@ -59,7 +59,7 @@ void receiver_thread()
 				shbuf_map(shbufId, (void **)&shbuf);
 
 				// Create window
-				auto bitmap = new Bitmap(packet->width, packet->height, 3, shbuf, PixelFormat::Rgb24);
+				auto bitmap = new Bitmap(packet->width, packet->height, packet->width * 3, shbuf, PixelFormat::Rgb24);
 				auto window = new WindowInfo(packet->title, packet->x, packet->y, packet->width, packet->height, shbufId, bitmap);
 				compositor->AddWindow(window);
 

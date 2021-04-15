@@ -11,6 +11,7 @@ namespace Gui
     class Window
     {
     public:
+        int id;
         nk::String title;
         int x = 32;
         int y = 32;

@@ -1,4 +1,5 @@
 #include <nekosys.h>
+#include <gfx/gfx.h>
 #include <libgui/application.h>
 #include <libgui/packets.h>
 
@@ -10,6 +11,7 @@ Application::Application()
 
 void Application::Run()
 {
+    gfx_initialize();
     while (!exitRequested)
     {
         auto rawPacket = connection.Receive();
@@ -22,10 +24,23 @@ void Application::Run()
 
                 auto fmt = PixelFormat::Rgb24;
                 lastWindow->shbufId = shbufId;
-                lastWindow->framebuffer = new Bitmap(lastWindow->width, lastWindow->height, fmt->GetBpp() * lastWindow->width, lastWindow->buffer, fmt);
+                lastWindow->framebuffer = new Bitmap(lastWindow->width, lastWindow->height, lastWindow->width * fmt->GetBpp(), lastWindow->buffer, fmt);
+                lastWindow->id = packet->windowId;
+                lastWindow->Draw();
+                windows.Add(lastWindow);
             })
 
-            CASE_PACKET(PRepaint, {})
+            CASE_PACKET(PRepaint, {
+                for (size_t i = 0; i < windows.Size(); i++)
+                {
+                    auto window = windows.At(i);
+                    if (window->id == packet->windowId)
+                    {
+                        window->Draw();
+                        break;
+                    }
+                }
+            })
         }
     }
 }
@@ -33,11 +48,12 @@ void Application::Run()
 void Application::Exit()
 {
     exitRequested = true;
+    connection.Close();
 }
 
 void Application::OpenWindow(Window &win)
 {
-    PCreateWindow packet{};
+     PCreateWindow packet{};
     packet.width = win.width;
     packet.height = win.height;
     packet.x = win.x;
