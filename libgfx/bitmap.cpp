@@ -62,6 +62,8 @@ void Bitmap::Blit(const Bitmap &other, Point position, BlendMode blendMode)
         return;
 
     dstRect = dstRect.Intersection(mask);
+    dstRect.x1 = MIN(dstRect.x1, width);
+    dstRect.y1 = MIN(dstRect.y1, height);
 
     Point srcOffset = {dstRect.x0 - position.x, dstRect.y0 - position.y};
 
@@ -160,10 +162,10 @@ void Bitmap::FillGradient(const Rectangle &rectangle, const Color &a, const Colo
 
     for (unsigned int i = masked.x0; i < masked.x1; i++)
     {
-        int val = static_cast<int>(255.0f * ((i - masked.x0) / (float)(masked.size().width)));
+        uint8_t alpha = static_cast<uint8_t>(255.0f * ((i - rectangle.x0) / (float)(rectangle.size().width)));
         for (unsigned int j = masked.y0; j < masked.y1; j++)
         {
-            SetPixel(i, j, Blend(a, {b.r, b.g, b.b, val}));
+            SetPixel(i, j, Blend(a, {b.r, b.g, b.b, alpha}));
         }
     }
 }
