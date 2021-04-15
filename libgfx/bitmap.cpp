@@ -137,7 +137,18 @@ void Bitmap::DrawText(const nk::String &text, const Font &font, const Point &pos
             }
         }
 
-        xOffset += glyph.advance + 1; 
+        xOffset += glyph.advance + 1;
+    }
+}
+
+void Bitmap::FillRect(const Rectangle &rectangle, const Color &color)
+{
+    for (unsigned int i = rectangle.x0; i < rectangle.x1; i++)
+    {
+        for (unsigned int j = rectangle.y0; j < rectangle.y1; j++)
+        {
+            SetPixel(i, j, color);
+        }
     }
 }
 

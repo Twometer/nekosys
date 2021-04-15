@@ -29,7 +29,7 @@ void Compositor::AddWindow(WindowInfo *window)
         windows_tail->next = window;
         windows_tail = window;
     }
-    dirtyManager->MarkDirty(window->clientRectangle());
+    dirtyManager->MarkDirty(window->rectangle());
 }
 
 void Compositor::BringToFront(WindowInfo *window)
@@ -70,13 +70,15 @@ Rectangle Compositor::RenderFrame()
     while (window != nullptr)
     {
         auto clientRect = window->clientRectangle();
+
         if (rect.Intersects(clientRect))
         {
             auto dirtyRect = clientRect.Intersection(rect);
             framebuffer->Blit(*window->bitmap, {dirtyRect.x0 - clientRect.x0, dirtyRect.y0 - clientRect.y0}, dirtyRect);
-            framebuffer->DrawText(window->title, font, {window->x, window->y}, {125, 125, 125, 255});
+            framebuffer->FillRect(Rectangle(window->x, window->y, window->width, WINDOW_TITLE_HEIGHT), {0x2e, 0x2e, 0x2e, 255});
+            framebuffer->DrawText(window->title, font, {window->x + 8, window->y + 3}, {204, 204, 204, 255});
+            framebuffer->DrawText("X", font, {window->x + window->width - 16, window->y + 3}, {204, 204, 204, 255});
         }
-
         window = window->next;
     }
 

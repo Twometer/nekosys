@@ -5,6 +5,8 @@
 #include <gfx/bitmap.h>
 #include <gfx/rectangle.h>
 
+#define WINDOW_TITLE_HEIGHT 24
+
 struct WindowInfo
 {
     nk::String title;
@@ -22,7 +24,12 @@ struct WindowInfo
 
     Rectangle clientRectangle()
     {
-        return Rectangle(x, y, width, height);
+        return Rectangle(x, y + WINDOW_TITLE_HEIGHT, width, height);
+    }
+
+    Rectangle rectangle()
+    {
+        return Rectangle(x, y, width, height + WINDOW_TITLE_HEIGHT);
     }
 };
 

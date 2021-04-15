@@ -37,6 +37,7 @@ public:
     void Blit(const Bitmap &other, const Point &srcOffset, Rectangle dstRect);
     void DrawBitmap(const Bitmap &other, Rectangle dstRect);
     void DrawText(const nk::String &text, const Font &font, const Point &position, const Color &color);
+    void FillRect(const Rectangle &rect, const Color &color);
 
 private:
     inline size_t GetIndex(unsigned int x, unsigned int y) const;
