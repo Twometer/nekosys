@@ -44,6 +44,7 @@ public:
     void Blit(const Bitmap &other, Point position, BlendMode blendMode = BlendMode::Default);
     void DrawText(const nk::String &text, const Font &font, const Point &position, const Color &color);
     void FillRect(const Rectangle &rect, const Color &color);
+    void FillGradient(const Rectangle &rect, const Color &a, const Color &b);
 
     void SetMask(const Rectangle &rect);
     void ClearMask();

@@ -151,6 +151,23 @@ void Bitmap::FillRect(const Rectangle &rectangle, const Color &color)
     }
 }
 
+void Bitmap::FillGradient(const Rectangle &rectangle, const Color &a, const Color &b)
+{
+    if (!mask.Intersects(rectangle))
+        return;
+
+    auto masked = rectangle.Intersection(mask);
+
+    for (unsigned int i = masked.x0; i < masked.x1; i++)
+    {
+        int val = static_cast<int>(255.0f * ((i - masked.x0) / (float)(masked.size().width)));
+        for (unsigned int j = masked.y0; j < masked.y1; j++)
+        {
+            SetPixel(i, j, Blend(a, {b.r, b.g, b.b, val}));
+        }
+    }
+}
+
 void Bitmap::SetMask(const Rectangle &rect)
 {
     this->mask = rect;

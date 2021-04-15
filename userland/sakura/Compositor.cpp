@@ -74,9 +74,9 @@ Rectangle Compositor::RenderFrame()
         framebuffer->Blit(*window->bitmap, window->clientRectangle().position());
 
         // Window title bar
-        framebuffer->FillRect(Rectangle(window->x, window->y, window->width, WINDOW_TITLE_HEIGHT), {0x2e, 0x2e, 0x2e, 255});
+        framebuffer->FillGradient(Rectangle(window->x, window->y, window->width, WINDOW_TITLE_HEIGHT), {9, 37, 104, 255}, {165, 198, 247, 255});
         framebuffer->DrawText(window->title, font, {window->x + 8, window->y + 3}, {204, 204, 204, 255});
-        framebuffer->DrawText("X", font, {window->x + window->width - 16, window->y + 3}, {204, 204, 204, 255});
+        framebuffer->DrawText("X", font, {window->x + window->width - 16, window->y + 3}, {0, 0, 0, 255});
 
         window = window->next;
     }
