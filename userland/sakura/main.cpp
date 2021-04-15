@@ -123,6 +123,7 @@ int main(int argc, char **argv)
 	}
 
 	// Shutdown (..?)
+	connection->Close();
 	thread_join(threadId);
 	framebuf_release();
 

@@ -12,7 +12,8 @@
                 "${workspaceFolder}/libelf/include",
                 "${workspaceFolder}/libneko/include",
                 "${workspaceFolder}/libpng/include",
-                "${workspaceFolder}/libgui/include"
+                "${workspaceFolder}/libgui/include",
+                "${workspaceFolder}/libgfx/include"
             ]
         }
     ],

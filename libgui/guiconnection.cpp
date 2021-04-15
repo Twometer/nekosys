@@ -30,6 +30,11 @@ void GuiConnection::SendTo(uint8_t packetId, size_t size, void *data, pid_t dst)
     delete[] packet;
 }
 
+void GuiConnection::Close()
+{
+    pipe_close(pipe);
+}
+
 PacketData GuiConnection::Receive()
 {
     PacketData data{};

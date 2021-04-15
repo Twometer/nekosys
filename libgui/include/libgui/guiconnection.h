@@ -30,6 +30,8 @@ namespace Gui
 
         void Send(uint8_t packetId, size_t size, void *data);
 
+        void Close();
+
         PacketData Receive();
     };
 };
