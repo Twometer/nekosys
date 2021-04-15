@@ -143,6 +143,8 @@ void Bitmap::FillRect(const Rectangle &rectangle, const Color &color)
         return;
 
     auto masked = rectangle.Intersection(mask);
+    masked.x1 = MIN(masked.x1, width);
+    masked.y1 = MIN(masked.y1, height);
 
     
     for (unsigned int y = masked.y0; y < masked.y1; y++)
@@ -160,7 +162,9 @@ void Bitmap::FillGradient(const Rectangle &rectangle, const Color &a, const Colo
         return;
 
     auto masked = rectangle.Intersection(mask);
-
+    masked.x1 = MIN(masked.x1, width);
+    masked.y1 = MIN(masked.y1, height);
+    
     for (unsigned int y = masked.y0; y < masked.y1; y++)
     {
         for (unsigned int x = masked.x0; x < masked.x1; x++)

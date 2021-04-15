@@ -20,6 +20,7 @@ void Mouse::HandleMousePacket(const MOUSEPACKET &packet)
 {
     posX += packet.dx;
     posY -= packet.dy;
+    buttons = packet.buttons;
     if (posX < 0)
         posX = 0;
     if (posY < 0)

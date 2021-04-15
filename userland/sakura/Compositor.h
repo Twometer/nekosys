@@ -33,6 +33,8 @@ public:
     Rectangle RenderFrame();
 
 private:
+    void HandleControls();
+
     void DrawCursor();
 };
 

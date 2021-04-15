@@ -48,6 +48,35 @@ void Compositor::BringToFront(WindowInfo *window)
     }
 }
 
+void Compositor::HandleControls()
+{
+    WindowInfo *window = windows_head;
+
+    while (window != nullptr)
+    {
+        if (mouse->IsButtonDown(MouseButton::Left) && window->dragRectangle().Intersects(mouse->position()) && !window->dragging)
+        {
+            window->dragging = true;
+            window->draggingOffset = {mouse->GetPosX() - window->x, mouse->GetPosY() - window->y};
+        }
+
+        if (window->dragging && !mouse->IsButtonDown(MouseButton::Left))
+        {
+            window->dragging = false;
+        }
+
+        if (window->dragging)
+        {
+            dirtyManager->MarkDirty(window->rectangle());
+            window->x = mouse->position().x - window->draggingOffset.x;
+            window->y = mouse->position().y - window->draggingOffset.y;
+            dirtyManager->MarkDirty(window->rectangle());
+        }
+
+        window = window->next;
+    }
+}
+
 Rectangle Compositor::RenderFrame()
 {
     Point oldMousePos = {mouse->GetPosX(), mouse->GetPosY()};
@@ -57,6 +86,8 @@ Rectangle Compositor::RenderFrame()
         dirtyManager->MarkDirty(Rectangle(oldMousePos.x, oldMousePos.y, MOUSE_UPDATE_SIZE, MOUSE_UPDATE_SIZE));
         dirtyManager->MarkDirty(Rectangle(mouse->GetPosX(), mouse->GetPosY(), MOUSE_UPDATE_SIZE, MOUSE_UPDATE_SIZE));
     }
+
+    HandleControls();
 
     if (!dirtyManager->AnyDirty())
         return Rectangle(0, 0, 0, 0);
