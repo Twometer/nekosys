@@ -12,14 +12,20 @@ void Application::Run()
 {
     while (!exitRequested)
     {
-        auto packet = connection.Receive();
-        if (packet.packetId == ID_PWindowBuf)
-        {
-            auto shbuf = ((PWindowFbuf *)packet.data)->shbufId;
-            lastWindow->shbufId = shbuf;
-            shbuf_map(shbuf, (void **)&lastWindow->framebuffer);
+        auto rawPacket = connection.Receive();
 
-            lastWindow->framebuffer[0] = 255;
+        SWITCH_PACKET
+        {
+            CASE_PACKET(PWindowCreated, {
+                auto shbufId = packet->shbufId;
+                shbuf_map(shbufId, (void **)&lastWindow->buffer);
+
+                auto fmt = PixelFormat::Rgb24;
+                lastWindow->shbufId = shbufId;
+                lastWindow->framebuffer = new Bitmap(lastWindow->width, lastWindow->height, fmt->GetBpp() * lastWindow->width, lastWindow->buffer, fmt);
+            })
+
+            CASE_PACKET(PRepaint, {})
         }
     }
 }
@@ -37,6 +43,6 @@ void Application::OpenWindow(Window &win)
     packet.x = win.x;
     packet.y = win.y;
     memcpy(packet.title, win.title.CStr(), win.title.Length());
-    connection.Send(ID_PCreateWindow, sizeof(packet), &packet);
+    connection.Send(packet);
     lastWindow = &win;
 }

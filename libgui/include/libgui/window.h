@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <nk/string.h>
+#include <gfx/bitmap.h>
 
 namespace Gui
 {
@@ -17,9 +18,14 @@ namespace Gui
         int height;
 
         int shbufId;
-        uint8_t *framebuffer;
+        uint8_t *buffer;
+        Bitmap *framebuffer;
 
         Window(const nk::String &title, int width, int height);
+
+        ~Window();
+
+        void Draw();
     };
 
 };

@@ -47,33 +47,27 @@ void receiver_thread()
 {
 	while (true)
 	{
-		auto packetData = connection->Receive();
-
-		switch (packetData.packetId)
+		auto rawPacket = connection->Receive();
+		SWITCH_PACKET
 		{
-		case ID_PCreateWindow:
-		{
-			auto packet = (PCreateWindow *)packetData.data;
-			printf("Creating window '%s' with size %dx%d\n", packet->title, packet->width, packet->height);
+			CASE_PACKET(PCreateWindow, {
+				printf("Creating window '%s' with size %dx%d\n", packet->title, packet->width, packet->height);
 
-			// Create shared buffer for framebuffer
-			uint8_t *shbuf;
-			auto shbufId = shbuf_create(packet->width * packet->height * 3);
-			shbuf_map(shbufId, (void **)&shbuf);
+				// Create shared buffer for framebuffer
+				uint8_t *shbuf;
+				auto shbufId = shbuf_create(packet->width * packet->height * 3);
+				shbuf_map(shbufId, (void **)&shbuf);
 
-			// Create window
-			auto bitmap = new Bitmap(packet->width, packet->height, 3, shbuf, PixelFormat::Rgb24);
-			auto window = new WindowInfo(packet->title, packet->x, packet->y, packet->width, packet->height, shbufId, bitmap);
-			compositor->AddWindow(window);
+				// Create window
+				auto bitmap = new Bitmap(packet->width, packet->height, 3, shbuf, PixelFormat::Rgb24);
+				auto window = new WindowInfo(packet->title, packet->x, packet->y, packet->width, packet->height, shbufId, bitmap);
+				compositor->AddWindow(window);
 
-			// Send reply
-			PWindowFbuf reply;
-			reply.shbufId = shbufId;
-			connection->SendTo(ID_PWindowBuf, sizeof(PCreateWindow), &reply, packetData.source);
-			break;
-		}
-		default:
-			break;
+				// Send reply
+				PWindowCreated reply;
+				reply.shbufId = shbufId;
+				connection->SendTo(reply, rawPacket.source);
+			})
 		}
 	}
 
