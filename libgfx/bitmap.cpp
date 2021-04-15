@@ -62,8 +62,7 @@ void Bitmap::Blit(const Bitmap &other, Point position, BlendMode blendMode)
         return;
 
     dstRect = dstRect.Intersection(mask);
-    dstRect.x1 = MIN(dstRect.x1, width);
-    dstRect.y1 = MIN(dstRect.y1, height);
+    ConstrainToBounds(dstRect);
 
     Point srcOffset = {dstRect.x0 - position.x, dstRect.y0 - position.y};
 
@@ -143,16 +142,19 @@ void Bitmap::FillRect(const Rectangle &rectangle, const Color &color)
         return;
 
     auto masked = rectangle.Intersection(mask);
-    masked.x1 = MIN(masked.x1, width);
-    masked.y1 = MIN(masked.y1, height);
+    ConstrainToBounds(masked);
 
-    
+    size_t offset =  masked.y0 * stride + masked.x0 * bpp;
+    size_t lineskip = stride - masked.size().width * bpp;
+
     for (unsigned int y = masked.y0; y < masked.y1; y++)
     {
         for (unsigned int x = masked.x0; x < masked.x1; x++)
         {
-            SetPixel(x, y, color);
+            format->SetPixel(data, offset, color);
+            offset += bpp;
         }
+        offset += lineskip;
     }
 }
 
@@ -162,9 +164,8 @@ void Bitmap::FillGradient(const Rectangle &rectangle, const Color &a, const Colo
         return;
 
     auto masked = rectangle.Intersection(mask);
-    masked.x1 = MIN(masked.x1, width);
-    masked.y1 = MIN(masked.y1, height);
-    
+    ConstrainToBounds(masked);
+
     for (unsigned int y = masked.y0; y < masked.y1; y++)
     {
         for (unsigned int x = masked.x0; x < masked.x1; x++)
@@ -183,6 +184,14 @@ void Bitmap::SetMask(const Rectangle &rect)
 void Bitmap::ClearMask()
 {
     this->mask = Rectangle(0, 0, width, height);
+}
+
+void Bitmap::ConstrainToBounds(Rectangle &rect)
+{
+    rect.x0 = MAX(rect.x0, 0);
+    rect.y0 = MAX(rect.y0, 0);
+    rect.x1 = MIN(rect.x1, width);
+    rect.y1 = MIN(rect.y1, height);
 }
 
 Color Bitmap::Blend(Color b, Color a)

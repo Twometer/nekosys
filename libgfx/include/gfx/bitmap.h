@@ -50,6 +50,8 @@ public:
     void ClearMask();
 
 private:
+    void ConstrainToBounds(Rectangle &rect);
+
     inline size_t GetIndex(unsigned int x, unsigned int y) const;
 
     Color Blend(Color a, Color b);
