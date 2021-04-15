@@ -144,11 +144,12 @@ void Bitmap::FillRect(const Rectangle &rectangle, const Color &color)
 
     auto masked = rectangle.Intersection(mask);
 
-    for (unsigned int i = masked.x0; i < masked.x1; i++)
+    
+    for (unsigned int y = masked.y0; y < masked.y1; y++)
     {
-        for (unsigned int j = masked.y0; j < masked.y1; j++)
+        for (unsigned int x = masked.x0; x < masked.x1; x++)
         {
-            SetPixel(i, j, color);
+            SetPixel(x, y, color);
         }
     }
 }
@@ -160,12 +161,12 @@ void Bitmap::FillGradient(const Rectangle &rectangle, const Color &a, const Colo
 
     auto masked = rectangle.Intersection(mask);
 
-    for (unsigned int i = masked.x0; i < masked.x1; i++)
+    for (unsigned int y = masked.y0; y < masked.y1; y++)
     {
-        uint8_t alpha = static_cast<uint8_t>(255.0f * ((i - rectangle.x0) / (float)(rectangle.size().width)));
-        for (unsigned int j = masked.y0; j < masked.y1; j++)
+        for (unsigned int x = masked.x0; x < masked.x1; x++)
         {
-            SetPixel(i, j, Blend(a, {b.r, b.g, b.b, alpha}));
+            uint8_t alpha = static_cast<uint8_t>(255.0f * ((x - rectangle.x0) / (float)(rectangle.size().width)));
+            SetPixel(x, y, Blend(a, {b.r, b.g, b.b, alpha}));
         }
     }
 }
