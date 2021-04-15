@@ -9,6 +9,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+enum class BlendMode
+{
+    Default,
+    Alpha
+};
+
 class Bitmap
 {
 public:
@@ -21,6 +27,7 @@ public:
 private:
     uint8_t *data;
     bool ownsBuffer;
+    Rectangle mask = Rectangle(0, 0, 0, 0);
 
 public:
     Bitmap(const nk::String &path);
@@ -34,10 +41,12 @@ public:
     inline void SetPixel(unsigned int x, unsigned int y, Color pixel);
     inline Color GetPixel(unsigned int x, unsigned int y) const;
 
-    void Blit(const Bitmap &other, const Point &srcOffset, Rectangle dstRect);
-    void DrawBitmap(const Bitmap &other, Rectangle dstRect);
+    void Blit(const Bitmap &other, Point position, BlendMode blendMode = BlendMode::Default);
     void DrawText(const nk::String &text, const Font &font, const Point &position, const Color &color);
     void FillRect(const Rectangle &rect, const Color &color);
+
+    void SetMask(const Rectangle &rect);
+    void ClearMask();
 
 private:
     inline size_t GetIndex(unsigned int x, unsigned int y) const;

@@ -61,24 +61,23 @@ Rectangle Compositor::RenderFrame()
     if (!dirtyManager->AnyDirty())
         return Rectangle(0, 0, 0, 0);
 
-    auto rect = dirtyManager->GetRectangle();
-    // printf("Redrawing %d,%d %dx%d\n", rect.x0, rect.y0, rect.size().width, rect.size().height);
+    auto dirtyRect = dirtyManager->GetRectangle();
 
-    framebuffer->Blit(*wallpaper, rect.position(), rect);
+    // printf("Redrawing %d,%d %dx%d\n", rect.x0, rect.y0, rect.size().width, rect.size().height);
+    framebuffer->SetMask(dirtyRect);
+    framebuffer->Blit(*wallpaper, {0, 0});
 
     WindowInfo *window = windows_head;
     while (window != nullptr)
     {
-        auto clientRect = window->clientRectangle();
+        // Window contents
+        framebuffer->Blit(*window->bitmap, window->clientRectangle().position());
 
-        if (rect.Intersects(clientRect))
-        {
-            auto dirtyRect = clientRect.Intersection(rect);
-            framebuffer->Blit(*window->bitmap, {dirtyRect.x0 - clientRect.x0, dirtyRect.y0 - clientRect.y0}, dirtyRect);
-            framebuffer->FillRect(Rectangle(window->x, window->y, window->width, WINDOW_TITLE_HEIGHT), {0x2e, 0x2e, 0x2e, 255});
-            framebuffer->DrawText(window->title, font, {window->x + 8, window->y + 3}, {204, 204, 204, 255});
-            framebuffer->DrawText("X", font, {window->x + window->width - 16, window->y + 3}, {204, 204, 204, 255});
-        }
+        // Window title bar
+        framebuffer->FillRect(Rectangle(window->x, window->y, window->width, WINDOW_TITLE_HEIGHT), {0x2e, 0x2e, 0x2e, 255});
+        framebuffer->DrawText(window->title, font, {window->x + 8, window->y + 3}, {204, 204, 204, 255});
+        framebuffer->DrawText("X", font, {window->x + window->width - 16, window->y + 3}, {204, 204, 204, 255});
+
         window = window->next;
     }
 
@@ -86,10 +85,10 @@ Rectangle Compositor::RenderFrame()
 
     DrawCursor();
     dirtyManager->Reset();
-    return rect;
+    return dirtyRect;
 }
 
 void Compositor::DrawCursor()
 {
-    framebuffer->DrawBitmap(cursor, Rectangle(mouse->GetPosX(), mouse->GetPosY(), cursor.width, cursor.height));
+    framebuffer->Blit(cursor, {mouse->GetPosX(), mouse->GetPosY()}, BlendMode::Alpha);
 }

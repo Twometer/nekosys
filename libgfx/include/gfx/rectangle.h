@@ -25,13 +25,13 @@ struct Rectangle
     {
     }
 
-    bool Intersects(const Rectangle &rectB)
+    bool Intersects(const Rectangle &rectB) const
     {
         auto &rectA = *this;
         return rectA.x0 < rectB.x1 && rectA.x1 > rectB.x0 && rectA.y0 < rectB.y1 && rectA.y1 > rectB.y0;
     }
 
-    Rectangle Intersection(const Rectangle &other)
+    Rectangle Intersection(const Rectangle &other) const
     {
         unsigned int x0 = MAX(this->x0, other.x0);
         unsigned int y0 = MAX(this->y0, other.y0);

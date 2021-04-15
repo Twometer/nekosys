@@ -16,17 +16,20 @@ Bitmap::Bitmap(const nk::String &path)
 
     bpp = format->GetBpp();
     stride = width * bpp;
+    ClearMask();
 }
 
 Bitmap::Bitmap(unsigned int width, unsigned int height, PixelFormat *format)
     : width(width), height(height), format(format), bpp(format->GetBpp()), ownsBuffer(true), stride(width * format->GetBpp())
 {
     data = new uint8_t[height * stride];
+    ClearMask();
 }
 
 Bitmap::Bitmap(unsigned int width, unsigned int height, unsigned int stride, uint8_t *data, PixelFormat *format) : width(width), height(height), stride(stride), data(data), format(format), ownsBuffer(false)
 {
     bpp = format->GetBpp();
+    ClearMask();
 }
 
 Bitmap::~Bitmap()
@@ -52,10 +55,15 @@ inline size_t Bitmap::GetIndex(unsigned int x, unsigned int y) const
     return y * stride + x * bpp;
 }
 
-void Bitmap::Blit(const Bitmap &other, const Point &srcOffset, Rectangle dstRect)
+void Bitmap::Blit(const Bitmap &other, Point position, BlendMode blendMode)
 {
-    dstRect.x1 = MIN(dstRect.x1, width);
-    dstRect.y1 = MIN(dstRect.y1, height);
+    Rectangle dstRect = Rectangle(position, {other.width, other.height});
+    if (!mask.Intersects(dstRect))
+        return;
+
+    dstRect = dstRect.Intersection(mask);
+
+    Point srcOffset = {dstRect.x0 - position.x, dstRect.y0 - position.y};
 
     if (format == other.format)
     {
@@ -82,7 +90,15 @@ void Bitmap::Blit(const Bitmap &other, const Point &srcOffset, Rectangle dstRect
             for (size_t x = 0; x < dstRect.size().width; x++)
             {
                 auto px = other.format->GetPixel(other.data, srcIdx);
-                format->SetPixel(data, dstIdx, px);
+                if (blendMode == BlendMode::Alpha)
+                {
+                    auto mypx = format->GetPixel(data, dstIdx);
+                    format->SetPixel(data, dstIdx, Blend(mypx, px));
+                }
+                else
+                {
+                    format->SetPixel(data, dstIdx, px);
+                }
                 srcIdx += other.bpp;
                 dstIdx += bpp;
             }
@@ -91,32 +107,6 @@ void Bitmap::Blit(const Bitmap &other, const Point &srcOffset, Rectangle dstRect
         }
     }
 }
-
-void Bitmap::DrawBitmap(const Bitmap &other, Rectangle dstRect)
-{
-    dstRect.x1 = MIN(dstRect.x1, width);
-    dstRect.y1 = MIN(dstRect.y1, height);
-
-    size_t srcIdx = 0;
-    size_t dstIdx = dstRect.position().y * stride + dstRect.position().x * bpp;
-    size_t srcLineskip = other.stride - dstRect.size().width * other.bpp;
-    size_t dstLineskip = stride - dstRect.size().width * bpp;
-
-    for (size_t y = 0; y < dstRect.size().height; y++)
-    {
-        for (size_t x = 0; x < dstRect.size().width; x++)
-        {
-            auto srcpx = other.format->GetPixel(other.data, srcIdx);
-            auto dstpx = format->GetPixel(data, dstIdx);
-            format->SetPixel(data, dstIdx, Blend(dstpx, srcpx));
-            srcIdx += other.bpp;
-            dstIdx += bpp;
-        }
-        srcIdx += srcLineskip;
-        dstIdx += dstLineskip;
-    }
-}
-
 void Bitmap::DrawText(const nk::String &text, const Font &font, const Point &position, const Color &color)
 {
     auto ptr = text.CStr();
@@ -124,15 +114,19 @@ void Bitmap::DrawText(const nk::String &text, const Font &font, const Point &pos
     for (size_t i = 0; i < text.Length(); i++)
     {
         Glyph &glyph = font.glyphs[ptr[i]];
+        auto glyphRect = Rectangle(position.x + xOffset, position.y, glyph.advance, font.height);
 
-        for (unsigned int y = 0; y < font.height; y++)
+        if (mask.Intersects(glyphRect))
         {
-            uint16_t rowData = glyph.rows[y];
-            for (unsigned int x = 0; x < font.width; x++)
+            for (unsigned int y = 0; y < font.height; y++)
             {
-                if (rowData & (1 << x))
+                uint16_t rowData = glyph.rows[y];
+                for (unsigned int x = 0; x < font.width; x++)
                 {
-                    SetPixel(x + position.x + xOffset, y + position.y, color);
+                    if (rowData & (1 << x))
+                    {
+                        SetPixel(x + position.x + xOffset, y + position.y, color);
+                    }
                 }
             }
         }
@@ -143,13 +137,28 @@ void Bitmap::DrawText(const nk::String &text, const Font &font, const Point &pos
 
 void Bitmap::FillRect(const Rectangle &rectangle, const Color &color)
 {
-    for (unsigned int i = rectangle.x0; i < rectangle.x1; i++)
+    if (!mask.Intersects(rectangle))
+        return;
+
+    auto masked = rectangle.Intersection(mask);
+
+    for (unsigned int i = masked.x0; i < masked.x1; i++)
     {
-        for (unsigned int j = rectangle.y0; j < rectangle.y1; j++)
+        for (unsigned int j = masked.y0; j < masked.y1; j++)
         {
             SetPixel(i, j, color);
         }
     }
+}
+
+void Bitmap::SetMask(const Rectangle &rect)
+{
+    this->mask = rect;
+}
+
+void Bitmap::ClearMask()
+{
+    this->mask = Rectangle(0, 0, width, height);
 }
 
 Color Bitmap::Blend(Color b, Color a)
