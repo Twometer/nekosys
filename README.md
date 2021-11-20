@@ -1,5 +1,5 @@
 <p align="center">
-  <img style="border-radius: 14px;" src="art/logo.png" width=128>
+  <img style="border-radius: 14px;" src="media/logo.png" width=128>
   <h1 align="center">The Nekosys Project</h1>
 </p>
 <p align="center">
