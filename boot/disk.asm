@@ -1,3 +1,5 @@
+disk_num: db 0x00
+
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Disk access packet ;;
 ;; for LBA BIOS calls ;;
@@ -75,7 +77,7 @@ read_sector:
     
     mov si, disk_packet       ; Send disk packet
     mov ah, 0x42
-    mov dl, 0
+    mov dl, [disk_num]
     int 0x13
     
     jc on_disk_error          ; Catch errors

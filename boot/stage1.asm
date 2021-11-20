@@ -1,6 +1,10 @@
 bits 16     ; We're in 16-bit mode
 org 0x7C00  ; The BIOS offset
 
+%define stage2_dst_address 0x8000    ; Destination address
+%define stage2_src_sector  1         ; Source sector
+%define stage2_src_size    2         ; Size, in sectors
+
 ;;;;;;;;;;;;;;;;;
 ;; Entry point ;;
 ;;;;;;;;;;;;;;;;;
@@ -19,10 +23,23 @@ boot:
     mov ss, ax
     mov sp, 0x1000
 
+    ; Save the disk
+    mov [disk_num], dl
+
     ; Screen init
     call clear_screen
+
     push banner
     call print
+
+    ; Load stage 2
+    mov bx, stage2_dst_address
+    push stage2_src_sector
+    push stage2_src_size
+    call read_sectors
+
+    ; Enter stage 2
+    jmp stage2_dst_address
 
     ; Halt if we get here
     cli
