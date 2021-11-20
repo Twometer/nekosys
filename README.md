@@ -1,57 +1,19 @@
 <p align="center">
-<img src="art/logo.png" width=128>
-<h1 align="center">The Nekosys OS</h1>
+  <img style="border-radius: 14px;" src="art/logo.png" width=128>
+  <h1 align="center">The Nekosys Project</h1>
 </p>
 <p align="center">
- nekosys is an x86 operating system written from scratch
+  nekosys is an x86 operating system written from scratch in modern C++
 </p>
 
+## About
 
-## Build System
-nekosys uses the custom [NekoMake](https://github.com/nekosys-os/nkm) build system
+This is the development version of the next generation of this OS. I'm planning to completely rewrite [the previous version](https://github.com/Twometer/nekosys/tree/1.x) with improved stability, better code and more features. Please note however, that this is not intended as a research project into the future of operating systems, but rather just a fun coding and learning project of mine :3
 
-## Disk layout
-- Sector 0: MBR and `boot.asm` stage one loader: Loads Stage 2 so that we can use more than 512 bytes
-- Sector 1+: `loader.asm` stage two loader: Parses the FAT, loads the kernel into memory and executes it
-- The kernel is in a file called `koneko.bin` on the disk
-
-The disk must be formatted with FAT-16. Neko's [nkimg](https://github.com/nekosys-os/image-builder)
-is a very useful tool for this job.
-
-## Memory layout
-A map for nekosys' memory layout can be found at [memory.md](memory.md)
-
-## Features
-- x86 (32-bit) kernel
-- pre-emptive multithreading
-- FAT-16 file system (vfs)
-- protected userspace
-- sometimes posix compliant
-- vesa hi-res graphics support
-- ...
-
-## Libraries
-- `libc`: Basic C functionality such as print, malloc etc.
-- `libneko`: Useful C++ tools library with containers, templates, etc.
-- `libelf`: Parser for ELF executables
-- `libpng`: PNG image loader (lodepng port)
-- ...
-
-## Userland
-- ...
-
-## Requirements
-- [NekoMake](https://github.com/nekosys-os/nkm)
-- [neko-gcc](https://github.com/nekosys-os/neko-gcc)
-- [nasm](https://www.nasm.us/)
-- [nkimg](https://github.com/nekosys-os/image-builder)
+...
 
 
-## Building
-```sh
- $  nkm 
-```
 
 ---
 
-made by [Twometer](https://github.com/Twometer)
+made by [Twometer](https://github.com/Twometer) and released under the [MIT License](LICENSE)
