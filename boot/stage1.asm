@@ -1,5 +1,5 @@
-bits 16
-org 0x7C00
+bits 16     ; We're in 16-bit mode
+org 0x7C00  ; The BIOS offset
 
 boot:
     ; Reset segment registers
@@ -15,6 +15,10 @@ boot:
     mov ax, 0x0900      
     mov ss, ax
     mov sp, 0x1000
+
+    mov al, 0x4E ; Show an N on the screen
+    mov ah, 0x0E ; TTY mode
+    int 0x10
 
     ; Halt if we get here
     cli
