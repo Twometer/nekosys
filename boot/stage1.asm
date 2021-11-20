@@ -1,6 +1,9 @@
 bits 16     ; We're in 16-bit mode
 org 0x7C00  ; The BIOS offset
 
+;;;;;;;;;;;;;;;;;
+;; Entry point ;;
+;;;;;;;;;;;;;;;;;
 boot:
     ; Reset segment registers
     xor ax, ax
@@ -16,13 +19,28 @@ boot:
     mov ss, ax
     mov sp, 0x1000
 
-    mov al, 0x4E ; Show an N on the screen
-    mov ah, 0x0E ; TTY mode
-    int 0x10
+    ; Screen init
+    call clear_screen
+    push banner
+    call print
 
     ; Halt if we get here
     cli
     hlt
 
+;;;;;;;;;;;;;;;
+;; Libraries ;;
+;;;;;;;;;;;;;;;
+%include "screen.asm"
+%include "disk.asm"
+
+;;;;;;;;;;;;;;;;;;;;;;
+;; String constants ;;
+;;;;;;;;;;;;;;;;;;;;;;
+banner: db "nekosys bootloader", 0x0a, 0x0d, 0
+
+;;;;;;;;;;;;;
+;; Padding ;;
+;;;;;;;;;;;;;
 times 510 - ($-$$) db 0 ; Pad to full boot sector
 dw 0xaa55               ; Boot signature
