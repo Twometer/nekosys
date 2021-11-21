@@ -59,5 +59,4 @@ banner: db "nekosys bootloader", 0x0a, 0x0d, 0
 ;;;;;;;;;;;;;
 ;; Padding ;;
 ;;;;;;;;;;;;;
-times 510 - ($-$$) db 0 ; Pad to full boot sector
-dw 0xaa55               ; Boot signature
+times 512 - ($-$$) db 0 ; Pad to full sector
