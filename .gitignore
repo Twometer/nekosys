@@ -2,6 +2,7 @@
 *.bin
 build/
 sysroot/bin
+docs_gen/
 
 # CMake
 CMakeCache.txt
