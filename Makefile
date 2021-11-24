@@ -4,17 +4,21 @@ ASM = nasm
 
 BUILD_DIR = $(shell pwd)/build
 
+export LD
 export CC
 export CXX
 export ASM
 export BUILD_DIR
 
-.PHONY: image run
+.PHONY: bootloader kernel image run clean
 
-all: bootloader
+all: bootloader kernel
 
 bootloader:
 	$(MAKE) -C boot/
+
+kernel:
+	$(MAKE) -C kernel/
 
 image:
 	cd scripts; ./gen-image.sh
@@ -22,3 +26,5 @@ image:
 run: image
 	cd scripts; ./run-qemu.sh
 	
+clean:
+	rm -rf build/
