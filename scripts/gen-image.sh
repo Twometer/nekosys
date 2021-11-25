@@ -12,6 +12,9 @@ parted -s $image_file mkpart primary 2048s 100%
 
 echo Formatting
 echfs-utils -m -p0 $image_file quick-format 512
+
+echo Copying files
+echfs-utils -m -p0 $image_file import "$build_dir/kernel/kernel.bin" "kernel.bin"
 for filename in $(find $sysroot_dir -type f); do
     echfs-utils -m -p0 $image_file import $filename ${filename#"$sysroot_dir"}
 done
