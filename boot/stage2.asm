@@ -35,8 +35,14 @@ main:
     call check_signature
     jc on_fs_error
 
+    ; Allow writes above 1MB
+    call enter_unreal
+
+    ; ...
+
     cli
     hlt
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Takes signature pointers in SI and DI,     ;;
@@ -67,6 +73,45 @@ check_signature:
     chksig_nequal:
         stc
         ret
+
+;;;;;;;;;;;;;;;;;;;;;;;;
+;; Enters unreal mode ;;
+;;;;;;;;;;;;;;;;;;;;;;;;
+enter_unreal:
+    cli
+    push ds
+
+    ; Enter protected mode
+    lgdt [unreal_gdt_info]
+    mov eax, cr0
+    or al, 1
+    mov cr0, eax
+
+    ; Stay in real-mode CS and jmp to not crash
+    jmp $ + 2
+
+    ; Set data segment to new extended DS
+    mov bx, 0x08
+    mov ds, bx
+
+    ; Leave protected mode
+    mov eax, cr0
+    and al, 0xfe
+    mov cr0, eax
+    pop ds
+    sti
+
+    ; Enable A20 line
+    mov ax, 0x2401
+    int 0x15
+    ret
+
+unreal_gdt_info:
+    dw unreal_gdt_end - unreal_gdt - 1 ; GDT size
+    dd unreal_gdt                      ; GDT address
+unreal_gdt: dd 0, 0 ; null descriptor
+            db 0xff, 0xff, 0, 0, 0, 10010010b, 11001111b, 0 ; big flat data segment
+unreal_gdt_end:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Error condition targets ;;
