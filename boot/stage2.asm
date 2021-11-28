@@ -5,9 +5,11 @@ org 0x8000  ; Stage-2 loader offset
 ;; Memory location definitions ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 %define boot_sector   0x7C00
-%define sector_cache  0x4000
-%define fat_table     0x5000
-%define kernel_offset 0xA000
+%define id_table      0x4000
+%define alloc_table   0x4200
+%define block_cache   0x5200
+%define kernel_tmp    0xA000
+%define kernel_dst    0x100000
 
 ;;;;;;;;;;;;;;;;;
 ;; Entry point ;;
@@ -25,23 +27,133 @@ main:
     mov [partition_lba], ax
 
     ; Load the identity table
-    push word [partition_lba]
-    push sector_cache
+    push ax
+    push id_table
     call read_sector
 
     ; Check for echFS signature
     mov si, echfs_sig
-    mov di, sector_cache + 4
+    mov di, id_table + 4
     call check_signature
     jc on_fs_error
+
+    ; Load the allocation table (at block 16)
+    push word 16
+    push word alloc_table
+    call read_block
 
     ; Allow writes above 1MB
     call enter_unreal
 
-    ; ...
+    ; Compute offset of main directory
+    mov dword eax, [id_table + 12] ; total block count
+    mov ebx, 8
+    mul ebx
+    mov ebx, [id_table + 28] ; block size
+    add eax, ebx
+    sub eax, 1
+    xor edx, edx
+    div ebx ; now we have size of alloc table, in blocks
+    add eax, 16 ; add offset of alloc table, EAX now stores block# of maindir
 
-    cli
-    hlt
+    ; read first block of main directory
+    push ax
+    push block_cache
+    call read_block
+
+    mov eax, block_cache
+    next_dirent:
+        cmp dword [eax], 0
+        je kernel_not_found
+
+        mov ebx, eax
+        add ebx, 9
+        mov si, bx
+        mov di, kernel_file_name
+        
+        call streq
+        jnc kernel_found
+
+        add eax, 256
+        jmp next_dirent
+
+    kernel_found:
+        add eax, 240
+        mov eax, [eax]
+
+        push word ax
+        push word kernel_tmp
+        call read_block
+
+        ; copy kernel block to 1MB
+        mov ecx, [id_table + 28] ; block size
+        mov esi, kernel_dst
+        mov edi, kernel_tmp
+    copy_kernel:
+        cmp ecx, 0
+        je kernel_copy_complete
+
+        mov eax, [edi]
+        mov dword [ds:esi], eax
+        add edi, 4
+        add esi, 4
+        sub ecx, 4
+        jmp copy_kernel
+
+    ; TODO: Copy more than one block
+
+    kernel_copy_complete:
+        ; enter pmode and kernel
+        cli
+        mov eax, cr0
+        or eax, 0x1
+        mov cr0, eax
+        jmp 0x10:launch_kernel ; leave the bootloader
+
+    kernel_not_found:
+        push err_no_kernel
+        call print
+        cli 
+        hlt
+
+bits 32
+launch_kernel:
+    jmp 0x10:kernel_dst
+bits 16
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; void read_block(word block_no, word dst_addr) ;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+read_block:
+    push bp
+    mov bp, sp
+    push eax
+   
+    xor eax, eax
+    mov ax, [bp + 6] ; block no
+    mov ebx, [id_table + 28] ; block size
+    mul ebx
+    xor edx, edx
+    mov ebx, 512
+    div ebx ; now eax holds offset from partition start in 512byte-sectors
+    add ax, [partition_lba] ; add partition offset
+    push ax
+
+    mov eax, ebx
+    mov ebx, 512
+    div ebx; now eax holds size of block in sectors
+    push ax
+
+    xor ax, ax
+    mov es, ax ; set sector read destination
+    mov bx, [bp + 4]
+
+    call read_sectors
+    
+    pop eax
+    mov sp, bp
+    pop bp
+    ret 4
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -65,7 +177,7 @@ check_signature:
         inc si
         inc di
         jmp chksig_nextchar
-
+        
     chksig_equal:
         clc
         ret
@@ -74,12 +186,40 @@ check_signature:
         stc
         ret
 
+streq:
+    push eax
+    streq_nextchar:
+        mov ah, [si]
+        mov al, [di]
+
+        cmp ax, 0
+        je streq_equal
+
+        cmp ah, al
+        jne streq_nequal
+
+        inc si
+        inc di
+        jmp streq_nextchar
+        
+    streq_equal:
+        clc
+        jmp streq_done
+
+    streq_nequal:
+        stc
+
+    streq_done:
+        pop eax
+        ret
+
 ;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Enters unreal mode ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;
 enter_unreal:
     cli
     push ds
+    push es
 
     ; Enter protected mode
     lgdt [unreal_gdt_info]
@@ -93,11 +233,13 @@ enter_unreal:
     ; Set data segment to new extended DS
     mov bx, 0x08
     mov ds, bx
+    mov es, bx
 
     ; Leave protected mode
     mov eax, cr0
     and al, 0xfe
     mov cr0, eax
+    pop es
     pop ds
     sti
 
@@ -109,8 +251,9 @@ enter_unreal:
 unreal_gdt_info:
     dw unreal_gdt_end - unreal_gdt - 1 ; GDT size
     dd unreal_gdt                      ; GDT address
-unreal_gdt: dd 0, 0 ; null descriptor
-            db 0xff, 0xff, 0, 0, 0, 10010010b, 11001111b, 0 ; big flat data segment
+unreal_gdt: dq 0 ; null descriptor (0x00)
+            db 0xff, 0xff, 0, 0, 0, 10010010b, 11001111b, 0 ; big flat data segment (0x08)
+            db 0xff, 0xff, 0, 0, 0, 10011010b, 11001111b, 0 ; big flat code segment (0x10)
 unreal_gdt_end:
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -137,7 +280,9 @@ partition_lba:       dw 0x00
 ;;;;;;;;;;;;;;;;;;;;;;
 banner: db "Stage 2 loaded", 0x0a, 0x0d, 0
 echfs_sig: db "_ECH_FS_", 0
-err_file_system: db "Invalid echFS signature", 0x0a, 0x0d, 0
+err_file_system: db "error: invalid echFS signature", 0x0a, 0x0d, 0
+err_no_kernel: db "error: kernel.bin not found", 0x0a, 0x0d, 0
+kernel_file_name: db "kernel.bin", 0
 
 ;;;;;;;;;;;;;
 ;; Padding ;;
