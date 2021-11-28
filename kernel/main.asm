@@ -1,9 +1,13 @@
 section .boot
-bits 16
+bits 32
 
 ; Entry point from bootloader
 global _start
 _start:
+    mov esp, kernel_stack_top
+    extern kmain
+    call kmain
+
     cli
     hlt
 
