@@ -3,7 +3,7 @@ OUTDIR = $(BUILD_DIR)/kernel
 
 SOURCES = main.cpp
 
-OBJECTS = $(OUTDIR)/kernel.o $(OUTDIR)/boot.o
+OBJECTS = $(OUTDIR)/kernel.o $(OUTDIR)/_start.o
  
 all: $(OUTDIR) $(OBJECTS) $(OUTDIR)/kernel.bin
 
@@ -13,8 +13,8 @@ $(OUTDIR):
 $(OUTDIR)/kernel.o:
 	$(CXX) -c $(SOURCES) -o $(OUTDIR)/kernel.o $(CXXFLAGS)
 
-$(OUTDIR)/boot.o:
-	$(ASM) -f elf32 -o $(OUTDIR)/boot.o main.asm
+$(OUTDIR)/_start.o:
+	$(ASM) -f elf32 -o $(OUTDIR)/_start.o _start.asm
 
 $(OUTDIR)/kernel.bin:
 	$(CXX) -T kernel.ld -o $(OUTDIR)/kernel.bin $(CXXFLAGS) $(OBJECTS) -lgcc
