@@ -11,6 +11,12 @@ org 0x8000  ; Stage-2 loader offset
 %define kernel_tmp    0xA000
 %define kernel_dst    0x100000
 
+%define bootinfo_base           0x0500
+%define bootinfo_mem_map_result 0x00
+%define bootinfo_mem_map_len    0x04
+%define bootinfo_mem_map_ptr    0x08 
+%define memory_map_base         0x1500
+
 ;;;;;;;;;;;;;;;;;
 ;; Entry point ;;
 ;;;;;;;;;;;;;;;;;
@@ -103,6 +109,9 @@ main:
     ; TODO: Copy more than one block
 
     kernel_copy_complete:
+        ; setup boot info
+        call load_mem_map
+
         ; enter pmode and kernel
         cli
         mov eax, cr0
@@ -120,6 +129,52 @@ bits 32
 launch_kernel:
     jmp 0x10:kernel_dst
 bits 16
+
+
+load_mem_map:
+    mov dword [bootinfo_base + bootinfo_mem_map_result], 0xFF
+    mov dword [bootinfo_base + bootinfo_mem_map_len], 0
+    mov dword [bootinfo_base + bootinfo_mem_map_ptr], memory_map_base
+
+    ; Set ES:DI target location for memory map loader
+    mov ax, 0
+    mov es, ax
+    mov di, memory_map_base
+
+    xor ebx, ebx            
+    mov edx, 0x0534D4150
+    mmap_next_entry:
+        mov eax, 0xe820         ; set command E820
+        mov ecx, 24             ; entry length
+        int 0x15
+        jc mmap_err_carry       ; if carry is set, then it failed
+
+        mov edx, 0x0534D4150
+        cmp eax, edx
+        jne mmap_err_bad_sig    ; if eax is not the magic num then error
+
+        cmp ebx, 0              ; if ebx == 0, it ended
+        je mmap_err_list_end
+
+        ; if it didn't fail, goto next entry
+        inc dword [bootinfo_base + bootinfo_mem_map_len]
+        add di, 24 ; increment di by 24
+        jmp mmap_next_entry  
+    
+    ; Error handlers
+    mmap_err_list_end:
+        mov dword [bootinfo_base + bootinfo_mem_map_result], 0x00
+        ret
+
+    mmap_err_bad_sig:
+        mov dword [bootinfo_base + bootinfo_mem_map_result], 0x01
+        ret
+
+    mmap_err_carry:
+        mov dword [bootinfo_base + bootinfo_mem_map_result], 0x02
+        ret
+
+    ret
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; void read_block(word block_no, word dst_addr) ;;
